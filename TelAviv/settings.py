@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql://root:e2qx7q9qBVnEWKDjPsAC@containers-us-west-36.railway.app:7970/railway',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'railway',
         'USER': 'root',
         'PASSWORD': 'e2qx7q9qBVnEWKDjPsAC',
