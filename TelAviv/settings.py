@@ -85,11 +85,11 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'railway',
-        'USER': 'root',
-        'PASSWORD': 'e2qx7q9qBVnEWKDjPsAC',
-        'HOST': 'containers-us-west-36.railway.app',
-        'PORT': '7970'
+        'NAME': os.environ.get('MYSQLDATABASE', 'railway'),
+        'USER': os.environ.get('MYSQLUSER', 'root'),
+        'PASSWORD': os.environ.get('MYSQLPASSWORD', 'e2qx7q9qBVnEWKDjPsAC'),
+        'HOST': os.environ.get('MYSQLHOST', 'containers-us-west-36.railway.app'),
+        'PORT': os.environ.get('MYSQLPORT', '7970')
     }
 }
 
