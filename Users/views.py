@@ -50,7 +50,7 @@ from Users.models import Users
 from Users.serializers import UsersSerializer
 import re
 import hashlib
-from validate_email import validate_email, EmailNotValidError
+from validate_email import validate_email
 
 
 def check_password(pas:str) -> bool:
