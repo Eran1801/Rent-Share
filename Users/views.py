@@ -55,7 +55,7 @@ import logging
 
 
 def check_password(pas:str) -> bool:
-    pattern = r'^(?=.*[A-Z])(?=.*[a-z](?=.*\d))' # contains at least one upper in the begging and lower letter and number
+    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d))' # contains at least one upper in the begging and lower letter and number
     return True if re.match(pattern,pas) and len(pas) >= 8 else False # adding the big&equal from 8
 
 # def check_email(email:str) -> [bool,str]:
@@ -75,6 +75,7 @@ def hash_password(plain_password:str):
 @csrf_exempt
 def register(request, user_id = 0): 
 
+    logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)  # Get logger instance
 
     if request.method == 'POST':
@@ -88,11 +89,11 @@ def register(request, user_id = 0):
         phone_number = True if len(user_data.get('user_phone')) >= 10 else False #! MAYBE USE TEMPLATE OF COUNTRY AND PHONE NUMBER
         password_b:bool = check_password(user_data.get('user_password'))
         password_2 = user_data.get('user_password_2') #! tell mor send from front also
-        user_data['user_password'] = hash_password(user_data['user_password']) # encrypt before saving
 
         logger.debug(f'Debug message: full_name = {full_name}\nphone_number = {phone_number}\npassword = {password_s}\npassword2 = {password_2}\email = {user_data.get("user_email")}')
 
         if password_s == password_2: # checking if 2 user passwords is equal
+            user_data['user_password'] = hash_password(user_data['user_password']) # encrypt before saving
             if full_name and phone_number and password_b: # check if all true, remove the email[0]
                     users_serializer = UsersSerializer(data=user_data)
                     if users_serializer.is_valid():
