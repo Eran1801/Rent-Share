@@ -92,8 +92,8 @@ def register(request, user_id = 0):
                     users_serializer = UsersSerializer(data=user_data)
                     if users_serializer.is_valid():
                         users_serializer.save() # to db
-                        return JsonResponse("Added Successfully!!", safe=False), redirect('/home') #? ADD /home to urls to app home
-                    return JsonResponse("Failed to Add.", safe=False) , redirect('/register') #? needs to remove it ? 
+                        return JsonResponse("Added Successfully!!", safe=False)
+                    return JsonResponse("Failed to Add.", safe=False)
         else:
             return JsonResponse("Passwords dont't match.", safe=False)
 
