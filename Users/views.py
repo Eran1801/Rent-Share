@@ -76,7 +76,7 @@ def register(request, user_id = 0):
 
     if request.method == 'POST':
         user_data = JSONParser().parse(request) # access individual fields, users_data.get('field_name')
-
+        
         password_s:str = user_data.get('user_password')
 
         # checks valid register input from user
@@ -92,11 +92,14 @@ def register(request, user_id = 0):
                     users_serializer = UsersSerializer(data=user_data)
                     if users_serializer.is_valid():
                         users_serializer.save() # to db
-                        return JsonResponse("Added Successfully!!", safe=False)
-                    return JsonResponse("Failed to Add.", safe=False)
+                        return JsonResponse("Register Success", safe=False)
+                    return JsonResponse("Register Fails", safe=False)
         else:
-            return JsonResponse("Passwords dont't match.", safe=False)
-
+            return JsonResponse("Passwords don't match.", safe=False)
+    elif request.method == 'GET':
+        users = Users.objects.all()
+        users_serializer = UsersSerializer(users, many=True)
+        return JsonResponse(users_serializer.data, safe=False)
         
 @csrf_exempt
 def login(request):
