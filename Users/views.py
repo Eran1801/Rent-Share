@@ -51,19 +51,11 @@ from Users.serializers import UsersSerializer
 import re
 import hashlib
 import logging
-# from validate_email import validate_email
+from validate_email import validate_email
 
-
-def check_password(pas:str) -> bool:
+def check_valid_password(pas:str) -> bool:
     pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)' # contains at least one upper in the begging and lower letter and number
     return True if re.match(pattern,pas) and len(pas) >= 8 else False # adding the big&equal from 8
-
-# def check_email(email:str) -> [bool,str]:
-#     try:
-#         email_info = validate_email(email,validate_email=True)
-#         return [True,email]
-#     except:
-#         return [False, 'Email not valid']
 
 def hash_password(plain_password:str):
     sha256 = hashlib.sha256()
@@ -88,14 +80,14 @@ def register(request, user_id = 0):
         user_password_2 = user_data.get('user_password_2')
         
         # checks valid register input from user
-        check_full_name = True if len(user_full_name) > 4 else False
-        # check_email = check_email(user_email)
+        check_full_name: bool = True if len(user_full_name) > 4 else False
+        check_email = validate_email(user_email)
         check_phone_number = True if len(user_phone_number) >= 10 else False
-        check_password:bool = check_password(user_password)
+        check_password = check_valid_password(user_password)
 
         if user_password == user_password_2: # checking if 2 user passwords is equal
             user_data['user_password'] = hash_password(user_data['user_password']) # encrypt before saving
-            if check_full_name and check_phone_number and check_password: # check if all true
+            if check_full_name and check_phone_number and check_password and check_email: # check if all true
                     del user_data['user_password_2']
                     users_serializer = UsersSerializer(data=user_data)
                     if users_serializer.is_valid():
