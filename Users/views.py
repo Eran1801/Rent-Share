@@ -50,6 +50,7 @@ from Users.models import Users
 from Users.serializers import UsersSerializer
 import re
 import hashlib
+import logging
 # from validate_email import validate_email
 
 
@@ -74,6 +75,8 @@ def hash_password(plain_password:str):
 @csrf_exempt
 def register(request, user_id = 0): 
 
+    logger = logging.getLogger(__name__)  # Get logger instance
+
     if request.method == 'POST':
         user_data = JSONParser().parse(request) # access individual fields, users_data.get('field_name')
         
@@ -87,6 +90,8 @@ def register(request, user_id = 0):
         password_2 = user_data.get('user_password_2') #! tell mor send from front also
         user_data['user_password'] = hash_password(user_data['user_password']) # encrypt before saving
 
+        logger.debug(f'Debug message: full_name = {full_name}\nphone_number = {phone_number}\npassword = {password_s}\npassword2 = {password_2}\email = {user_data.get("user_email")}')
+
         if password_s == password_2: # checking if 2 user passwords is equal
             if full_name and phone_number and password_b: # check if all true, remove the email[0]
                     users_serializer = UsersSerializer(data=user_data)
@@ -96,6 +101,7 @@ def register(request, user_id = 0):
                     return JsonResponse("Register Fails", safe=False)
         else:
             return JsonResponse("Passwords don't match.", safe=False)
+        
     elif request.method == 'GET':
         users = Users.objects.all()
         users_serializer = UsersSerializer(users, many=True)
