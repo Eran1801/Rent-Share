@@ -55,7 +55,7 @@ import logging
 
 
 def check_password(pas:str) -> bool:
-    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d))' # contains at least one upper in the begging and lower letter and number
+    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)' # contains at least one upper in the begging and lower letter and number
     return True if re.match(pattern,pas) and len(pas) >= 8 else False # adding the big&equal from 8
 
 # def check_email(email:str) -> [bool,str]:
