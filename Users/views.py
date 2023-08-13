@@ -53,6 +53,7 @@ import hashlib
 import logging
 from validate_email import validate_email
 
+
 def check_valid_password(pas:str) -> bool:
     pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)' # contains at least one upper in the begging and lower letter and number
     return True if re.match(pattern,pas) and len(pas) >= 8 else False # adding the big&equal from 8
