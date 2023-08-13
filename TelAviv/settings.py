@@ -13,6 +13,17 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 
+
+# --------- .env Variables ---------
+
+SECRET_KEY_DJANGO = os.environ['SECRET_KEY']
+DB_NAME = os.environ['DB_NAME']
+DB_PASSWORD = os.environ['DB_PAS_SQL']
+ROOT = os.environ['ROOT']
+HOST_DB_SQL = os.environ['HOST_DB_SQL']
+PORT = os.environ['PORT']
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,7 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f--g3ey-1mxjm&)po*vlg0%h+%u=zg4-$6r^4z&pca5pxn@cj%'
+SECRET_KEY = SECRET_KEY_DJANGO
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -85,11 +96,11 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'railway',
-        'USER': 'root',
-        'PASSWORD': 'e2qx7q9qBVnEWKDjPsAC',
-        'HOST': 'containers-us-west-36.railway.app',
-        'PORT': '7970'
+        'NAME': DB_NAME,
+        'USER': ROOT, 
+        'PASSWORD': DB_PASSWORD,
+        'HOST': HOST_DB_SQL,
+        'PORT': PORT
     }
 }
 
