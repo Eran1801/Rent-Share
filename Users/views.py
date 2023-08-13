@@ -61,8 +61,8 @@ def check_email(email:str) -> [bool,str]:
     try:
         email_info = validate_email(email,validate_email=True)
         return [True,email]
-    except EmailNotValidError as e:
-        return [False, str(e)]
+    except:
+        return [False, 'Email not valid']
 
 def hash_password(plain_password:str):
     sha256 = hashlib.sha256()
