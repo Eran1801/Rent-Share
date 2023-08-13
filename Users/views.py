@@ -81,23 +81,25 @@ def register(request, user_id = 0):
     if request.method == 'POST':
         user_data = JSONParser().parse(request) # access individual fields, users_data.get('field_name')
         
-        password_s:str = user_data.get('user_password')
-
+        user_full_name = user_data.get('user_full_name')
+        user_email = user_data.get('user_email')
+        user_phone_number = user_data.get('user_phone')
+        user_password = user_data.get('user_password')
+        user_password_2 = user_data.get('user_password_2')
+        
         # checks valid register input from user
-        full_name = True if len(user_data.get('user_full_name')) > 4 else False
-        # email = check_email(user_data.get('user_email'))
-        phone_number = True if len(user_data.get('user_phone')) >= 10 else False #! MAYBE USE TEMPLATE OF COUNTRY AND PHONE NUMBER
-        password_b:bool = check_password(user_data.get('user_password'))
-        password_2 = user_data.get('user_password_2') #! tell mor send from front also
+        check_full_name = True if len(user_full_name) > 4 else False
+        # check_email = check_email(user_email)
+        check_phone_number = True if len(user_phone_number) >= 10 else False
+        check_password:bool = check_password(user_password)
 
-        logger.debug(f'Debug message: full_name = {full_name}\nphone_number = {phone_number}\npassword = {password_s}\npassword2 = {password_2}\nemail = {user_data.get("user_email")}')
-
-        if password_s == password_2: # checking if 2 user passwords is equal
+        if user_password == user_password_2: # checking if 2 user passwords is equal
             user_data['user_password'] = hash_password(user_data['user_password']) # encrypt before saving
-            if full_name and phone_number and password_b: # check if all true, remove the email[0]
+            if check_full_name and check_phone_number and check_password: # check if all true
+                    del user_data['user_password_2']
                     users_serializer = UsersSerializer(data=user_data)
                     if users_serializer.is_valid():
-                        users_serializer.save() # to db
+                        users_serializer.save() # save to db
                         return JsonResponse("Register Success", safe=False)
                     else:
                         logger.debug(users_serializer.errors)
