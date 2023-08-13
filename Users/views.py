@@ -90,7 +90,7 @@ def register(request, user_id = 0):
         password_b:bool = check_password(user_data.get('user_password'))
         password_2 = user_data.get('user_password_2') #! tell mor send from front also
 
-        logger.debug(f'Debug message: full_name = {full_name}\nphone_number = {phone_number}\npassword = {password_s}\npassword2 = {password_2}\email = {user_data.get("user_email")}')
+        logger.debug(f'Debug message: full_name = {full_name}\nphone_number = {phone_number}\npassword = {password_s}\npassword2 = {password_2}\nemail = {user_data.get("user_email")}')
 
         if password_s == password_2: # checking if 2 user passwords is equal
             user_data['user_password'] = hash_password(user_data['user_password']) # encrypt before saving
