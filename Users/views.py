@@ -99,7 +99,9 @@ def register(request, user_id = 0):
                     if users_serializer.is_valid():
                         users_serializer.save() # to db
                         return JsonResponse("Register Success", safe=False)
-                    return JsonResponse("Register Fails", safe=False)
+                    else:
+                        logger.debug(users_serializer.errors)
+                        return JsonResponse("Register Fails", safe=False)
         else:
             return JsonResponse("Passwords don't match.", safe=False)
         
