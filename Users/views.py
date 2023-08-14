@@ -59,7 +59,7 @@ def register(request, user_id = 0):
             user_data['user_password'] = hash_password(user_password) # encrypt before saving
 
             if email_exists(user_email): 
-                return JsonResponse('Email already exists', safe=False)
+                return JsonResponse({'error':'Email already exists'}, safe=False)
             if phone_exists(user_phone_number):
                 return JsonResponse('Phone number already exists',safe=False)
             
