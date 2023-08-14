@@ -21,5 +21,10 @@ class Post(models.Model):
 
     driving_license = models.ImageField(upload_to='posts/images')
 
-    apartment_pictures = models.ImageField(upload_to='posts/images')
+    apartment_pic_1 = models.ImageField(upload_to='posts/images',)
+    apartment_pic_2 = models.ImageField(upload_to='posts/images')
+    apartment_pic_3 = models.ImageField(upload_to='posts/images')
+    apartment_pic_4 = models.ImageField(upload_to='posts/images')
+
+
     

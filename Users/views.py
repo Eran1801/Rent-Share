@@ -77,7 +77,7 @@ def register(request, user_id = 0):
             users_serializer = UsersSerializer(data=user_data)
             if users_serializer.is_valid():
                 users_serializer.save() # save to db
-                return HttpResponseServerError("Register Success")
+                return JsonResponse("Register Success",safe=False)
             else:
                 logger.debug(users_serializer.errors)
                 return HttpResponseServerError("Register Fails")
@@ -91,7 +91,7 @@ def register(request, user_id = 0):
         
 @csrf_exempt
 def login(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         
         user_data = JSONParser().parse(request)
 
@@ -104,10 +104,10 @@ def login(request):
         try:
             user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
             if user.user_password == hash_password_login:
-                return JsonResponse("Passwords match. Login successfully", safe=False)
+                return JsonResponse("Passwords match. Login successfully",safe=False)
             else:
-                return JsonResponse("Passwords don't match. Login fail", safe=False)
+                return HttpResponseServerError("Passwords don't match. Login fail")
         except Users.DoesNotExist:
-            return JsonResponse("User not found.", safe=False)
+            return HttpResponseServerError("User not found.")
         
       
