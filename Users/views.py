@@ -104,7 +104,16 @@ def login(request):
         try:
             user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
             if user.user_password == hash_password_login:
-                return JsonResponse("Passwords match. Login successfully",safe=False)
+                response_data = {
+                'user': {
+                    'user_id': user.user_id,
+                    'user_full_name': user.user_full_name,
+                    'user_email': user.user_email,
+                    'user_phone': user.user_phone
+                },
+                    'message': 'Passwords match. Login successfully'
+                }
+                return JsonResponse(response_data)
             else:
                 return HttpResponseServerError("Passwords don't match. Login fail")
         except Users.DoesNotExist:
