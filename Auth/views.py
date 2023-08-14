@@ -5,8 +5,8 @@ from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.parsers import JSONParser
 
-from Users.models import Users
-from Users.serializers import UsersSerializer
+from Auth.models import Users
+from Auth.serializers import UsersSerializer
 import re
 import hashlib
 import logging
@@ -59,18 +59,18 @@ def register(request, user_id = 0):
             user_data['user_password'] = hash_password(user_password) # encrypt before saving
 
             if email_exists(user_email): 
-                return JsonResponse('Email already exists', safe=False)
+                return JsonResponse({'error':'Email already exists'}, safe=False)
             if phone_exists(user_phone_number):
                 return JsonResponse('Phone number already exists',safe=False)
             
             if not check_full_name:
-                return JsonResponse('Invalid full name')
+                return JsonResponse('Invalid full name',safe=False)
             if not check_phone_number:
-                return JsonResponse('Invalid phone number')
+                return JsonResponse('Invalid phone number',safe=False)
             if not check_password:
-                return JsonResponse('Invalid password')
+                return JsonResponse('Invalid password',safe=False)
             if not check_email:
-                return JsonResponse('Invalid email')
+                return JsonResponse('Invalid email',safe=False)
 
             del user_data['user_password_2'] # don't need to be save
             
@@ -89,3 +89,25 @@ def register(request, user_id = 0):
         users_serializer = UsersSerializer(users, many=True)
         return JsonResponse(users_serializer.data, safe=False)
         
+@csrf_exempt
+def login(request):
+    if request.method == 'GET':
+        
+        user_data = JSONParser().parse(request)
+
+        login_email_address = user_data.get('user_email').lower() # lower case email 
+        login_password = user_data.get('user_password')
+
+        # encrypt user password for check similarity in the db
+        hash_password_login = hash_password(login_password) 
+        
+        try:
+            user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
+            if user.user_password == hash_password_login:
+                return JsonResponse("Passwords match. Login successfully", safe=False)
+            else:
+                return JsonResponse("Passwords don't match. Login fail", safe=False)
+        except Users.DoesNotExist:
+            return JsonResponse("User not found.", safe=False)
+        
+      
