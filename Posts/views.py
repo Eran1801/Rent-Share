@@ -4,3 +4,5 @@ from django.views.decorators.csrf import \
 from rest_framework.parsers import JSONParser
 
 @csrf_exempt
+def add_post(request):
+    pass
