@@ -39,7 +39,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -59,7 +58,6 @@ INSTALLED_APPS = [
 # where to store the images in my project
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
-
 
 CORS_ORIGIN_ALLOW_ALL = True  # can reach from any host
 
@@ -157,7 +155,6 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# settings.py
 
 LOGGING = {
     'version': 1,
