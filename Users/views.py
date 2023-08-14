@@ -61,28 +61,28 @@ def register(request, user_id = 0):
             if email_exists(user_email): 
                 return HttpResponseServerError('Email already exists')
             if phone_exists(user_phone_number):
-                return JsonResponse('Phone number already exists',safe=False)
+                return HttpResponseServerError('Phone number already exists')
             
             if not check_full_name:
-                return JsonResponse('Invalid full name',safe=False)
+                return HttpResponseServerError('Invalid full name')
             if not check_phone_number:
-                return JsonResponse('Invalid phone number',safe=False)
+                return HttpResponseServerError('Invalid phone number')
             if not check_password:
-                return JsonResponse('Invalid password',safe=False)
+                return HttpResponseServerError('Invalid password')
             if not check_email:
-                return JsonResponse('Invalid email',safe=False)
+                return HttpResponseServerError('Invalid email')
 
             del user_data['user_password_2'] # don't need to be save
             
             users_serializer = UsersSerializer(data=user_data)
             if users_serializer.is_valid():
                 users_serializer.save() # save to db
-                return JsonResponse("Register Success", safe=False)
+                return HttpResponseServerError("Register Success")
             else:
                 logger.debug(users_serializer.errors)
-                return JsonResponse("Register Fails", safe=False)
+                return HttpResponseServerError("Register Fails")
         else:
-            return JsonResponse("Passwords don't match.", safe=False)
+            return HttpResponseServerError("Passwords don't match.")
         
     elif request.method == 'GET':
         users = Users.objects.all()
