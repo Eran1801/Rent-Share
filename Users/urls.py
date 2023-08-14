@@ -1,6 +1,6 @@
 from django.urls import re_path
 
-from Auth import views
+from Users import views
 
 urlpatterns = [
     # Attach the right function to the right url

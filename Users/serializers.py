@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from Auth.models import Users
+from Users.models import Users
 
 
 # This file helps us to convert the data complex data types to native python data types
