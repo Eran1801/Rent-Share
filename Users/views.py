@@ -3,7 +3,7 @@ from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.parsers import JSONParser
-from django.http import HttpResponseBadRequest
+from django.http import *
 
 from Users.models import Users
 from Users.serializers import UsersSerializer
@@ -59,7 +59,7 @@ def register(request, user_id = 0):
             user_data['user_password'] = hash_password(user_password) # encrypt before saving
 
             if email_exists(user_email): 
-                return JsonResponse('Email already exists')
+                return HttpResponseServerError('Email already exists')
             if phone_exists(user_phone_number):
                 return JsonResponse('Phone number already exists',safe=False)
             
