@@ -64,13 +64,13 @@ def register(request, user_id = 0):
                 return JsonResponse('Phone number already exists',safe=False)
             
             if not check_full_name:
-                return JsonResponse('Invalid full name',safe=False)
+                return JsonResponse('Invalid full name')
             if not check_phone_number:
-                return JsonResponse('Invalid phone number',safe=False)
+                return JsonResponse('Invalid phone number')
             if not check_password:
-                return JsonResponse('Invalid password',safe=False)
+                return JsonResponse('Invalid password')
             if not check_email:
-                return JsonResponse('Invalid email',safe=False)
+                return JsonResponse('Invalid email')
 
             del user_data['user_password_2'] # don't need to be save
             
@@ -89,25 +89,3 @@ def register(request, user_id = 0):
         users_serializer = UsersSerializer(users, many=True)
         return JsonResponse(users_serializer.data, safe=False)
         
-@csrf_exempt
-def login(request):
-    if request.method == 'GET':
-        
-        user_data = JSONParser().parse(request)
-
-        login_email_address = user_data.get('user_email').lower() # lower case email 
-        login_password = user_data.get('user_password')
-
-        # encrypt user password for check similarity in the db
-        hash_password_login = hash_password(login_password) 
-        
-        try:
-            user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
-            if user.user_password == hash_password_login:
-                return JsonResponse("Passwords match. Login successfully", safe=False)
-            else:
-                return JsonResponse("Passwords don't match. Login fail", safe=False)
-        except Users.DoesNotExist:
-            return JsonResponse("User not found.", safe=False)
-        
-      
