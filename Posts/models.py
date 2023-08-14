@@ -1,8 +1,9 @@
 from django.db import models
+from Users.models import Users
 
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)  # create primary key
-    post_user_email = models.CharField(max_length=50)
+    post_user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') # relation with Users table
 
     post_city = models.CharField(max_length=50)
     post_street = models.CharField(max_length=50)
@@ -13,18 +14,16 @@ class Post(models.Model):
     post_rent_end = models.DateField()
 
     # Files to confirm that the user rent the house
-    arnona_image = models.ImageField(upload_to='posts/images/')
-    electricity_image = models.ImageField(upload_to='posts/images/')
-    water_image = models.ImageField(upload_to='posts/images/')
-    internet_image = models.ImageField(upload_to='posts/images/')
-    contract_pdf = models.FileField(upload_to = 'posts/pdf')
+    proof_image = models.ImageField(upload_to='posts/images/',null=False)
+    driving_license = models.ImageField(upload_to='posts/images',null=False)
 
-    driving_license = models.ImageField(upload_to='posts/images')
+    post_description = models.CharField(max_length=2000)
 
-    apartment_pic_1 = models.ImageField(upload_to='posts/images',)
-    apartment_pic_2 = models.ImageField(upload_to='posts/images')
-    apartment_pic_3 = models.ImageField(upload_to='posts/images')
-    apartment_pic_4 = models.ImageField(upload_to='posts/images')
+    proof_image_confirmed = models.BooleanField(default=False)
+    driving_license_confirmed = models.BooleanField(default=False)
 
-
+    apartment_pic_1 = models.ImageField(upload_to='posts/images',blank=True, null=True)
+    apartment_pic_2 = models.ImageField(upload_to='posts/images',blank=True, null=True)
+    apartment_pic_3 = models.ImageField(upload_to='posts/images',blank=True, null=True)
+    apartment_pic_4 = models.ImageField(upload_to='posts/images',blank=True, null=True)
     

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'Users.apps.UsersConfig',
     'rest_framework',
+    'Posts.apps.PostsConfig'
 ]
 
 # where to store the images in my project
