@@ -57,7 +57,7 @@ INSTALLED_APPS = [
 ]
 
 # where to store the images in my project
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'modia/')
 MEDIA_URL = '/media/'
 
 CORS_ORIGIN_ALLOW_ALL = True  # can reach from any host

@@ -2,8 +2,9 @@ from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.parsers import JSONParser
+from rest_framework.decorators import api_view
 import logging
-from Posts.serializers import PostSerializer
+from Posts.serializers import PostSerializer,PostSerializerAll
 from Users.models import Users
 from django.http import HttpResponseServerError
 from Posts.models import Post
@@ -101,6 +102,16 @@ def add_post(request):
             return HttpResponseServerError("Post Fails")
     
 
+@api_view(['GET'])
+@csrf_exempt
+def get_posts(request):
+    logging.basicConfig(level=logging.DEBUG)
+
+    all_posts = Post.objects.get.all()
+
+    all_posts = Post.objects.all()
+    response_data_serializer = PostSerializerAll(all_posts,many = True)
+    return JsonResponse(response_data_serializer)
 
 
 

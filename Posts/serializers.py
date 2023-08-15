@@ -14,3 +14,8 @@ class PostSerializer(serializers.ModelSerializer):
                   'proof_image', 'driving_license', 'post_description', 'proof_image_confirmed',
                   'apartment_pic_1')
         # ,'apartment_pic_2','apartment_pic_3','apartment_pic_4'
+
+class PostSerializerAll(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = '__all__'  # This will serialize all fields in the Post model
