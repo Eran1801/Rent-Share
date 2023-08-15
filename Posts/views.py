@@ -107,7 +107,7 @@ def add_post(request):
 def get_posts(request):
     logging.basicConfig(level=logging.DEBUG)
 
-    all_posts = Post.objects.get.all()
+    all_posts = Post.objects.all()
     logger.info("all_posts success.")
 
     response_data_serializer = PostSerializerAll(all_posts,many = True)
