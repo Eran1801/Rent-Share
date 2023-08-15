@@ -120,8 +120,8 @@ def get_post_by_id(request):
 
     logging.basicConfig(level=logging.DEBUG)
 
-    data = JSONParser().parse(request)
-    post_id = data.get('post_id')
+    post_id = JSONParser().parse(request)
+    # post_id = data.get('post_id')
     logger.info("post_id success.")
 
     post = Post.objects.get(post_id=post_id)
