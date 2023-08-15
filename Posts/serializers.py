@@ -8,4 +8,5 @@ class PostSerializer(serializers.ModelSerializer):
                  'post_apartment_number','post_apartment_price',
                  'post_rent_start','post_rent_end',
                  'proof_image','driving_license','post_description','proof_image_confirmed',
-                 'apartment_pic_1','apartment_pic_2','apartment_pic_3','apartment_pic_4')
+                 'apartment_pic_1')
+        # ,'apartment_pic_2','apartment_pic_3','apartment_pic_4'
