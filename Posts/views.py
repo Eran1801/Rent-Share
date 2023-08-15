@@ -71,7 +71,7 @@ def add_post(request):
         post_description = post_data.get('post_description')
 
         post_data_dict = {
-            'post_user': user.user_id,
+            'post_user_id': user.user_id,
             'post_city': post_city,
             'post_street': post_street,
             'post_apartment_number': post_apartment_number,

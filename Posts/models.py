@@ -5,7 +5,7 @@ class Post(models.Model):
     post_id = models.AutoField(primary_key=True)  # create primary key
 
     #  relation with Users table, this means each post is associated with a user from the Users model.
-    post_user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') #
+    post_user_id = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') #
 
     post_city = models.CharField(max_length=50)
     post_street = models.CharField(max_length=50)
