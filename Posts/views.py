@@ -112,4 +112,4 @@ def get_posts(request):
 
     response_data_serializer = PostSerializerAll(all_posts,many = True)
     logger.info("serializer success.")
-    return JsonResponse(response_data_serializer)
+    return JsonResponse(response_data_serializer.data, safe=False)
