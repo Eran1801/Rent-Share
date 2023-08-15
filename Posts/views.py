@@ -113,3 +113,19 @@ def get_posts(request):
     response_data_serializer = PostSerializerAll(all_posts,many = True)
     logger.info("serializer success.")
     return JsonResponse(response_data_serializer.data, safe=False)
+
+@api_view(['POST'])
+@csrf_exempt
+def get_post_by_id(request):
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    post_id = JSONParser().parse(request).get('post_id')
+    logger.info("post_id success.")
+
+    post = Post.objects.get(post_id=post_id)
+    logger.info("post by user_id success.")
+
+    post_serializer = PostSerializerAll(post,many=True)
+    return JsonResponse(post_serializer.data,safe=False)
+
