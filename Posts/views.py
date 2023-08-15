@@ -58,12 +58,15 @@ def add_post(request):
             proof_image=proof_image,
             driving_license=driving_license,
             apartment_pic_1=apartment_pic_1,
-            apartment_pic_2=apartment_pic_2,
-            apartment_pic_3=apartment_pic_3,
-            apartment_pic_4=apartment_pic_4,
             post_description=post_description
 
         )
+
+        '''
+            apartment_pic_2=apartment_pic_2,
+            apartment_pic_3=apartment_pic_3,
+            apartment_pic_4=apartment_pic_4,
+        '''
 
         post_serializer = PostSerializer(data=new_post)
         if post_serializer.is_valid():
