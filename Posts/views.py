@@ -108,13 +108,8 @@ def get_posts(request):
     logging.basicConfig(level=logging.DEBUG)
 
     all_posts = Post.objects.get.all()
+    logger.info("all_posts success.")
 
-    all_posts = Post.objects.all()
     response_data_serializer = PostSerializerAll(all_posts,many = True)
+    logger.info("serializer success.")
     return JsonResponse(response_data_serializer)
-
-
-
-
-
-        
