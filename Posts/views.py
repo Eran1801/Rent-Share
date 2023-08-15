@@ -122,7 +122,7 @@ def get_post_by_id(request):
 
     post_id = JSONParser().parse(request)
     # post_id = data.get('post_id')
-    logger.info("post_id success.")
+    logger.info(f"post_id success. {post_id}")
 
     post = Post.objects.get(post_id=post_id)
     logger.info("post by user_id success.")
