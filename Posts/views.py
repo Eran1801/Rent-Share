@@ -19,14 +19,15 @@ def add_post(request):
     if request.method == 'POST':
         post_data = JSONParser().parse(request)
 
-        post_user_email = post_data.get('post_user_email')
+        # post_user_email = post_data.get('user_email')
+        post_user_email = post_user_email = post_data.get('user', {}).get('user_email')
 
         # Fetch the Users object based on the email
         try:
             user = Users.objects.get(user_email=post_user_email)
         except Users.DoesNotExist:
             return HttpResponseServerError('User not found')
-
+        
         post_city = post_data.get('post_city')
         post_street = post_data.get('post_street')
         post_apartment_number = post_data.get('post_apartment_number')
