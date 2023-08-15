@@ -35,8 +35,9 @@ def add_post(request):
         post_rent_start = user_data.get('post_rent_start') # extract day, month, year 
         post_rent_end = user_data.get('post_rent_end') # extract day, month, year 
 
-        proof_image = user_data.get('proof_image')
+        proof_image = user_data.get('proof_image') # bool
         driving_license = user_data.get('driving_license')
+        
         apartment_pic_1 = user_data.get('apartment_pic_1')
         apartment_pic_2 = user_data.get('apartment_pic_2')
         apartment_pic_3 = user_data.get('apartment_pic_3')
