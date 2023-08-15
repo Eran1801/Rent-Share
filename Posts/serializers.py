@@ -2,7 +2,7 @@ from rest_framework import serializers
 from Posts.models import Post
 
 class PostSerializer(serializers.ModelSerializer):
-    proof_image_confirmed = serializers.ImageField(max_length=None, use_url=False)
+    proof_image = serializers.ImageField(max_length=None, use_url=False)
     driving_license = serializers.ImageField(max_length=None, use_url=False)
     apartment_pic_1 = serializers.ImageField(max_length=None, use_url=False)  # Handle optional image file
 
