@@ -20,7 +20,7 @@ def add_post(request):
         post_data = JSONParser().parse(request)
 
         # post_user_email = post_data.get('user_email')
-        post_user_email = post_user_email = post_data.get('user', {}).get('user_email')
+        post_user_email = post_data.get('user', {}).get('user_email')
 
         # Fetch the Users object based on the email
         try:
@@ -28,6 +28,8 @@ def add_post(request):
         except Users.DoesNotExist:
             return HttpResponseServerError('User not found')
         
+        logger.info("User found.")
+
         post_city = post_data.get('post_city')
         post_street = post_data.get('post_street')
         post_apartment_number = post_data.get('post_apartment_number')
@@ -46,21 +48,19 @@ def add_post(request):
 
         post_description = post_data.get('post_description')
 
-        new_post = Post(
-
-            post_user=user,
-            post_city=post_city,
-            post_street=post_street,
-            post_apartment_number=post_apartment_number,
-            post_apartment_price=post_apartment_price,
-            post_rent_start=post_rent_start,
-            post_rent_end=post_rent_end,
-            proof_image=proof_image,
-            driving_license=driving_license,
-            apartment_pic_1=apartment_pic_1,
-            post_description=post_description
-
-        )
+        post_data_dict = {
+            'post_user': user,
+            'post_city': post_city,
+            'post_street': post_street,
+            'post_apartment_number': post_apartment_number,
+            'post_apartment_price': post_apartment_price,
+            'post_rent_start': post_rent_start,
+            'post_rent_end': post_rent_end,
+            'proof_image': proof_image,
+            'driving_license': driving_license,
+            'apartment_pic_1': apartment_pic_1,
+            'post_description': post_description
+        }
 
         '''
             apartment_pic_2=apartment_pic_2,
@@ -68,7 +68,7 @@ def add_post(request):
             apartment_pic_4=apartment_pic_4,
         '''
 
-        post_serializer = PostSerializer(data=new_post)
+        post_serializer = PostSerializer(data=post_data_dict)
         if post_serializer.is_valid():
             post_serializer.save() # save to db
             return JsonResponse("Post Success",safe=False)
