@@ -108,10 +108,10 @@ def get_posts(request):
     logging.basicConfig(level=logging.DEBUG)
 
     all_posts = Post.objects.all()
-    logger.info("all_posts success.")
+    logger.info("get_posts : all_posts success.")
 
     response_data_serializer = PostSerializerAll(all_posts,many = True)
-    logger.info("serializer success.")
+    logger.info("get_posts : serializer success.")
     return JsonResponse(response_data_serializer.data, safe=False)
 
 @api_view(['POST'])
@@ -122,11 +122,12 @@ def get_post_by_id(request):
 
     try:
         data = JSONParser().parse(request)
+        logger.info(f"get_post_by_id : post_id success. {data} and type is {type(data)}")
         post_id = data.get('post_id')
-        logger.info(f"post_id success. {post_id} and type is {type(post_id)}")
+        logger.info(f"get_post_by_id : post_id success. {post_id} and type is {type(post_id)}")
 
         post = Post.objects.get(post_id=post_id)
-        logger.info("post by user_id success.")
+        logger.info("get_post_by_id : post by user_id success.")
 
         post_serializer = PostSerializerAll(post)
         return JsonResponse(post_serializer.data, safe=False)
