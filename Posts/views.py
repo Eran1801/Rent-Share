@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializer,PostSerializerAll
 from Users.models import Users
-from django.http import HttpResponseServerError
+from django.http import HttpResponseBadRequest, HttpResponseServerError
 from Posts.models import Post
 import base64
 import io
@@ -120,13 +120,20 @@ def get_post_by_id(request):
 
     logging.basicConfig(level=logging.DEBUG)
 
-    post_id = JSONParser().parse(request)
-    # post_id = data.get('post_id')
-    logger.info(f"post_id success. {post_id}")
+    try:
+        data = JSONParser().parse(request)
+        post_id = data.get('post_id')
+        logger.info(f"post_id success. {post_id} and type is {type(post_id)}")
 
-    post = Post.objects.get(post_id=post_id)
-    logger.info("post by user_id success.")
+        post = Post.objects.get(post_id=post_id)
+        logger.info("post by user_id success.")
 
-    post_serializer = PostSerializerAll(post,many=True)
-    return JsonResponse(post_serializer.data,safe=False)
+        post_serializer = PostSerializerAll(post)
+        return JsonResponse(post_serializer.data, safe=False)
+
+    except Post.DoesNotExist:
+            return HttpResponseBadRequest("Post with the given ID does not exist.")
+    except Exception as e:
+            logger.error(f"Error occurred: {e}")
+            return HttpResponseBadRequest("An error occurred.")
 
