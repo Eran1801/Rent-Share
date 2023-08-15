@@ -7,10 +7,21 @@ from Posts.serializers import PostSerializer
 from Users.models import Users
 from django.http import HttpResponseServerError
 from Posts.models import Post
-
+import base64
+import io
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
+
+def convert_base64_to_image(base64_str, filename):
+    format, image_str = base64_str.split(';base64,') 
+    ext = format.split('/')[-1] 
+
+    data = ContentFile(base64.b64decode(image_str), name=filename + '.' + ext)
+    return data
+
 
 @csrf_exempt
 def add_post(request):
@@ -38,10 +49,20 @@ def add_post(request):
         post_rent_start = post_data.get('post_rent_start') # extract day, month, year 
         post_rent_end = post_data.get('post_rent_end') # extract day, month, year 
 
-        proof_image = post_data.get('proof_image') # bool
-        driving_license = post_data.get('driving_license')
+        proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
+        proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
 
-        apartment_pic_1 = post_data.get('apartment_pic_1')
+        driving_license_base64 = post_data.get('driving_license')[0]
+        driving_license_file = convert_base64_to_image(driving_license_base64, "driving_license")
+
+        apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
+        apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
+
+
+        # proof_image = post_data.get('proof_image') # bool
+        # driving_license = post_data.get('driving_license')
+
+        # apartment_pic_1 = post_data.get('apartment_pic_1')
         # apartment_pic_2 = post_data.get('apartment_pic_2')
         # apartment_pic_3 = post_data.get('apartment_pic_3')
         # apartment_pic_4 = post_data.get('apartment_pic_4')
@@ -56,9 +77,9 @@ def add_post(request):
             'post_apartment_price': post_apartment_price,
             'post_rent_start': post_rent_start,
             'post_rent_end': post_rent_end,
-            'proof_image': proof_image,
-            'driving_license': driving_license,
-            'apartment_pic_1': apartment_pic_1,
+            'proof_image': proof_image_file,
+            'driving_license': driving_license_file,
+            'apartment_pic_1': apartment_pic_1_file,
             'post_description': post_description
         }
 
