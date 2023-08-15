@@ -62,6 +62,8 @@ def add_post(request):
             'post_description': post_description
         }
 
+        logger.info("post_data_dict created!.")
+
         '''
             apartment_pic_2=apartment_pic_2,
             apartment_pic_3=apartment_pic_3,
@@ -71,6 +73,7 @@ def add_post(request):
         post_serializer = PostSerializer(data=post_data_dict)
         if post_serializer.is_valid():
             post_serializer.save() # save to db
+            logger.info("save to db")
             return JsonResponse("Post Success",safe=False)
         else:
             logger.debug(post_serializer.errors)
