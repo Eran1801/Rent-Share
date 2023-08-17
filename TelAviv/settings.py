@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-
+import boto3
 
 # --------- .env Variables ---------
 
@@ -32,7 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f--g3ey-1mxjm&)po*vlg0%h+%u=zg4-$6r^4z&pca5pxn@cj%'
+SECRET_KEY = 'django-insecure-f--g3ey-1mxjm&)po*vlg0%h+%u=zg4-$6r^4z&pca5pxn@cj%' # todo: put var to env
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -53,12 +53,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'Users.apps.UsersConfig',
     'rest_framework',
-    'Posts.apps.PostsConfig'
+    'Posts.apps.PostsConfig',
+    'storages',
 ]
 
-# where to store the images in my project
-MEDIA_ROOT = os.path.join(BASE_DIR, 'modia/')
-MEDIA_URL = '/media/'
 
 CORS_ORIGIN_ALLOW_ALL = True  # can reach from any host
 
@@ -97,6 +95,7 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# todo: put vars to env
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -156,6 +155,7 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# LOGGER CONFIG
 
 LOGGING = {
     'version': 1,
@@ -175,3 +175,16 @@ LOGGING = {
         },
     },
 }
+
+# S3 BUCKETS CONFIG
+
+AWS_SECRET_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
+AWS_S3_SIGNATURE_NAME = 's3v4'
+AWS_SE_REGION_NAME = 'eu-west-3'
+
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_S3_VERITY = True
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

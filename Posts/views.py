@@ -135,4 +135,3 @@ def get_post_by_id(request):
     except Exception as e:
             logger.error(f"Error occurred: {e}")
             return HttpResponseBadRequest("An error occurred.")
-
