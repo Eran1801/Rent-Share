@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-import boto3
 
 # --------- .env Variables ---------
 
@@ -178,13 +177,47 @@ LOGGING = {
 
 # S3 BUCKETS CONFIG
 
-AWS_SECRET_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
+# AWS_SECRET_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
+# AWS_SECRET_ACCESS_KEY = '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'
+# AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
+# AWS_S3_SIGNATURE_NAME = 's3v4'
+# AWS_S3_REGION_NAME = 'eu-west-3'
+# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+# AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+
+# AWS_LOCATION = 'static'
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# AWS_S3_FILE_OVERWRITE = False
+# AWS_DEFAULT_ACL = 'public-read'
+# AWS_S3_VERITY = True
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION) 
+
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_QUERYSTRING_AUTH = False  # To remove query parameters from URLs
+
+# # For media files
+# MEDIA_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, 'media')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Make sure the 'media' directory exists in your project
+
+# # For static files
+# STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, 'static')
+
+# S3 BUCKETS CONFIG
+
+AWS_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
 AWS_SECRET_ACCESS_KEY = 'LhN05bF5khOATlmzAJSPxmKmc/drY4VggvEIBDB+'
 AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
-AWS_S3_SIGNATURE_NAME = 's3v4'
-AWS_SE_REGION_NAME = 'eu-west-3'
+AWS_S3_SIGNATURE_VERSION = 's3v4'  # Use 's3v4' for Signature Version 4
+AWS_DEFAULT_ACL = 'public-read'  # This sets the default ACL for new objects
+AWS_S3_REGION_NAME = 'eu-west-3'  # Your AWS region
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_S3_VERITY = True
+# For static files
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# For media files
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_QUERYSTRING_AUTH = False  # To remove query parameters from URLs
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'

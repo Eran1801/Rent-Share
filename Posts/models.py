@@ -18,14 +18,14 @@ class Post(models.Model):
 
     # Files to confirm that the user rent the house
     # todo: change the order of the folders in the cloud 
-    proof_image = models.ImageField(upload_to='posts/images/',null=False)
-    driving_license = models.ImageField(upload_to='posts/images',null=False)
+    proof_image = models.ImageField(upload_to='Post/',null=False)
+    driving_license = models.ImageField(upload_to='Post/',null=False)
 
     post_description = models.CharField(max_length=2000)
 
     proof_image_confirmed = models.BooleanField(default=False) # after confirm from admin turn to True
 
-    apartment_pic_1 = models.ImageField(upload_to='',blank=True, null=True)
+    apartment_pic_1 = models.ImageField(upload_to='Post/',blank=True, null=True)
     # apartment_pic_2 = models.ImageField(upload_to='posts/images',blank=True, null=True)
     # apartment_pic_3 = models.ImageField(upload_to='posts/images',blank=True, null=True)
     # apartment_pic_4 = models.ImageField(upload_to='posts/images',blank=True, null=True)

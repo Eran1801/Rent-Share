@@ -10,3 +10,6 @@ urlpatterns = [
     re_path(r'^', include('Users.urls')),
     re_path(r'^', include('Posts.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

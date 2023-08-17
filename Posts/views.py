@@ -98,14 +98,14 @@ def add_post(request):
 
         # gets the names of the files to upload to s3 bucket
 
-        files_to_upload = ['proof_image','driving_license','apartment_pic_1']
-        files_names_to_upload = []
+        #files_to_upload = ['proof_image','driving_license','apartment_pic_1']
+        #files_names_to_upload = []
 
-        for f in files_to_upload:
-            proof_image_instance = post_data_dict.get(f)
-            files_names_to_upload.append(proof_image_instance.__annotations__['name'])
+        # for f in files_to_upload:
+        #     proof_image_instance = post_data_dict.get(f)
+        #     files_names_to_upload.append(proof_image_instance)
 
-        logger.info(f"files_names_to_upload = {files_names_to_upload}")
+        #logger.info(f"files_names_to_upload = {files_names_to_upload}")
 
         # TODO: update the list in the loop accordantly. 
         # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
@@ -124,11 +124,11 @@ def add_post(request):
             post_serializer.save() # save to db
             logger.info("save to db")
 
-            for f in files_names_to_upload:
-                logger.info(f"uploading {f} to s3 bucket")
-                upload_file_to_s3(f,'rent-buzz',f'post/{user_id}')
-                logger.info(f"uploading {f} to s3 bucket success")
-            logger.info(f"uploading all 3 pic to s3 bucket successfully")
+            # for f in files_names_to_upload:
+            #     logger.info(f"uploading {f} to s3 bucket")
+            #     upload_file_to_s3(f,'rent-buzz',f'post/{user_id}')
+            #     logger.info(f"uploading {f} to s3 bucket success")
+            #logger.info(f"uploading all 3 pic to s3 bucket successfully")
 
             return JsonResponse("Post Success",safe=False)
         else:
