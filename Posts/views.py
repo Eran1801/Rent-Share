@@ -84,7 +84,7 @@ def add_post(request):
             'proof_image': proof_image_file,
             'driving_license': driving_license_file,
             'apartment_pic_1': apartment_pic_1_file,
-            'post_description': post_description
+            'post_description': post_description,
         }
 
         logger.info("post_data_dict created!.")
@@ -103,7 +103,7 @@ def add_post(request):
 
         for f in files_to_upload:
             proof_image_instance = post_data_dict.get(f)
-            files_names_to_upload.append(proof_image_instance.name)
+            files_names_to_upload.append(proof_image_instance.__annotations__['name'])
 
         logger.info(f"files_names_to_upload = {files_names_to_upload}")
 
@@ -121,15 +121,15 @@ def add_post(request):
 
         post_serializer = PostSerializer(data=post_data_dict)
         if post_serializer.is_valid():
-
             post_serializer.save() # save to db
             logger.info("save to db")
+
             for f in files_names_to_upload:
                 logger.info(f"uploading {f} to s3 bucket")
                 upload_file_to_s3(f,'rent-buzz',f'post/{user_id}')
                 logger.info(f"uploading {f} to s3 bucket success")
             logger.info(f"uploading all 3 pic to s3 bucket successfully")
-            
+
             return JsonResponse("Post Success",safe=False)
         else:
             logger.debug(post_serializer.errors)

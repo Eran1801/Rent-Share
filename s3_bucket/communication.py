@@ -27,6 +27,7 @@ def upload_file_to_s3(file_name:str, bucket:str,path_inside_s3:str) -> bool:
     try:
         response = s3_client.upload_file(file_name, bucket, path_inside_s3)
     except ClientError as e:
+        logging.info(f"upload_file_to_s3 error")
         logging.error(e)
         return False
     return True
