@@ -209,7 +209,7 @@ AWS_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
 AWS_SECRET_ACCESS_KEY = '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'
 AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
 AWS_S3_SIGNATURE_VERSION = 's3v4'  # Use 's3v4' for Signature Version 4
-AWS_DEFAULT_ACL = 'public-read'  # This sets the default ACL for new objects
+AWS_DEFAULT_ACL = None  # This sets the default ACL for new objects
 AWS_S3_REGION_NAME = 'eu-west-3'  # Your AWS region
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
