@@ -109,7 +109,6 @@ def add_post(request):
         logger.debug(post_serializer.errors)
         return HttpResponseServerError("Post Fails")
     
-
 @api_view(['GET'])
 @csrf_exempt
 def get_posts(request):

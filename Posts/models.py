@@ -4,7 +4,8 @@ from Users.models import Users
 import os
 import uuid
 from django.db import models
-import boto3 
+import boto3
+from botocore.exceptions import ClientError
 
 s3 = boto3.client('s3')  # Initialize the S3 client
 
@@ -16,8 +17,15 @@ def generate_unique_filename(instance, filename):
     
     # Check if the generated filename already exists in the S3 bucket
     while True:
-        if not s3.object_exists('your-bucket-name', unique_filename):
-            break
+        try:
+            s3.head_object(Bucket='rent-buzz', Key=unique_filename)
+        except ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                # Object not found, break the loop
+                break
+            else:
+                # Handle other errors if needed
+                raise
         unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
     
     return os.path.join('Post', str(instance.post_user_id), unique_filename)
