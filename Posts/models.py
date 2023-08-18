@@ -7,9 +7,11 @@ from django.db import models
 import boto3
 from botocore.exceptions import ClientError
 
-s3 = boto3.client('s3')  # Initialize the S3 client
 
 def generate_unique_filename(instance, filename):
+
+    s3 = boto3.client('s3')  # Initialize the S3 client
+
     _, ext = os.path.splitext(filename)
     
     # Generate a unique filename using a combination of UUID, timestamp, and original filename
