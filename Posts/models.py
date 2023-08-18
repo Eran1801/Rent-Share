@@ -1,5 +1,26 @@
+import time
 from django.db import models
 from Users.models import Users
+import os
+import uuid
+from django.db import models
+import boto3 
+
+s3 = boto3.client('s3')  # Initialize the S3 client
+
+def generate_unique_filename(instance, filename):
+    _, ext = os.path.splitext(filename)
+    
+    # Generate a unique filename using a combination of UUID, timestamp, and original filename
+    unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
+    
+    # Check if the generated filename already exists in the S3 bucket
+    while True:
+        if not s3.object_exists('your-bucket-name', unique_filename):
+            break
+        unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
+    
+    return os.path.join('Post', str(instance.post_user_id), unique_filename)
 
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)  # create primary key
@@ -17,15 +38,14 @@ class Post(models.Model):
     post_rent_end = models.DateField()
 
     # Files to confirm that the user rent the house
-    # todo: change the order of the folders in the cloud 
-    proof_image = models.ImageField(upload_to='Post/',null=False)
-    driving_license = models.ImageField(upload_to='Post/',null=False)
+    proof_image = models.ImageField(upload_to=generate_unique_filename,null=False)
+    driving_license = models.ImageField(upload_to=generate_unique_filename,null=False)
 
     post_description = models.CharField(max_length=2000)
 
     proof_image_confirmed = models.BooleanField(default=False) # after confirm from admin turn to True
 
-    apartment_pic_1 = models.ImageField(upload_to='Post/',blank=True, null=True)
+    apartment_pic_1 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
     # apartment_pic_2 = models.ImageField(upload_to='posts/images',blank=True, null=True)
     # apartment_pic_3 = models.ImageField(upload_to='posts/images',blank=True, null=True)
     # apartment_pic_4 = models.ImageField(upload_to='posts/images',blank=True, null=True)

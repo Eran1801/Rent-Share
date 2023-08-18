@@ -9,10 +9,7 @@ from Users.models import Users
 from django.http import HttpResponseBadRequest, HttpResponseServerError
 from Posts.models import Post
 import base64
-import io
 from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from s3_bucket.communication import *
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -24,116 +21,93 @@ def convert_base64_to_image(base64_str, filename):
     data = ContentFile(base64.b64decode(image_str), name=filename + '.' + ext)
     return data
 
-
+@api_view(['POST'])
 @csrf_exempt
 def add_post(request):
+
     logging.basicConfig(level=logging.DEBUG)
 
-    if request.method == 'POST':
-        post_data = JSONParser().parse(request)
+    post_data = JSONParser().parse(request)
 
-        # post_user_email = post_data.get('user_email')
-        post_user_email = post_data.get('user', {}).get('user_email')
+    post_user_email = post_data.get('user', {}).get('user_email')
 
-        # Fetch the Users object based on the email
-        try:
-            user = Users.objects.get(user_email=post_user_email)
-        except Users.DoesNotExist:
-            return HttpResponseServerError('User not found')
-        
-        logger.info("User found.")
+    # Fetch the Users object based on the email
+    try:
+        user = Users.objects.get(user_email=post_user_email)
+    except Users.DoesNotExist:
+        return HttpResponseServerError('User not found')
+    
+    logger.info("User found.")
 
-        post_city = post_data.get('post_city')
-        post_street = post_data.get('post_street')
-        post_apartment_number = post_data.get('post_apartment_number')
-        post_apartment_price = post_data.get('post_apartment_price')
-        
-        post_rent_start = post_data.get('post_rent_start') # extract day, month, year 
-        post_rent_end = post_data.get('post_rent_end') # extract day, month, year 
+    post_city = post_data.get('post_city')
+    post_street = post_data.get('post_street')
+    post_apartment_number = post_data.get('post_apartment_number')
+    post_apartment_price = post_data.get('post_apartment_price')
+    
+    post_rent_start = post_data.get('post_rent_start') # extract day, month, year 
+    post_rent_end = post_data.get('post_rent_end') # extract day, month, year 
 
-        post_description = post_data.get('post_description')
+    post_description = post_data.get('post_description')
 
-        proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
-        proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
+    proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
+    proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
 
-        driving_license_base64 = post_data.get('driving_license')[0]
-        driving_license_file = convert_base64_to_image(driving_license_base64, "driving_license")
+    driving_license_base64 = post_data.get('driving_license')[0]
+    driving_license_file = convert_base64_to_image(driving_license_base64, "driving_license")
 
-        apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
-        apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
+    apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
+    apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
 
-        # proof_image = post_data.get('proof_image') # bool
+    # proof_image = post_data.get('proof_image') # bool
 
-        # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
-        # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")
+    # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
+    # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")
 
-        # apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
-        # apartment_pic_3_file = convert_base64_to_image(apartment_pic_3_base64, "apartment_pic_3")
+    # apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
+    # apartment_pic_3_file = convert_base64_to_image(apartment_pic_3_base64, "apartment_pic_3")
 
-        # apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
-        # apartment_pic_4_file = convert_base64_to_image(apartment_pic_4_base64, "apartment_pic_4")
+    # apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
+    # apartment_pic_4_file = convert_base64_to_image(apartment_pic_4_base64, "apartment_pic_4")
 
-        post_data_dict = {
-            'post_user_id': user.user_id,
-            'post_city': post_city,
-            'post_street': post_street,
-            'post_apartment_number': post_apartment_number,
-            'post_apartment_price': post_apartment_price,
-            'post_rent_start': post_rent_start,
-            'post_rent_end': post_rent_end,
-            'proof_image': proof_image_file,
-            'driving_license': driving_license_file,
-            'apartment_pic_1': apartment_pic_1_file,
-            'post_description': post_description,
-        }
+    post_data_dict = {
+        'post_user_id': user.user_id,
+        'post_city': post_city,
+        'post_street': post_street,
+        'post_apartment_number': post_apartment_number,
+        'post_apartment_price': post_apartment_price,
+        'post_rent_start': post_rent_start,
+        'post_rent_end': post_rent_end,
+        'proof_image': proof_image_file,
+        'driving_license': driving_license_file,
+        'apartment_pic_1': apartment_pic_1_file,
+        'post_description': post_description,
+    }
 
-        logger.info("post_data_dict created!.")
+    '''
+        # todo : add the rest of the images int the above dict
+        'apartment_pic_2' : apartment_pic_2_file,
+        'apartment_pic_3' : apartment_pic_3_file,
+        'apartment_pic_4' : apartment_pic_4_file,
+    '''
 
-        '''
-            # todo : add the rest of the images int the above dict
-            'apartment_pic_2' : apartment_pic_2_file,
-            'apartment_pic_3' : apartment_pic_3_file,
-            'apartment_pic_4' : apartment_pic_4_file,
-        '''
+    # TODO: update the list in the loop accordantly. 
+    # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
+    # apartment_pic_2_filename = apartment_pic_2_instance.name
 
-        # gets the names of the files to upload to s3 bucket
+    # apartment_pic_3_instance = post_data_dict['apartment_pic_3']
+    # apartment_pic_3_filename = apartment_pic_3_instance.name
 
-        #files_to_upload = ['proof_image','driving_license','apartment_pic_1']
-        #files_names_to_upload = []
+    # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
+    # apartment_pic_4_filename = apartment_pic_4_instance.name
 
-        # for f in files_to_upload:
-        #     proof_image_instance = post_data_dict.get(f)
-        #     files_names_to_upload.append(proof_image_instance)
-
-        #logger.info(f"files_names_to_upload = {files_names_to_upload}")
-
-        # TODO: update the list in the loop accordantly. 
-        # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
-        # apartment_pic_2_filename = apartment_pic_2_instance.name
-
-        # apartment_pic_3_instance = post_data_dict['apartment_pic_3']
-        # apartment_pic_3_filename = apartment_pic_3_instance.name
-
-        # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
-        # apartment_pic_4_filename = apartment_pic_4_instance.name
-
-        user_id = post_data_dict.get('post_user_id')
-
-        post_serializer = PostSerializer(data=post_data_dict)
-        if post_serializer.is_valid():
-            post_serializer.save() # save to db
-            logger.info("save to db")
-
-            # for f in files_names_to_upload:
-            #     logger.info(f"uploading {f} to s3 bucket")
-            #     upload_file_to_s3(f,'rent-buzz',f'post/{user_id}')
-            #     logger.info(f"uploading {f} to s3 bucket success")
-            #logger.info(f"uploading all 3 pic to s3 bucket successfully")
-
-            return JsonResponse("Post Success",safe=False)
-        else:
-            logger.debug(post_serializer.errors)
-            return HttpResponseServerError("Post Fails")
+    post_serializer = PostSerializer(data=post_data_dict)
+    if post_serializer.is_valid():
+        post_serializer.save() # save to db
+        logger.info("save to db")
+        return JsonResponse("Post Success",safe=False)
+    else:
+        logger.debug(post_serializer.errors)
+        return HttpResponseServerError("Post Fails")
     
 
 @api_view(['GET'])
@@ -144,9 +118,9 @@ def get_posts(request):
     all_posts = Post.objects.all()
     logger.info("get_posts : all_posts success.")
 
-    response_data_serializer = PostSerializerAll(all_posts,many = True)
+    all_posts_serialize = PostSerializerAll(all_posts,many = True) # many -> many objects
     logger.info("get_posts : serializer success.")
-    return JsonResponse(response_data_serializer.data, safe=False)
+    return JsonResponse(all_posts_serialize.data, safe=False)
 
 @api_view(['POST'])
 @csrf_exempt
@@ -155,10 +129,10 @@ def get_post_by_id(request):
     logging.basicConfig(level=logging.DEBUG)
 
     try:
-        post_id = JSONParser().parse(request)
-        logger.info(f"get_post_by_id : post_id = {post_id} and type is {type(post_id)}")
+        post_id:int = JSONParser().parse(request)
+        logger.info(f"get_post_by_id : post_id = {post_id}")
 
-        post = Post.objects.get(post_id=post_id)
+        post = Post.objects.get(post_id=post_id) # get the post using post_id
         logger.info("get_post_by_id : post by user_id success.")
 
         post_serializer = PostSerializerAll(post)
@@ -167,5 +141,4 @@ def get_post_by_id(request):
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
-            logger.error(f"Error occurred: {e}")
-            return HttpResponseBadRequest("An error occurred.")
+            return HttpResponseBadRequest(f"An error occurred: {e}")

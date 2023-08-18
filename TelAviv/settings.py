@@ -177,47 +177,38 @@ LOGGING = {
 
 # S3 BUCKETS CONFIG
 
-# AWS_SECRET_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
-# AWS_SECRET_ACCESS_KEY = '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'
-# AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
-# AWS_S3_SIGNATURE_NAME = 's3v4'
-# AWS_S3_REGION_NAME = 'eu-west-3'
-# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-# AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-
-# AWS_LOCATION = 'static'
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-# AWS_S3_FILE_OVERWRITE = False
-# AWS_DEFAULT_ACL = 'public-read'
-# AWS_S3_VERITY = True
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION) 
-
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# AWS_QUERYSTRING_AUTH = False  # To remove query parameters from URLs
-
-# # For media files
-# MEDIA_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, 'media')
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Make sure the 'media' directory exists in your project
-
-# # For static files
-# STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, 'static')
-
-# S3 BUCKETS CONFIG
-
+# credentials used to authenticate and authorize your application to interact with the AWS services.
 AWS_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
 AWS_SECRET_ACCESS_KEY = 'LhN05bF5khOATlmzAJSPxmKmc/drY4VggvEIBDB+'
+
+# the name of the S3 bucket where you want to store your static and media files.
 AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
-AWS_S3_SIGNATURE_VERSION = 's3v4'  # Use 's3v4' for Signature Version 4
-AWS_DEFAULT_ACL = None  # This sets the default ACL for new objects
-AWS_S3_REGION_NAME = 'eu-west-3'  # Your AWS region
+
+# specifies the version of the signature to use for requests to S3.
+# 's3v4' indicates the AWS Signature Version 4.
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+
+# sets the default access control for new objects in the S3 bucket.
+# Setting it to None allows you to control the access through bucket policies or IAM roles.
+AWS_DEFAULT_ACL = None
+
+AWS_S3_REGION_NAME = 'eu-west-3'
+
+# the custom domain to use for serving static and media files.
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
-# For static files
+# the base URL for static files served from S3.
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+
+# defines the storage backend to use for static files.
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-# For media files
+# DEFAULT_FILE_STORAGE defines the storage backend to use for media files.
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_QUERYSTRING_AUTH = False  # To remove query parameters from URLs
+
+# controls whether query parameters are included in URLs for S3 objects.
+# Setting it to False removes query parameters from URLs, enhancing security.
+AWS_QUERYSTRING_AUTH = False
+
+# MEDIA_URL is the base URL for media files served from S3.
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
