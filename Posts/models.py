@@ -7,8 +7,7 @@ import uuid
 from django.db import models
 
 def generate_unique_filename(instance:Any, filename):
-    
-    ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
 
     # Generate a unique filename using a combination of UUID, timestamp, and original filename
     unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
