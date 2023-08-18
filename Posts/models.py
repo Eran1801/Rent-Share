@@ -1,33 +1,18 @@
 import time
+from typing import Any
 from django.db import models
 from Users.models import Users
 import os
 import uuid
 from django.db import models
-import boto3
-from botocore.exceptions import ClientError
 
-def check_object_exists(bucket_name, object_key):
 
-    s3 = boto3.client('s3')  # Initialize the S3 client
-
-    try:
-        s3.head_object(Bucket=bucket_name, Key=object_key)
-        return True  # Object exists
-    except ClientError as e:
-        if e.response['Error']['Code'] == '404':
-            return False  # Object does not exist
-
-def generate_unique_filename(instance, filename):
+def generate_unique_filename(instance:Any, filename):
     _, ext = os.path.splitext(filename)
     
     # Generate a unique filename using a combination of UUID, timestamp, and original filename
     unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
-    
-    # Check if the generated filename already exists in the S3 bucket
-    while check_object_exists('rent-buzz',unique_filename):
-        unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
-    
+        
     return os.path.join('Post', str(instance.post_user_id), unique_filename)
 
 class Post(models.Model):
