@@ -39,6 +39,8 @@ def add_post(request):
     
     logger.info("User found.")
 
+    #! tell mor to handle the date error in the front end but also in the frontend
+
     post_city = post_data.get('post_city')
     post_street = post_data.get('post_street')
     post_apartment_number = post_data.get('post_apartment_number')
@@ -49,6 +51,14 @@ def add_post(request):
 
     post_description = post_data.get('post_description')
 
+    '''
+    # todo
+    Image Handling:
+    our code for converting base64-encoded images to actual files seems fine.
+    Just ensure that you handle any possible exceptions that might occur during 
+    this conversion, such as invalid image formats or base64 data.
+    '''
+
     proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
     proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
 
@@ -57,8 +67,6 @@ def add_post(request):
 
     apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
     apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
-
-    # proof_image = post_data.get('proof_image') # bool
 
     # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
     # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")

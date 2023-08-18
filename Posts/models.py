@@ -6,16 +6,16 @@ import os
 import uuid
 from django.db import models
 
-
 def generate_unique_filename(instance:Any, filename):
     _, ext = os.path.splitext(filename)
-    
+
     # Generate a unique filename using a combination of UUID, timestamp, and original filename
-    unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
-        
-    return os.path.join('Post', str(instance.post_user_id), unique_filename)
+    unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}_{index_for_unique_filename}"
+    
+    return os.path.join('Post', str(instance.post_id), unique_filename)
 
 class Post(models.Model):
+    
     post_id = models.AutoField(primary_key=True)  # create primary key
 
     #  relation with Users table, this means each post is associated with a user from the Users model.
