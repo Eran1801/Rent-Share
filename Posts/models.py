@@ -7,10 +7,10 @@ from django.db import models
 import boto3
 from botocore.exceptions import ClientError
 
-
-s3 = boto3.client('s3')  # Initialize the S3 client
-
 def check_object_exists(bucket_name, object_key):
+
+    s3 = boto3.client('s3')  # Initialize the S3 client
+
     try:
         s3.head_object(Bucket=bucket_name, Key=object_key)
         return True  # Object exists
