@@ -9,7 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^', include('Users.urls')),
     re_path(r'^', include('Posts.urls')),
-    re_path(r'^',include('Personal.urls')),
+    re_path(r'^',include('PersonalInfo.urls')),
 ]
 
 if settings.DEBUG:
