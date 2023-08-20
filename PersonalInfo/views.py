@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
@@ -17,3 +18,5 @@ def change_personal_info(request):
     #  find the user inside the db based on the email and then update the fields
     
     logger.info(f'user_data = {user_data}')
+
+    return HttpResponse(status=200)
