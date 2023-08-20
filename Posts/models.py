@@ -7,14 +7,14 @@ import os
 import uuid
 from django.db import models
 
-def generate_unique_filename(instance:Any, filename):
+def generate_unique_filename(instance:Any, filename:str):
     logger = logging.getLogger(__name__)
     _, ext = os.path.splitext(filename)
 
     # Generate a unique filename using a combination of UUID, timestamp, and original filename
     unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
     
-    return os.path.join('Post', str(instance.post_user_id), filename ,unique_filename)
+    return os.path.join('Post', str(instance.post_user_id), filename[:filename.index('.')] ,unique_filename)
 
 class Post(models.Model):
     
