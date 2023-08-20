@@ -123,7 +123,7 @@ def get_posts(request):
     logging.basicConfig(level=logging.DEBUG)
 
     all_posts = Post.objects.all()
-    logger.info("get_posts : all_posts success.")
+    logger.info(f"all_posts : {all_posts}")
 
     all_posts_serialize = PostSerializerAll(all_posts,many = True) # many -> many objects
     logger.info("get_posts : serializer success.")
