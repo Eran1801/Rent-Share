@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 @api_view(['PUT'])
 @csrf_exempt
 def change_personal_info(request):
+    '''This function will be used to change the user's personal info'''
 
     try:
         user_data = request.data  # Use request.data to parse JSON
@@ -54,6 +55,7 @@ def change_personal_info(request):
 @api_view(['PUT'])
 @csrf_exempt
 def change_password(request):
+    '''This function will be used to change the user's password'''
 
     try:
         user_data = request.data

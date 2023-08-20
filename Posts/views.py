@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 def convert_base64_to_image(base64_str, filename):
+    '''This function will be used to convert base64-encoded images to actual files'''
     format, image_str = base64_str.split(';base64,') 
     ext = format.split('/')[-1] 
 
@@ -26,6 +27,7 @@ def convert_base64_to_image(base64_str, filename):
 @api_view(['POST'])
 @csrf_exempt
 def add_post(request):
+    '''This function will be used to add a new post'''
 
     '''
     # todo
@@ -122,6 +124,7 @@ def add_post(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_posts(request):
+    '''This function will be used to get all posts'''
 
     all_posts = Post.objects.all()
     logger.info(f"all_posts : {all_posts}")
@@ -133,6 +136,7 @@ def get_posts(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_id(request):
+    '''This function will be used to get a post by its ID'''
 
     try:
         post_id:int = JSONParser().parse(request)
@@ -152,6 +156,11 @@ def get_post_by_id(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_city_street_apartment(request):
+    '''
+    This function will be used to get a post by its city, street, and apartment number.
+    If the apartment number is not provided, the function will return all posts that match the city and street.
+    If the street is not provided, the function will return all posts that match the city.
+    '''
 
     try:
         post_data = request.data
