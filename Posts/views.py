@@ -139,7 +139,7 @@ def get_post_by_id(request):
     '''This function will be used to get a post by its ID'''
 
     try:
-        post_id:int = JSONParser().parse(request)
+        post_id:int = request.data.get('post_id')
         logger.info(f"get_post_by_id : post_id = {post_id}")
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
@@ -152,6 +152,29 @@ def get_post_by_id(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
+
+@api_view(['GET'])
+@csrf_exempt
+def get_post_by_user_id(request):
+    '''This function will be used to get a post by its user ID'''
+
+    try:
+        user_id = request.data
+
+        posts = Post.objects.get(post_user_id=user_id) # get the post using post_id
+    
+        if posts.count() == 1:
+            post_serializer = PostSerializerAll(posts)
+        else:
+            post_serializer = PostSerializerAll(posts, many=True) # more than one post
+
+        return JsonResponse(post_serializer.data, safe=False)
+
+    except Post.DoesNotExist:
+            return HttpResponseBadRequest("Post with the given ID does not exist.")
+    except Exception as e:
+            return HttpResponseBadRequest(f"An error occurred: {e}")
+     
 
 @api_view(['GET'])
 @csrf_exempt
@@ -189,5 +212,29 @@ def get_post_by_city_street_apartment(request):
         else:
             return PostSerializerAll(post_v1).data
             
+    except Exception as e:
+            return HttpResponseBadRequest(f"An error occurred: {e}")
+    
+@api_view(['PUT'])
+@csrf_exempt
+def update_description_post(request):
+    '''This function will be used to update the description of a post'''
+
+    try:
+        post_data = request.data
+
+        post_id = post_data.get('post_id')
+        post_description = post_data.get('post_description')
+
+        post = Post.objects.get(post_id=post_id) # get the post using post_id
+
+        post.post_description = post_description
+        post.save()
+
+        post_serializer = PostSerializerAll(post)
+        return JsonResponse(post_serializer.data, safe=False)
+
+    except Post.DoesNotExist:
+            return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")

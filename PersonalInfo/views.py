@@ -55,6 +55,7 @@ def change_personal_info(request):
 @api_view(['PUT'])
 @csrf_exempt
 def change_password(request):
+
     '''This function will be used to change the user's password'''
 
     try:
