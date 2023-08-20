@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'Users.apps.UsersConfig',
     'rest_framework',
     'Posts.apps.PostsConfig',
-    'PersonalInfo.apps.PersonalinfoConfig',
+    'PersonalInfo.apps.PersonalInfoConfig',
     'storages',
 ]
 
