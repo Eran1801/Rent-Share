@@ -31,7 +31,14 @@ def email_exists(email:str) -> bool:
     return Users.objects.filter(user_email=email).exists()
 
 def phone_exists(phone:str)-> bool:
+    '''returns True if at least one record matches the filter, and False if no records match.'''
     return Users.objects.filter(user_phone=phone).exists()
+
+def full_name_check(full_name:str) -> bool:
+    return True if len(full_name) >= 4 and full_name.count(' ') > 0 else False
+
+def phone_number_check(phone_number:str) -> bool:
+    return True if len(phone_number) >= 10 else False
 
 @api_view(['POST'])
 @csrf_exempt
@@ -48,9 +55,9 @@ def register(request, user_id = 0):
     user_password_2 = user_data.get('user_password_2')
     
     # checks valid register input from user
-    check_full_name: bool = True if len(user_full_name) >= 4 and user_full_name.count(' ') > 0 else False
+    check_full_name: bool = full_name_check(user_full_name)
     check_email = validate_email(user_email)
-    check_phone_number = True if len(user_phone_number) >= 10 else False
+    check_phone_number = phone_number_check(user_phone_number)
     check_password = check_valid_password(user_password)
 
     if user_password == user_password_2: # checking if 2 user passwords are equal
@@ -59,15 +66,19 @@ def register(request, user_id = 0):
 
         if email_exists(user_email): 
             return HttpResponseServerError('Email already exists')
+        
         if phone_exists(user_phone_number):
             return HttpResponseServerError('Phone number already exists')
         
         if not check_full_name:
             return HttpResponseServerError('Invalid full name')
+        
         if not check_phone_number:
             return HttpResponseServerError('Invalid phone number')
+        
         if not check_password:
             return HttpResponseServerError('Invalid password')
+        
         if not check_email:
             return HttpResponseServerError('Invalid email')
 
@@ -97,7 +108,9 @@ def login(request):
     
     try:
         user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
+
         if user.user_password == hash_password_login:
+
             response_data = {
             'user': {
                 'user_id': user.user_id,
@@ -107,6 +120,7 @@ def login(request):
             },
                 'message': 'Passwords match. Login successfully'
             }
+            
             return JsonResponse(response_data)
         else:
             return HttpResponseServerError("Passwords don't match. Login fail")
