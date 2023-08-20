@@ -10,7 +10,6 @@ from Users.views import hash_password
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-
 @api_view(['PUT'])
 @csrf_exempt
 def change_personal_info(request):

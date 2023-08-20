@@ -130,7 +130,7 @@ def get_posts(request):
     logger.info("get_posts : serializer success.")
     return JsonResponse(all_posts_serialize.data, safe=False)
 
-@api_view(['POST'])
+@api_view(['GET'])
 @csrf_exempt
 def get_post_by_id(request):
 
@@ -149,6 +149,8 @@ def get_post_by_id(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
 
+@api_view(['GET'])
+@csrf_exempt
 def get_post_by_city_street_apartment(request):
 
     try:

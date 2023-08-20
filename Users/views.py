@@ -12,8 +12,8 @@ import hashlib
 import logging
 from validate_email import validate_email
 
-# Define the logger at the module level
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 def check_valid_password(pas:str) -> bool:
     pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)' # contains at least one upper and one lower letter and number.
@@ -43,8 +43,6 @@ def phone_number_check(phone_number:str) -> bool:
 @api_view(['POST'])
 @csrf_exempt
 def register(request, user_id = 0): 
-
-    logging.basicConfig(level=logging.DEBUG)
 
     user_data = JSONParser().parse(request) # access individual fields, users_data.get('field_name')
     
