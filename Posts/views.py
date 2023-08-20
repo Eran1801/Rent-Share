@@ -1,10 +1,11 @@
+from django.db.models import Q
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
-from Posts.serializers import PostSerializer,PostSerializerAll
+from Posts.serializers import PostSerializerAll
 from Users.models import Users
 from django.http import HttpResponseBadRequest, HttpResponseServerError
 from Posts.models import Post
@@ -13,6 +14,7 @@ from django.core.files.base import ContentFile
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 def convert_base64_to_image(base64_str, filename):
     format, image_str = base64_str.split(';base64,') 
@@ -25,9 +27,15 @@ def convert_base64_to_image(base64_str, filename):
 @csrf_exempt
 def add_post(request):
 
-    logging.basicConfig(level=logging.DEBUG)
+    '''
+    # todo
+    Image Handling:
+    our code for converting base64-encoded images to actual files seems fine.
+    Just ensure that you handle any possible exceptions that might occur during 
+    this conversion, such as invalid image formats or base64 data.
+    '''
 
-    post_data = JSONParser().parse(request)
+    post_data = request
 
     post_user_email = post_data.get('user', {}).get('user_email')
 
@@ -46,18 +54,10 @@ def add_post(request):
     post_apartment_number = post_data.get('post_apartment_number')
     post_apartment_price = post_data.get('post_apartment_price')
     
-    post_rent_start = post_data.get('post_rent_start') # extract day, month, year 
-    post_rent_end = post_data.get('post_rent_end') # extract day, month, year 
+    post_rent_start = post_data.get('post_rent_start')
+    post_rent_end = post_data.get('post_rent_end')
 
     post_description = post_data.get('post_description')
-
-    '''
-    # todo
-    Image Handling:
-    our code for converting base64-encoded images to actual files seems fine.
-    Just ensure that you handle any possible exceptions that might occur during 
-    this conversion, such as invalid image formats or base64 data.
-    '''
 
     proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
     proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
@@ -77,6 +77,7 @@ def add_post(request):
     # apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
     # apartment_pic_4_file = convert_base64_to_image(apartment_pic_4_base64, "apartment_pic_4")
 
+    # creating a dict to pass to the serializer as the post
     post_data_dict = {
         'post_user_id': user.user_id,
         'post_city': post_city,
@@ -91,12 +92,13 @@ def add_post(request):
         'post_description': post_description,
     }
 
-    '''
-        # todo : add the rest of the images int the above dict
-        'apartment_pic_2' : apartment_pic_2_file,
-        'apartment_pic_3' : apartment_pic_3_file,
-        'apartment_pic_4' : apartment_pic_4_file,
-    '''
+    # ADD this to the dict 
+    """
+    # todo : add the rest of the images int the above dict
+    'apartment_pic_2' : apartment_pic_2_file,
+    'apartment_pic_3' : apartment_pic_3_file,
+    'apartment_pic_4' : apartment_pic_4_file,
+    """
 
     # TODO: update the list in the loop accordantly. 
     # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
@@ -108,7 +110,7 @@ def add_post(request):
     # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
     # apartment_pic_4_filename = apartment_pic_4_instance.name
 
-    post_serializer = PostSerializer(data=post_data_dict)
+    post_serializer = PostSerializerAll(post_data_dict)
     if post_serializer.is_valid():
         post_serializer.save() # save to db
         logger.info("save to db")
@@ -120,7 +122,6 @@ def add_post(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_posts(request):
-    logging.basicConfig(level=logging.DEBUG)
 
     all_posts = Post.objects.all()
     logger.info(f"all_posts : {all_posts}")
@@ -132,8 +133,6 @@ def get_posts(request):
 @api_view(['POST'])
 @csrf_exempt
 def get_post_by_id(request):
-
-    logging.basicConfig(level=logging.DEBUG)
 
     try:
         post_id:int = JSONParser().parse(request)
@@ -150,3 +149,34 @@ def get_post_by_id(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
 
+def get_post_by_city_street_apartment(request):
+
+    try:
+        post_data = request.data
+
+        post_city = post_data.get('post_city')
+        post_street = post_data.get('post_street')
+        post_apartment_number = post_data.get('post_apartment_number')
+
+        if len(post_city) == 0  and len(post_street) and len(post_apartment_number) == 0:
+            return HttpResponseBadRequest("All fields are empty")
+        if len(post_city) == 0:
+            return HttpResponseBadRequest("City field is required")
+
+        post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
+        post_v2 = Post.objects.filter(post_city=post_city, post_street=post_street)
+        post_v3 = Post.objects.filter(post_city=post_city)
+
+        if not post_v1 :
+            if not post_v2:
+                if not post_v3 == 0:
+                    return HttpResponseServerError("Post not found")
+                else:
+                    return PostSerializerAll(post_v3).data
+            else:
+                return PostSerializerAll(post_v2).data
+        else:
+            return PostSerializerAll(post_v1).data
+            
+    except Exception as e:
+            return HttpResponseBadRequest(f"An error occurred: {e}")

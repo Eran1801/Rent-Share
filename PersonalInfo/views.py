@@ -55,6 +55,7 @@ def change_personal_info(request):
 @api_view(['PUT'])
 @csrf_exempt
 def change_password(request):
+
     try:
         user_data = request.data
 
@@ -79,3 +80,7 @@ def change_password(request):
 
     except Users.DoesNotExist:
         return HttpResponseServerError("User not found")
+    
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred")
