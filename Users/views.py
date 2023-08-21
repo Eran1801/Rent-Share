@@ -48,7 +48,7 @@ def phone_number_check(phone_number:str) -> bool:
     check if the phone number is valid.
     phone number must be at least 10 characters.    
     '''
-    return True if len(phone_number) >= 10 else False
+    return True if len(phone_number) == 10 else False
 
 @api_view(['POST'])
 @csrf_exempt
@@ -63,54 +63,59 @@ def register(request, user_id = 0):
     4. save the user to the db.
     '''
 
-    user_data = JSONParser().parse(request) # access individual fields, users_data.get('field_name')
-    
-    user_full_name = user_data.get('user_full_name')
-    user_email = user_data.get('user_email').lower() # lower case email
-    user_phone_number = user_data.get('user_phone')
-    user_password = user_data.get('user_password')
-    user_password_2 = user_data.get('user_password_2')
-    
-    # checks valid register input from user
-    check_full_name: bool = full_name_check(user_full_name)
-    check_email = validate_email(user_email)
-    check_phone_number = phone_number_check(user_phone_number)
-    check_password = check_valid_password(user_password)
+    try:
+        user_data = JSONParser().parse(request) # access individual fields, users_data.get('field_name')
+        
+        user_full_name = user_data.get('user_full_name')
+        user_email = user_data.get('user_email').lower() # lower case email
+        user_phone_number = user_data.get('user_phone')
+        user_password = user_data.get('user_password')
+        user_password_2 = user_data.get('user_password_2')
 
-    if user_password == user_password_2: # checking if 2 user passwords are equal
+        # checks valid register input from user
+        check_full_name: bool = full_name_check(user_full_name)
+        check_email = validate_email(user_email)
+        check_phone_number = phone_number_check(user_phone_number)
+        check_password = check_valid_password(user_password)
 
-        user_data['user_password'] = hash_password(user_password) # encrypt before saving
+        if user_password == user_password_2: # checking if 2 user passwords are equal
 
-        if email_exists(user_email): 
-            return HttpResponseServerError('Email already exists')
-        
-        if phone_exists(user_phone_number):
-            return HttpResponseServerError('Phone number already exists')
-        
-        if not check_full_name:
-            return HttpResponseServerError('Invalid full name')
-        
-        if not check_phone_number:
-            return HttpResponseServerError('Invalid phone number')
-        
-        if not check_password:
-            return HttpResponseServerError('Invalid password')
-        
-        if not check_email:
-            return HttpResponseServerError('Invalid email')
+            user_data['user_password'] = hash_password(user_password) # encrypt before saving
 
-        del user_data['user_password_2'] # don't needs to be save in the db
-        
-        users_serializer = UsersSerializer(data=user_data)
-        if users_serializer.is_valid():
-            users_serializer.save() # save to db
-            return JsonResponse("Register Success",safe=False)
+            if email_exists(user_email): 
+                return HttpResponseServerError('Email already exists')
+            
+            if phone_exists(user_phone_number):
+                return HttpResponseServerError('Phone number already exists')
+            
+            if not check_full_name:
+                return HttpResponseServerError('Invalid full name')
+            
+            if not check_phone_number:
+                return HttpResponseServerError('Invalid phone number')
+            
+            if not check_password:
+                return HttpResponseServerError('Invalid password')
+            
+            if not check_email:
+                return HttpResponseServerError('Invalid email')
+
+            del user_data['user_password_2'] # don't needs to be save in the db
+            
+            users_serializer = UsersSerializer(data=user_data)
+            if users_serializer.is_valid():
+                users_serializer.save() # save to db
+                return JsonResponse("Register Success",safe=False)
+            else:
+                logger.debug(users_serializer.errors)
+                return HttpResponseServerError("Register Fails")
         else:
-            logger.debug(users_serializer.errors)
-            return HttpResponseServerError("Register Fails")
-    else:
-        return HttpResponseServerError("Passwords don't match.")
-        
+            return HttpResponseServerError("Passwords don't match.")
+            
+    except Exception as e:
+        logger.error(e)
+        return HttpResponseServerError("Error parsing user registering data")
+    
 @api_view(['POST'])
 @csrf_exempt
 def login(request):
@@ -120,15 +125,16 @@ def login(request):
     2. encrypt the password before comparing it to the password in the db.
     3. check if the passwords match.
     '''
-    user_data = JSONParser().parse(request)
-
-    login_email_address = user_data.get('user_email').lower() # lower case email 
-    login_password = user_data.get('user_password')
-
-    # encrypt user password for check similarity in the db
-    hash_password_login = hash_password(login_password) 
-    
     try:
+        user_data = JSONParser().parse(request)
+
+        login_email_address = user_data.get('user_email').lower() # lower case email 
+        login_password = user_data.get('user_password')
+
+        # encrypt user password for check similarity in the db
+        hash_password_login = hash_password(login_password) 
+    
+    
         user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
 
         if user.user_password == hash_password_login:
@@ -146,7 +152,11 @@ def login(request):
             return JsonResponse(response_data)
         else:
             return HttpResponseServerError("Passwords don't match. Login fail")
+        
     except Users.DoesNotExist:
         return HttpResponseServerError("User not found.")
     
+    except Exception as e:
+        logger.error('Error parsing user login data: %s', e)
+        return HttpResponseServerError("Error parsing user login data")
     

@@ -24,17 +24,17 @@ class Post(models.Model):
     #  if user delete his account, all of it's post removes also.
     post_user_id = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') #
 
-    post_city = models.CharField(max_length=50)
-    post_street = models.CharField(max_length=50)
-    post_apartment_number = models.CharField(max_length=50)
-    post_apartment_price = models.CharField(max_length=10)
+    post_city = models.CharField(max_length=50, null=False, blank=False)
+    post_street = models.CharField(max_length=50, null=False, blank=False)
+    post_apartment_number = models.CharField(max_length=50, null=False, blank=False)
+    post_apartment_price = models.CharField(max_length=10, null=False, blank=False)
 
-    post_rent_start = models.DateField()
-    post_rent_end = models.DateField()
+    post_rent_start = models.DateField(null=False, blank=False)
+    post_rent_end = models.DateField(null=False, blank=False)
 
     # Files to confirm that the user rent the house
-    proof_image = models.ImageField(upload_to=generate_unique_filename,null=False)
-    driving_license = models.ImageField(upload_to=generate_unique_filename,null=False)
+    proof_image = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
+    driving_license = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
 
     post_description = models.CharField(max_length=2000)
 
