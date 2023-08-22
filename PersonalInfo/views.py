@@ -30,9 +30,9 @@ def change_personal_info(request):
         elif not Users.phone_number_check(phone):
             return HttpResponseServerError("Phone number is invalid")
         elif not Users.phone_exists(phone):
-            return HttpResponseServerError("Phone number already exists")
+            return HttpResponseServerError("Phone number already exists in our system")
         elif not Users.email_exists(email):
-            return HttpResponseServerError("Email already exists")
+            return HttpResponseServerError("Email already exists in our system")
         
         user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
 
@@ -42,7 +42,6 @@ def change_personal_info(request):
         user.user_phone = user_data['user_phone']
 
         user.save()  # save changes to the database
-
         return JsonResponse("Personal info updated successfully",safe=False)
 
     except Users.DoesNotExist:
@@ -78,6 +77,27 @@ def change_password(request):
             return HttpResponseServerError("Password is invalid")
         
         user.user_password = hash_password(new_password) # update the password
+        user.save() # save changes to the database
+
+    except Users.DoesNotExist:
+        return HttpResponseServerError("User not found")
+    
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred")
+    
+
+@api_view(['PUT'])
+@csrf_exempt
+def change_profile_picture(request):
+    '''This function will be used to change the user's profile picture'''
+
+    try:
+        user_data = request.data
+
+        user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
+
+        user.user_profile_picture = user_data['user_profile_picture'] # update the profile picture
         user.save() # save changes to the database
 
     except Users.DoesNotExist:

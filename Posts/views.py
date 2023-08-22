@@ -17,25 +17,39 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 def convert_base64_to_image(base64_str, filename):
-    '''This function will be used to convert base64-encoded images to actual files'''
-    format, image_str = base64_str.split(';base64,') 
-    ext = format.split('/')[-1] 
-
-    data = ContentFile(base64.b64decode(image_str), name=filename + '.' + ext)
-    return data
+    '''
+    Convert base64-encoded images to actual files.
+    
+    Args:
+        base64_str (str): Base64-encoded image string.
+        filename (str): Desired filename for the output image file.
+        
+    Returns:
+        ContentFile: The converted image data as a Django ContentFile.
+    '''
+    # split the base64 string into format and image data parts
+    format, image_str = base64_str.split(';base64,')
+    
+    # extract the image file extension from the format part
+    ext = format.split('/')[-1]
+    
+    # decode the base64-encoded image data
+    image_data = base64.b64decode(image_str)
+    
+    # create the full image filename with extension
+    image_filename = f"{filename}.{ext}"
+    
+    # create a ContentFile object containing the image data
+    # ContentFile - a file-like object that takes just raw content, rather than an actual file.
+    content_file = ContentFile(image_data, name=image_filename)
+    
+    # return the ContentFile object
+    return content_file
 
 @api_view(['POST'])
 @csrf_exempt
 def add_post(request):
     '''This function will be used to add a new post'''
-
-    '''
-    # todo
-    Image Handling:
-    our code for converting base64-encoded images to actual files seems fine.
-    Just ensure that you handle any possible exceptions that might occur during 
-    this conversion, such as invalid image formats or base64 data.
-    '''
 
     post_data = request
 
@@ -45,9 +59,7 @@ def add_post(request):
     try:
         user = Users.objects.get(user_email=post_user_email)
     except Users.DoesNotExist:
-        return HttpResponseServerError('User not found')
-    
-    logger.info("User found.")
+        return HttpResponseServerError('User not found')    
 
     #! tell mor to handle the date error in the front end but also in the backend
 
@@ -102,7 +114,6 @@ def add_post(request):
     'apartment_pic_4' : apartment_pic_4_file,
     """
 
-    # TODO: update the list in the loop accordantly. 
     # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
     # apartment_pic_2_filename = apartment_pic_2_instance.name
 
@@ -114,24 +125,36 @@ def add_post(request):
 
     post_serializer = PostSerializerAll(post_data_dict)
     if post_serializer.is_valid():
-        post_serializer.save() # save to db
-        logger.info("save to db")
-        return JsonResponse("Post Success",safe=False)
+        try:
+            post_serializer.save()  # Attempt to save to the database
+            logger.info("Saved to the database")
+            return JsonResponse("Post successfully saved in db", safe=False)
+        except Exception as e:
+            logger.error(f"add_post : {e}")
+            return HttpResponseServerError("An error occurred while saving the post")
     else:
         logger.debug(post_serializer.errors)
-        return HttpResponseServerError("Post Fails")
-    
+        return HttpResponseServerError("Post validation failed")
+
+
 @api_view(['GET'])
 @csrf_exempt
 def get_posts(request):
-    '''This function will be used to get all posts'''
+    '''This function will be used to get all the posts in the db 'Pots' table'''
+    try:
+        all_posts = Post.objects.all()
 
-    all_posts = Post.objects.all()
-    logger.info(f"all_posts : {all_posts}")
-
-    all_posts_serialize = PostSerializerAll(all_posts,many = True) # many -> many objects
-    logger.info("get_posts : serializer success.")
-    return JsonResponse(all_posts_serialize.data, safe=False)
+        serialize_all_posts = PostSerializerAll(all_posts,many = True) # many -> many objects
+        if serialize_all_posts.is_valid():
+            logger.info("Successfully serialized all posts")
+            return JsonResponse(serialize_all_posts.data, safe=False)
+        else:
+            logger.debug(serialize_all_posts.errors)
+            return HttpResponseServerError("An error occurred while serialize all posts")
+        
+    except Exception as e:
+        logger.error(f"get_posts : {e}")
+        return HttpResponseServerError("An error occurred get_posts")
 
 @api_view(['GET'])
 @csrf_exempt
@@ -140,18 +163,21 @@ def get_post_by_id(request):
 
     try:
         post_id:int = request.data.get('post_id')
-        logger.info(f"get_post_by_id : post_id = {post_id}")
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
-        logger.info("get_post_by_id : post by user_id success.")
 
         post_serializer = PostSerializerAll(post)
-        return JsonResponse(post_serializer.data, safe=False)
+        if post_serializer.is_valid():
+            logger.info("Successfully serialized the post")
+            return JsonResponse(post_serializer.data, safe=False)
+        else:
+            logger.debug(post_serializer.errors)
+            return HttpResponseServerError("An error occurred while serialize the post")
 
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
-            return HttpResponseBadRequest(f"An error occurred: {e}")
+            return HttpResponseBadRequest(f"An error occurred get_post_by_id: {e}")
 
 @api_view(['GET'])
 @csrf_exempt
@@ -174,7 +200,15 @@ def get_post_by_user_id(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
-     
+
+def serialize_post(post:Post):
+    post_serializer = PostSerializerAll(post)
+    if post_serializer.is_valid():
+        logger.info("Successfully serialized the post")
+        return JsonResponse(post_serializer.data, safe=False)
+    else:
+        logger.debug(post_serializer.errors)
+        return HttpResponseServerError("An error occurred while serialize the post")
 
 @api_view(['GET'])
 @csrf_exempt
@@ -204,37 +238,42 @@ def get_post_by_city_street_apartment(request):
         if not post_v1 :
             if not post_v2:
                 if not post_v3 == 0:
-                    return HttpResponseServerError("Post not found")
+                    return HttpResponseServerError("Post not found") # all fields are missing   
                 else:
-                    return PostSerializerAll(post_v3).data
+                    serialize_post(post_v3) # only city is provided
             else:
-                return PostSerializerAll(post_v2).data
+                return serialize_post(post_v2)# city and street are provided
         else:
-            return PostSerializerAll(post_v1).data
+            return serialize_post(post_v3) # all fields are provided
             
     except Exception as e:
-            return HttpResponseBadRequest(f"An error occurred: {e}")
+            return HttpResponseBadRequest(f"An error occurred, get_post_by_city.. : {e}")
     
 @api_view(['PUT'])
 @csrf_exempt
 def update_description_post(request):
     '''This function will be used to update the description of a post'''
 
+    post_data = request.data
+
+    post_id = post_data.get('post_id')
+    post_description = post_data.get('post_description')
+
     try:
-        post_data = request.data
-
-        post_id = post_data.get('post_id')
-        post_description = post_data.get('post_description')
-
         post = Post.objects.get(post_id=post_id) # get the post using post_id
 
-        post.post_description = post_description
-        post.save()
-
+        post.post_description = post_description # update the description
         post_serializer = PostSerializerAll(post)
-        return JsonResponse(post_serializer.data, safe=False)
+
+        if post_serializer.is_valid():
+            logger.info("Successfully serialized the post after update the description")
+            post.save() # save the updated post to the db
+            return JsonResponse(post_serializer.data, safe=False)  # return the updated post to frontend
+        else:
+            logger.debug(post_serializer.errors)
+            return HttpResponseServerError("An error occurred while serialize the post after update the description")
 
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
-            return HttpResponseBadRequest(f"An error occurred: {e}")
+            return HttpResponseBadRequest(f"An error occurred, update_description_post: {e}")

@@ -3,6 +3,7 @@ from Users.views import *
 
 class TestsFouUsersFunctions(unittest.TestCase):
 
+    # ---------------password--------------------
     def test_valid_password(self):
         self.assertTrue(check_valid_password("Abc12345"))
         self.assertTrue(check_valid_password("Abcdefg1"))
@@ -19,7 +20,6 @@ class TestsFouUsersFunctions(unittest.TestCase):
         self.assertFalse(check_valid_password("")) 
 
     # ---------------user name--------------------
-    
     def test_valid_user_name(self):
         self.assertTrue(full_name_check("John Doe"))
         self.assertTrue(full_name_check("John Doe Jr"))
@@ -32,8 +32,7 @@ class TestsFouUsersFunctions(unittest.TestCase):
         self.assertFalse(full_name_check("Ben"))
         self.assertFalse(full_name_check("Jonathan"))
 
-     # ---------------phone number------------------------
-
+    # ---------------phone number------------------------
     def test_valid_phone_number(self):
         self.assertTrue(phone_number_check("0501234567"))
         self.assertTrue(phone_number_check("0501345678"))
