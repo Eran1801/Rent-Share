@@ -5,6 +5,7 @@ from django.views.decorators.csrf import \
 from rest_framework.parsers import JSONParser
 from django.http import *
 from rest_framework.decorators import api_view
+from Posts.views import convert_base64_to_image
 from Users.models import Users
 from Users.serializers import UsersSerializer
 import re
@@ -71,6 +72,9 @@ def register(request, user_id = 0):
         user_phone_number = user_data.get('user_phone')
         user_password = user_data.get('user_password')
         user_password_2 = user_data.get('user_password_2')
+
+        profile_image_base64 = user_data.get('profile_pic')[0]  # Extract the first item from the list
+        profile_image_file = convert_base64_to_image(profile_image_base64, "profile_pic")
 
         # checks valid register input from user
         check_full_name: bool = full_name_check(user_full_name)

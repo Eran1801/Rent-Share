@@ -27,24 +27,29 @@ def convert_base64_to_image(base64_str, filename):
     Returns:
         ContentFile: The converted image data as a Django ContentFile.
     '''
-    # split the base64 string into format and image data parts
-    format, image_str = base64_str.split(';base64,')
+    try:
+        # split the base64 string into format and image data parts
+        format, image_str = base64_str.split(';base64,')
+        
+        # extract the image file extension from the format part
+        ext = format.split('/')[-1]
+        
+        # decode the base64-encoded image data
+        image_data = base64.b64decode(image_str)
+        
+        # create the full image filename with extension
+        image_filename = f"{filename}.{ext}"
+        
+        # create a ContentFile object containing the image data
+        # ContentFile - a file-like object that takes just raw content, rather than an actual file.
+        content_file = ContentFile(image_data, name=image_filename)
+        
+        # return the ContentFile object
+        return content_file
     
-    # extract the image file extension from the format part
-    ext = format.split('/')[-1]
-    
-    # decode the base64-encoded image data
-    image_data = base64.b64decode(image_str)
-    
-    # create the full image filename with extension
-    image_filename = f"{filename}.{ext}"
-    
-    # create a ContentFile object containing the image data
-    # ContentFile - a file-like object that takes just raw content, rather than an actual file.
-    content_file = ContentFile(image_data, name=image_filename)
-    
-    # return the ContentFile object
-    return content_file
+    except Exception as e:
+        logger.error(f"convert_base64_to_image: {e}")
+        return None
 
 @api_view(['POST'])
 @csrf_exempt
@@ -135,7 +140,6 @@ def add_post(request):
     else:
         logger.debug(post_serializer.errors)
         return HttpResponseServerError("Post validation failed")
-
 
 @api_view(['GET'])
 @csrf_exempt

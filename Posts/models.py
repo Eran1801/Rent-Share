@@ -1,4 +1,3 @@
-import logging
 import time
 from typing import Any
 from django.db import models
@@ -8,13 +7,12 @@ import uuid
 from django.db import models
 
 def generate_unique_filename(instance:Any, filename:str):
-    logger = logging.getLogger(__name__)
     _, ext = os.path.splitext(filename)
 
     # Generate a unique filename using a combination of UUID, timestamp, and original filename
     unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
     
-    return os.path.join('Post', str(instance.post_user_id), filename[:filename.index('.')] ,unique_filename)
+    return os.path.join('Posts', str(instance.post_user_id), filename[:filename.index('.')] ,unique_filename)
 
 class Post(models.Model):
     
@@ -30,10 +28,10 @@ class Post(models.Model):
     post_apartment_price = models.CharField(max_length=10, null=False, blank=False)
 
     post_rent_start = models.DateField(null=False, blank=False)
-    post_rent_end = models.DateField(null=False, blank=False)
+    post_rent_end = models.DateField(null=False, blank=False) 
 
     # Files to confirm that the user rent the house
-    proof_image = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
+    proof_image = models.ImageField(upload_to=generate_unique_filename(post_id),null=False,blank=False) # TODO: MAYBE WRONG HERE BECAUSE SENDIN
     driving_license = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
 
     post_description = models.CharField(max_length=2000)

@@ -54,7 +54,6 @@ def change_personal_info(request):
 @api_view(['PUT'])
 @csrf_exempt
 def change_password(request):
-
     '''This function will be used to change the user's password'''
 
     try:
@@ -86,7 +85,6 @@ def change_password(request):
         logger.error(f'Error: {e}')
         return HttpResponseServerError("An error occurred")
     
-
 @api_view(['PUT'])
 @csrf_exempt
 def change_profile_picture(request):
