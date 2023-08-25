@@ -128,7 +128,7 @@ def add_post(request):
     # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
     # apartment_pic_4_filename = apartment_pic_4_instance.name
 
-    post_serializer = PostSerializerAll(post_data_dict)
+    post_serializer = PostSerializerAll(data=post_data_dict)
     if post_serializer.is_valid():
         try:
             post_serializer.save()  # Attempt to save to the database

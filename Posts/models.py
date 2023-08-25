@@ -34,12 +34,12 @@ class Post(models.Model):
     proof_image = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False) # TODO: MAYBE WRONG HERE BECAUSE SENDIN
     driving_license = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
 
-    post_description = models.CharField(max_length=2000)
-
-    proof_image_confirmed = models.BooleanField(default=False) # after confirm from admin turn to True
-
     apartment_pic_1 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
     # apartment_pic_2 = models.ImageField(upload_to='posts/images',blank=True, null=True)
     # apartment_pic_3 = models.ImageField(upload_to='posts/images',blank=True, null=True)
     # apartment_pic_4 = models.ImageField(upload_to='posts/images',blank=True, null=True)
-    
+
+    post_description = models.CharField(max_length=2000)
+
+    proof_image_confirmed = models.BooleanField(default=False) # after confirm from admin turn to True
+
