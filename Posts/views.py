@@ -152,6 +152,9 @@ def get_posts(request):
         if all_posts_serialize.is_valid():
             logger.info("Successfully serialized all the posts")
             return JsonResponse(all_posts_serialize.data, safe=False)
+        else:
+            logger.debug(all_posts_serialize.errors)
+            return HttpResponseServerError("An error occurred while serialize all the posts")
     except Exception as e:
         logger.error(f"get_posts : {e}")
         return HttpResponseServerError("An error occurred get_posts")
