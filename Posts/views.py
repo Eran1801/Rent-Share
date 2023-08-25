@@ -159,10 +159,11 @@ def get_posts(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_id(request):
+    #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
     '''This function will be used to get a post by its ID'''
 
     try:
-        post_id = request.data
+        post_id = int(request.data)
         logger.info('post_id: ' + str(post_id) + type(post_id))
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
