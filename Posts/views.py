@@ -156,7 +156,7 @@ def get_posts(request):
          logger.error(f"get_posts : {e}")
          return HttpResponseServerError("An error occurred get_posts")
 
-@api_view(['POST'])
+@api_view(['GET'])
 @csrf_exempt
 def get_post_by_id(request):
     #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
