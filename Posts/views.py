@@ -56,7 +56,7 @@ def convert_base64_to_image(base64_str, filename):
 def add_post(request):
     '''This function will be used to add a new post'''
 
-    post_data = request
+    post_data = request.data
 
     post_user_email = post_data.get('user', {}).get('user_email')
 
