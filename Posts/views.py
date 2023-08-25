@@ -141,12 +141,6 @@ def add_post(request):
         logger.debug(post_serializer.errors)
         return HttpResponseServerError("Post validation failed")
 
-
-'''
-ERROR:Posts.views:get_posts : Cannot call `.is_valid()` as no `data=` 
-keyword argument was passed when instantiating the serializer instance.
-'''
-
 @api_view(['GET'])
 @csrf_exempt
 def get_posts(request):
@@ -154,14 +148,9 @@ def get_posts(request):
     try:
         all_posts = Post.objects.all()
 
-        serialize_all_posts = PostSerializerAll(all_posts,many = True) # many -> many objects
-        if serialize_all_posts.is_valid():
-            logger.info("Successfully serialized all posts")
-            return JsonResponse(serialize_all_posts.data, safe=False)
-        else:
-            logger.debug(serialize_all_posts.errors)
-            return HttpResponseServerError("An error occurred while serialize all posts")
-        
+        all_posts_serialize = PostSerializerAll(all_posts,many = True) # many -> many objects
+        logger.info("get_posts : serializer success.")
+        return JsonResponse(all_posts_serialize.data, safe=False)
     except Exception as e:
         logger.error(f"get_posts : {e}")
         return HttpResponseServerError("An error occurred get_posts")
