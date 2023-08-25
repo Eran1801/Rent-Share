@@ -146,27 +146,19 @@ def add_post(request):
 def get_posts(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
 
-    logging.basicConfig(level=logging.DEBUG)
+    try:
+        all_posts = Post.objects.all()
 
-    all_posts = Post.objects.all()
-    logger.info("get_posts : all_posts success.")
-
-    all_posts_serialize = PostSerializerAll(all_posts,many = True) # many -> many objects
-    logger.info("get_posts : serializer success.")
-    return JsonResponse(all_posts_serialize.data, safe=False)
-    # try:
-    #     all_posts = Post.objects.all()
-
-    #     all_posts_serialize = PostSerializerAll(data=all_posts) # many -> many objects
-    #     if all_posts_serialize.is_valid():
-    #         logger.info("Successfully serialized all the posts")
-    #         return JsonResponse(all_posts_serialize.data, safe=False)
-    #     else:
-    #         logger.debug(all_posts_serialize.errors)
-    #         return HttpResponseServerError("An error occurred while serialize all the posts")
-    # except Exception as e:
-    #     logger.error(f"get_posts : {e}")
-    #     return HttpResponseServerError("An error occurred get_posts")
+        all_posts_serialize = PostSerializerAll(data=all_posts,many=True) # many -> many objects
+        if all_posts_serialize.is_valid():
+            logger.info("Successfully serialized all the posts")
+            return JsonResponse(all_posts_serialize.data, safe=False)
+        else:
+             logger.debug(all_posts_serialize.errors)
+             return HttpResponseServerError("An error occurred while serialize all the posts")
+    except Exception as e:
+         logger.error(f"get_posts : {e}")
+         return HttpResponseServerError("An error occurred get_posts")
 
 @api_view(['GET'])
 @csrf_exempt
