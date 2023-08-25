@@ -141,6 +141,12 @@ def add_post(request):
         logger.debug(post_serializer.errors)
         return HttpResponseServerError("Post validation failed")
 
+
+'''
+ERROR:Posts.views:get_posts : Cannot call `.is_valid()` as no `data=` 
+keyword argument was passed when instantiating the serializer instance.
+'''
+
 @api_view(['GET'])
 @csrf_exempt
 def get_posts(request):
@@ -187,7 +193,6 @@ def get_post_by_id(request):
 @csrf_exempt
 def get_post_by_user_id(request):
     '''This function will be used to get a post by its user ID'''
-
     try:
         user_id = request.data
 

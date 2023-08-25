@@ -65,7 +65,7 @@ def register(request, user_id = 0):
     '''
 
     try:
-        user_data = JSONParser().parse(request) # access individual fields, users_data.get('field_name')
+        user_data = JSONParser().parse(request)
         
         user_full_name = user_data.get('user_full_name')
         user_email = user_data.get('user_email').lower() # lower case email
@@ -163,4 +163,12 @@ def login(request):
     except Exception as e:
         logger.error('Error parsing user login data: %s', e)
         return HttpResponseServerError("Error parsing user login data")
-    
+
+@api_view(['GET'])
+@csrf_exempt
+def tenant_review(request, user_id):
+    '''
+    This function will returns the tenant reviews that owners will give on the tenant.
+    '''
+    pass
+
