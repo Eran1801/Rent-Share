@@ -156,12 +156,12 @@ def get_posts(request):
          logger.error(f"get_posts : {e}")
          return HttpResponseServerError("An error occurred get_posts")
 
-@api_view(['GET'])
+@api_view(['POST'])
 @csrf_exempt
 def get_post_by_id(request):
     #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
     '''This function will be used to get a post by its ID'''
-
+    #! To understand how the front send me the post_id var 
     try:
         post_id = int(request.data)
         logger.info('post_id: ' + str(post_id) + type(post_id))
