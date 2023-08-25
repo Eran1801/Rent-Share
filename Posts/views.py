@@ -162,8 +162,8 @@ def get_post_by_id(request):
     '''This function will be used to get a post by its ID'''
 
     try:
-        post_id:int = request.data.get('post_id')
-        logger.info('post_id: ' + str(post_id))
+        post_id = request.data
+        logger.info('post_id: ' + str(post_id) + type(post_id)))
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
 
