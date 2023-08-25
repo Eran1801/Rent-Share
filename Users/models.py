@@ -16,8 +16,8 @@ from typing import Any
 
 class Users(models.Model):
     user_id = models.AutoField(primary_key=True)  # create primary key
-    user_full_name = models.CharField(max_length=3,blank=False, null=False)
+    user_full_name = models.CharField(max_length=25,blank=False, null=False)
     user_password = models.CharField(max_length=100,blank=False, null=False)
     user_email = models.CharField(max_length=50,blank=False, null=False,unique=True) 
-    user_phone = models.CharField(max_length=20,blank=False, null=False,unique=True)
+    user_phone = models.CharField(max_length=10,blank=False, null=False,unique=True)
     #profile_pic = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True) # TODO: ADD
