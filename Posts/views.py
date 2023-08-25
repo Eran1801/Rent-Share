@@ -149,13 +149,9 @@ def get_posts(request):
     try:
         all_posts = Post.objects.all()
 
-        all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
-        if all_posts_serialize.is_valid():
-            logger.info("Successfully serialized all the posts")
-            return JsonResponse(all_posts_serialize.data, safe=False)
-        else:
-             logger.debug(all_posts_serialize.errors)
-             return HttpResponseServerError("An error occurred while serialize all the posts")
+        all_posts_serialize = PostSerializerAll(data=all_posts,many=True) # many -> many objects
+        return JsonResponse(all_posts_serialize.data, safe=False)
+
     except Exception as e:
          logger.error(f"get_posts : {e}")
          return HttpResponseServerError("An error occurred get_posts")
@@ -172,12 +168,7 @@ def get_post_by_id(request):
         post = Post.objects.get(post_id=post_id) # get the post using post_id
 
         post_serializer = PostSerializerAll(data=post)
-        if post_serializer.is_valid():
-            logger.info("Successfully serialized the post")
-            return JsonResponse(post_serializer.data, safe=False)
-        else:
-            logger.debug(post_serializer.errors)
-            return HttpResponseServerError("An error occurred while serialize the post")
+        return JsonResponse(post_serializer.data, safe=False)
 
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")
@@ -187,36 +178,25 @@ def get_post_by_id(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_user_id(request):
-    '''This function will be used to get a post by its user ID'''
+    '''This function will be used to get a post by the user ID'''
     try:
         user_id = request.data
 
-        posts = Post.objects.get(post_user_id=user_id) # get the post using post_id
-        post_serializer = None
-    
-        if posts.count() == 1:
-            post_serializer = PostSerializerAll(data=posts)
-        else:
-            post_serializer = PostSerializerAll(data=posts, many=True) # more than one post
+        posts = Post.objects.filter(post_user_id=user_id) # get the post using post_id
+        post_serializer = PostSerializerAll(data=posts, many=True) # more than one post
 
-        if post_serializer.is_valid():
-            logger.info("Successfully serialized the post")
-            return JsonResponse(post_serializer.data, safe=False)
-        else:
-            logger.debug(post_serializer.errors)
-            return HttpResponseServerError("An error occurred while serialize the post")
-        
-    except Post.DoesNotExist:
+        return JsonResponse(post_serializer.data, safe=False)
+    except Post.DoesNotExist:    
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
+    
 
 def serialize_post(post:Post):
-    post_serializer = PostSerializerAll(data=post)
-    if post_serializer.is_valid():
-        logger.info("Successfully serialized the post")
+    try:
+        post_serializer = PostSerializerAll(data=post)
         return JsonResponse(post_serializer.data, safe=False)
-    else:
+    except :
         logger.debug(post_serializer.errors)
         return HttpResponseServerError("An error occurred while serialize the post in get_post_by_city_street_apartment")
 
@@ -236,9 +216,9 @@ def get_post_by_city_street_apartment(request):
         post_street = post_data.get('post_street')
         post_apartment_number = post_data.get('post_apartment_number')
 
-        if len(post_city) == 0  and len(post_street) and len(post_apartment_number) == 0:
+        if len(post_city) == '0'  and len(post_street) == '0' and len(post_apartment_number) == '0':
             return HttpResponseBadRequest("All fields are empty")
-        if len(post_city) == 0:
+        if len(post_city) == '0':
             return HttpResponseBadRequest("City field is required")
 
         post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
