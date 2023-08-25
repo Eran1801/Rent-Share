@@ -149,7 +149,7 @@ def get_posts(request):
     try:
         all_posts = Post.objects.all()
 
-        all_posts_serialize = PostSerializerAll(data=all_posts,many=True) # many -> many objects
+        all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
         return JsonResponse(all_posts_serialize.data, safe=False)
 
     except Exception as e:
@@ -167,7 +167,7 @@ def get_post_by_id(request):
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
 
-        post_serializer = PostSerializerAll(data=post)
+        post_serializer = PostSerializerAll(post)
         return JsonResponse(post_serializer.data, safe=False)
 
     except Post.DoesNotExist:
@@ -183,7 +183,7 @@ def get_post_by_user_id(request):
         user_id = request.data
 
         posts = Post.objects.filter(post_user_id=user_id) # get the post using post_id
-        post_serializer = PostSerializerAll(data=posts, many=True) # more than one post
+        post_serializer = PostSerializerAll(posts, many=True) # more than one post
 
         return JsonResponse(post_serializer.data, safe=False)
     except Post.DoesNotExist:    
@@ -194,7 +194,7 @@ def get_post_by_user_id(request):
 
 def serialize_post(post:Post):
     try:
-        post_serializer = PostSerializerAll(data=post)
+        post_serializer = PostSerializerAll(post)
         return JsonResponse(post_serializer.data, safe=False)
     except :
         logger.debug(post_serializer.errors)
