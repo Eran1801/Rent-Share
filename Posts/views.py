@@ -149,7 +149,7 @@ def get_posts(request):
     try:
         all_posts = Post.objects.all()
 
-        all_posts_serialize = PostSerializerAll(data=all_posts,many=True) # many -> many objects
+        all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
         if all_posts_serialize.is_valid():
             logger.info("Successfully serialized all the posts")
             return JsonResponse(all_posts_serialize.data, safe=False)
