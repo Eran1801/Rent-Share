@@ -165,7 +165,7 @@ def get_post_by_id(request):
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
 
-        post_serializer = PostSerializerAll(post)
+        post_serializer = PostSerializerAll(data=post)
         if post_serializer.is_valid():
             logger.info("Successfully serialized the post")
             return JsonResponse(post_serializer.data, safe=False)
