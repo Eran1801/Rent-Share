@@ -148,9 +148,10 @@ def get_posts(request):
     try:
         all_posts = Post.objects.all()
 
-        all_posts_serialize = PostSerializerAll(all_posts,many = True) # many -> many objects
-        logger.info("get_posts : serializer success.")
-        return JsonResponse(all_posts_serialize.data, safe=False)
+        all_posts_serialize = PostSerializerAll(data=all_posts,many = True) # many -> many objects
+        if all_posts_serialize.is_valid():
+            logger.info("Successfully serialized all the posts")
+            return JsonResponse(all_posts_serialize.data, safe=False)
     except Exception as e:
         logger.error(f"get_posts : {e}")
         return HttpResponseServerError("An error occurred get_posts")
@@ -162,6 +163,7 @@ def get_post_by_id(request):
 
     try:
         post_id:int = request.data.get('post_id')
+        logger.info('post_id: ' + str(post_id))
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
 
@@ -186,27 +188,33 @@ def get_post_by_user_id(request):
         user_id = request.data
 
         posts = Post.objects.get(post_user_id=user_id) # get the post using post_id
+        post_serializer = None
     
         if posts.count() == 1:
-            post_serializer = PostSerializerAll(posts)
+            post_serializer = PostSerializerAll(data=posts)
         else:
-            post_serializer = PostSerializerAll(posts, many=True) # more than one post
+            post_serializer = PostSerializerAll(data=posts, many=True) # more than one post
 
-        return JsonResponse(post_serializer.data, safe=False)
-
+        if post_serializer.is_valid():
+            logger.info("Successfully serialized the post")
+            return JsonResponse(post_serializer.data, safe=False)
+        else:
+            logger.debug(post_serializer.errors)
+            return HttpResponseServerError("An error occurred while serialize the post")
+        
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
 
 def serialize_post(post:Post):
-    post_serializer = PostSerializerAll(post)
+    post_serializer = PostSerializerAll(data=post)
     if post_serializer.is_valid():
         logger.info("Successfully serialized the post")
         return JsonResponse(post_serializer.data, safe=False)
     else:
         logger.debug(post_serializer.errors)
-        return HttpResponseServerError("An error occurred while serialize the post")
+        return HttpResponseServerError("An error occurred while serialize the post in get_post_by_city_street_apartment")
 
 @api_view(['GET'])
 @csrf_exempt
@@ -259,10 +267,9 @@ def update_description_post(request):
 
     try:
         post = Post.objects.get(post_id=post_id) # get the post using post_id
-
         post.post_description = post_description # update the description
-        post_serializer = PostSerializerAll(post)
 
+        post_serializer = PostSerializerAll(data=post)
         if post_serializer.is_valid():
             logger.info("Successfully serialized the post after update the description")
             post.save() # save the updated post to the db
