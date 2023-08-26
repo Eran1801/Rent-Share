@@ -217,9 +217,9 @@ def get_post_by_city_street_apartment(request):
         post_street = post_data.get('post_street')
         post_apartment_number = post_data.get('post_apartment_number')
 
-        if len(post_city) == '0'  and len(post_street) == '0' and len(post_apartment_number) == '0':
+        if len(post_city) == 0  and len(post_street) == 0 and len(post_apartment_number) == 0:
             return HttpResponseBadRequest("All fields are empty")
-        if len(post_city) == '0':
+        if len(post_city) == 0:
             return HttpResponseBadRequest("City field is required")
 
         post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)

@@ -13,43 +13,48 @@ logging.basicConfig(level=logging.DEBUG)
 @api_view(['PUT'])
 @csrf_exempt
 def change_personal_info(request):
+
+@api_view(['PUT'])
+@csrf_exempt
+def change_personal_info(request):
     '''This function will be used to change the user's personal info'''
 
     try:
         user_data = request.data  # Use request.data to parse JSON
-
-        full_name = user_data['user_full_name']
-        email = user_data['user_email']
-        phone = user_data['user_phone']
-
-        # check data is valid
-        if not Users.full_name_check(full_name):
-            return HttpResponseServerError("Full name is invalid")
-        elif not Users.validate_email(email):
-            return HttpResponseServerError("Email is invalid")
-        elif not Users.phone_number_check(phone):
-            return HttpResponseServerError("Phone number is invalid")
-        elif not Users.phone_exists(phone):
-            return HttpResponseServerError("Phone number already exists in our system")
-        elif not Users.email_exists(email):
-            return HttpResponseServerError("Email already exists in our system")
+        user_id = user_data['user_id']
         
-        user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
+        user = Users.objects.get(user_id=user_id)  # Get the user from the database by user_id
 
-        # update the user info
-        user.user_full_name = user_data['user_full_name']
-        user.user_email = user_data['user_email']
-        user.user_phone = user_data['user_phone']
+        # Check if fields have changed
+        if user_data['user_full_name'] != user.user_full_name:
+            if Users.full_name_check(user_data['user_full_name']) == False:
+                return HttpResponseServerError("Full name is invalid")
+            else:
+                user.user_full_name = user_data['user_full_name']
 
-        user.save()  # save changes to the database
-        return JsonResponse("Personal info updated successfully",safe=False)
+        if user_data['user_email'] != user.user_email:
+            if Users.validate_email(user_data['user_email']) == False:
+                return HttpResponseServerError("Email is invalid")
+            if Users.email_exists(user_data['user_email']) == False:
+                return HttpResponseServerError("Email already exists in our system")
+            user.user_email = user_data['user_email']
+
+        if user_data['user_phone'] != user.user_phone:
+            if Users.phone_number_check(user_data['user_phone']) == False:
+                return HttpResponseServerError("Phone number is invalid")
+            if Users.phone_exists(user_data['user_phone']) == False:
+                return HttpResponseServerError("Phone number already exists in our system")
+            user.user_phone = user_data['user_phone']
+
+        user.save()  # Save changes to the database
+        return JsonResponse("Personal info updated successfully", safe=False)
 
     except Users.DoesNotExist:
         return HttpResponseServerError("User not found")
 
     except Exception as e:
         logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred")  
+        return HttpResponseServerError("An error occurred")
     
 @api_view(['PUT'])
 @csrf_exempt

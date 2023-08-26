@@ -138,7 +138,6 @@ def login(request):
         # encrypt user password for check similarity in the db
         hash_password_login = hash_password(login_password) 
     
-    
         user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
 
         if user.user_password == hash_password_login:
