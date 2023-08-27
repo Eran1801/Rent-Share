@@ -130,7 +130,7 @@ def login(request):
     3. check if the passwords match.
     '''
     try:
-        user_data = JSONParser().parse(request)
+        user_data = request.data
 
         login_email_address = user_data.get('user_email').lower() # lower case email 
         login_password = user_data.get('user_password')
