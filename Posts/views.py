@@ -202,6 +202,7 @@ def get_post_by_city_street_apartment(request):
 
     try:
         post_data = request.data
+        logger.info(f'post_data = {post_data} and his type is {type(post_data)}')
 
         post_city = post_data.get('post_city',None)
         post_street = post_data.get('post_street', None)

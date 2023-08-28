@@ -168,7 +168,6 @@ def tenant_review(request, user_id):
     '''
     pass
 
-
 @api_view(['DELETE'])
 @csrf_exempt    
 def delete_user(request, user_id):

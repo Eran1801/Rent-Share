@@ -5,7 +5,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 import Users
-from Users.views import hash_password
+from Users.views import *
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -16,7 +16,7 @@ def change_personal_info(request):
     '''This function will be used to change the user's personal info'''
 
     try:
-        user_data = request.data  # Use request.data to parse JSON
+        user_data = request.data
         user_id = user_data['user_id']
         
         user = Users.objects.get(user_id=user_id)  # Get the user from the database by user_id
@@ -31,14 +31,14 @@ def change_personal_info(request):
         if user_data['user_email'] != user.user_email:
             if Users.validate_email(user_data['user_email']) == False:
                 return HttpResponseServerError("Email is invalid")
-            if Users.email_exists(user_data['user_email']) == False:
+            if Users.email_exists(user_data['user_email']) == True:
                 return HttpResponseServerError("Email already exists in our system")
             user.user_email = user_data['user_email']
 
         if user_data['user_phone'] != user.user_phone:
             if Users.phone_number_check(user_data['user_phone']) == False:
                 return HttpResponseServerError("Phone number is invalid")
-            if Users.phone_exists(user_data['user_phone']) == False:
+            if Users.phone_exists(user_data['user_phone']) == True:
                 return HttpResponseServerError("Phone number already exists in our system")
             user.user_phone = user_data['user_phone']
 
