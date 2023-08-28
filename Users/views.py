@@ -65,16 +65,13 @@ def register(request, user_id = 0):
     '''
 
     try:
-        user_data = JSONParser().parse(request)
+        user_data = request.data 
         
         user_full_name = user_data.get('user_full_name')
         user_email = user_data.get('user_email').lower() # lower case email
         user_phone_number = user_data.get('user_phone')
         user_password = user_data.get('user_password')
         user_password_2 = user_data.get('user_password_2')
-
-        #profile_image_base64 = user_data.get('profile_pic')[0]  # Extract the first item from the list
-        #profile_image_file = convert_base64_to_image(profile_image_base64, "profile_pic")
 
         # checks valid register input from user
         check_full_name: bool = full_name_check(user_full_name)
@@ -171,3 +168,18 @@ def tenant_review(request, user_id):
     '''
     pass
 
+
+@api_view(['DELETE'])
+@csrf_exempt    
+def delete_user(request, user_id):
+    '''
+    This function will be used to delete a user from the db.
+    '''
+    try:
+        user = Users.objects.get(user_id=user_id)
+        user.delete()
+        return JsonResponse('Delete successfully', safe=False)
+    except Exception as e:
+        logger.error('Error deleting user: %s', e)
+        return HttpResponseServerError("Error deleting user")
+    

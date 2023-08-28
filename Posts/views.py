@@ -145,7 +145,6 @@ def add_post(request):
 @csrf_exempt
 def get_posts(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
-
     try:
         all_posts = Post.objects.all()
 
@@ -191,15 +190,6 @@ def get_post_by_user_id(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
-    
-
-def serialize_post(post:Post):
-    try:
-        post_serializer = PostSerializerAll(post)
-        return JsonResponse(post_serializer.data, safe=False)
-    except :
-        logger.debug(post_serializer.errors)
-        return HttpResponseServerError("An error occurred while serialize the post in get_post_by_city_street_apartment")
 
 @api_view(['GET'])
 @csrf_exempt
@@ -213,30 +203,28 @@ def get_post_by_city_street_apartment(request):
     try:
         post_data = request.data
 
-        post_city = post_data.get('post_city')
-        post_street = post_data.get('post_street')
-        post_apartment_number = post_data.get('post_apartment_number')
+        post_city = post_data.get('post_city',None)
+        post_street = post_data.get('post_street', None)
+        post_apartment_number = post_data.get('post_apartment_number', None)
 
-        if len(post_city) == 0  and len(post_street) == 0 and len(post_apartment_number) == 0:
+        if post_city is None and post_street is None and post_apartment_number is None:
             return HttpResponseBadRequest("All fields are empty")
-        if len(post_city) == 0:
+        if post_city is None:
             return HttpResponseBadRequest("City field is required")
 
+        # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
         post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
-        post_v2 = Post.objects.filter(post_city=post_city, post_street=post_street)
-        post_v3 = Post.objects.filter(post_city=post_city)
 
-        if not post_v1 :
-            if not post_v2:
-                if not post_v3 == 0:
-                    return HttpResponseServerError("Post not found") # all fields are missing   
-                else:
-                    serialize_post(post_v3) # only city is provided
-            else:
-                return serialize_post(post_v2)# city and street are provided
+        if len(post_v1) > 0:
+            try:
+                post_serializer = PostSerializerAll(post_v1)
+                return JsonResponse(post_serializer.data, safe=False)
+            except :
+                logger.debug(post_serializer.errors)
+                return HttpResponseServerError("An error occurred while serialize the post in get_post_by_city_street_apartment")
         else:
-            return serialize_post(post_v3) # all fields are provided
-            
+            return HttpResponseServerError("Post not found")  # all fields are missing
+
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, get_post_by_city.. : {e}")
     
@@ -267,3 +255,22 @@ def update_description_post(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, update_description_post: {e}")
+    
+@api_view(['DELETE'])
+@csrf_exempt
+def delete_post(request):
+    '''This function will be used to delete a post'''
+    try:
+        post_id = request.data
+
+        post = Post.objects.get(post_id=post_id) # get the post using post_id
+        post.delete() # delete the post
+
+        return JsonResponse("Post successfully deleted", safe=False)
+
+    except Post.DoesNotExist:
+            return HttpResponseBadRequest("Post with the given ID does not exist.")
+    except Exception as e:
+            return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
+
+
