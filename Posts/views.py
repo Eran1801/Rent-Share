@@ -157,7 +157,7 @@ def get_posts(request):
             post_street = request.query_params.get('post_street', None)
             post_apartment_number = request.query_params.get('post_apartment_number', None)
 
-            logger.info('post_city: ' + str(post_city) + type(post_city))
+            logger.info('post_city: ' + str(post_city) + ' ' + str(type(post_city)))
 
             if post_city is None and post_street is None and post_apartment_number is None:
                 return HttpResponseBadRequest("All fields are empty")
