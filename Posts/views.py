@@ -147,15 +147,17 @@ def get_posts(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
     try:
 
-        if request.data == {}:
+        if not request.query_params: # if data is empty returns all posts
             all_posts = Post.objects.all()
             all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
             return JsonResponse(all_posts_serialize.data, safe=False)
         else:
             #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
-            post_city = request.data.get('post_city', None)
-            post_street = request.data.get('post_street', None)
-            post_apartment_number = request.data.get('post_apartment_number', None)
+            post_city = request.query_params.get('post_city', None)
+            post_street = request.query_params.get('post_street', None)
+            post_apartment_number = request.query_params.get('post_apartment_number', None)
+
+            logger.info('post_city: ' + str(post_city) + type(post_city))
 
             if post_city is None and post_street is None and post_apartment_number is None:
                 return HttpResponseBadRequest("All fields are empty")
