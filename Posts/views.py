@@ -164,8 +164,20 @@ def get_posts(request):
             if post_city is None:
                 return HttpResponseBadRequest("City field is required")
 
+            # Construct the queryset conditions based on available parameters
+            filter_conditions = {}
+
+            if post_city is not None:
+                filter_conditions['post_city'] = post_city
+            if post_street is not None:
+                filter_conditions['post_street'] = post_street
+            if post_apartment_number is not None:
+                filter_conditions['post_apartment_number'] = post_apartment_number
+
+            post_v1 = Post.objects.filter(**filter_conditions)
+
             # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
-            post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
+            #post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
 
             if len(post_v1) > 0:
                 try:
