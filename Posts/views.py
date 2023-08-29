@@ -181,11 +181,13 @@ def get_post_by_parm(request):
         filter_conditions = {'post_city': post_city}
 
         if post_street != 'null' and post_street != '':
+            logger.info(f'filter_conditions1: {filter_conditions}')
             filter_conditions['post_street'] = post_street
         if post_apartment_number != 'null' and post_apartment_number != '':
+            logger.info(f'filter_conditions2: {filter_conditions}')
             filter_conditions['post_apartment_number'] = post_apartment_number
 
-        logger.info(f'filter_conditions: {filter_conditions}')
+        logger.info(f'filter_conditions3: {filter_conditions}')
 
         post_v1 = Post.objects.filter(**filter_conditions)
 
