@@ -185,6 +185,8 @@ def get_post_by_parm(request):
         if post_apartment_number != 'null':
             filter_conditions['post_apartment_number'] = post_apartment_number
 
+        logger.info(f'filter_conditions: {filter_conditions}')
+
         post_v1 = Post.objects.filter(**filter_conditions)
 
         # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
@@ -192,9 +194,10 @@ def get_post_by_parm(request):
 
         if post_v1.exists():
             try:
-                post_serializer = PostSerializerAll(post_v1)
+                post_serializer = PostSerializerAll(post_v1, many=True)
                 return JsonResponse(post_serializer.data, safe=False)
             except :
+                logger.debug(post_serializer.errors)
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
         else:
             return HttpResponseNotFound("Post not found")

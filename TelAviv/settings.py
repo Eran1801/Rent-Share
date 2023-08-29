@@ -103,7 +103,10 @@ DATABASES = {
         'USER': 'root', 
         'PASSWORD': 'e2qx7q9qBVnEWKDjPsAC',
         'HOST': 'containers-us-west-36.railway.app',
-        'PORT': 7970
+        'PORT': 7970,
+        'OPTIONS': {
+            'charset': 'utf8',  # Example character encoding setting
+        },
     }
 }
 
