@@ -163,15 +163,15 @@ def get_post_by_parm(request):
     try:
 
         post_city = request.GET.get('post_city') 
-        logger.info('post_city: ' + str(post_city))
+        logger.info(f'post_city: {post_city} and his type is {type(post_city)}')
 
         post_street = request.GET.get('post_street')
-        logger.info('post_street: ' + str(post_street))
+        logger.info(f'post_street:  + {post_street} and his type is {type(post_street)}')
 
         post_apartment_number = request.GET.get('post_apartment_number')
-        logger.info('post_apartment_number: ' + str(post_apartment_number))
+        logger.info(f'post_apartment_number: {post_apartment_number} and his type is {type(post_apartment_number)}')
         
-        if post_city == '' and post_street is None and post_apartment_number is None: 
+        if post_city == '' and post_street == None and post_apartment_number == None: 
             #! IF MOR GETS THIS RESPONSE HE NEEDS TO TELL THE USER TO ENTER AT LEAST ONE FIELD
             return HttpResponseBadRequest("At least one field is required")
 
