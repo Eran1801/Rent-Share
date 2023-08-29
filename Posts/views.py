@@ -162,18 +162,11 @@ def get_post_by_parm(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
     try:
 
-        data = request.data
-        logger.info('data: ' + str(data))
-
-        # Maybe needs to add the '' as a default. first I need to understand when the front is sending when 
-        # the user didn't insert any value/just the city and etc. it will be an empty string or None or what?
-        post_city = data.get('post_city')
-        post_street = data.get('post_street')
-        post_apartment_number = data.get('post_apartment_number')
-
-        #? PRINT THE DATA TO SEE IT
+        post_city = request.GET.get('post_city', None)
         logger.info('post_city: ' + str(post_city))
+        post_street = request.GET.get('post_street', None)
         logger.info('post_street: ' + str(post_street))
+        post_apartment_number = request.GET.get('post_apartment_number', None)
         logger.info('post_apartment_number: ' + str(post_apartment_number))
         
         if not any([post_city, post_street, post_apartment_number]): 
