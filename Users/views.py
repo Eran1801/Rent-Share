@@ -1,3 +1,6 @@
+from email.utils import formataddr
+import random
+import smtplib
 from django.db import connection
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
@@ -12,9 +15,15 @@ import re
 import hashlib
 import logging
 from validate_email import validate_email
+from email.message import EmailMessage
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+PORT = 587
+EMAIL_SERVER = "smtp-mail.outlook.com"  # Adjust server address, if you are not using @outlook
+FROM_EMAIL = "rentbuzz@outlook.co.il"
+PASSWORD_EMAIL = 'RentBuzz11'
 
 def check_valid_password(pas:str) -> bool:
     '''check if the password is valid'''
@@ -181,4 +190,70 @@ def delete_user(request, user_id):
     except Exception as e:
         logger.error('Error deleting user: %s', e)
         return HttpResponseServerError("Error deleting user")
+
+def generate_random_digits() -> str:
+    return ''.join(random.choice('0123456789') for _ in range(6))
+
+@api_view(['GET'])
+@csrf_exempt
+def forget_password(request):
+    try:
+
+        user_email = request.data.get('user_email').lower() # lower case email\
+
+        confirm_code = generate_random_digits()
+        msg = f'קוד האימות שלך הוא: {confirm_code}'
+
+        # send email to user email with a 6 digit code
+        send_email(FROM_EMAIL,user_email,msg)
+        #! needs to figure out how to send the confirm_code and the user_email to the front
+        return JsonResponse(f"Email sent successfully with code : {confirm_code} with email {user_email}", safe=False)
+
+    except Exception as e:
+        logger.error('Error forget password: %s', e)
+        return HttpResponseServerError("Error forget password")
+    
+@api_view(['PUT'])
+@csrf_exempt
+def reset_password(request):
+    try:
+        user_email = request.data.get('user_email').lower() # lower case email
+        user_code_input = request.data.get('user_code_input')
+        user_code_send = request.data.get('user_code_send')
+        user_password = request.data.get('user_password')
+        user_password_2 = request.data.get('user_password_2')
+
+        if user_code_input != user_code_send:
+            return HttpResponseServerError("Code is incorrect")
+
+        if user_password == user_password_2: # checking if 2 user passwords are equal
+            user = Users.objects.get(user_email=user_email) # retrieve user from db based on email
+            user.user_password = hash_password(user_password) # encrypt before saving
+            user.save()
+            return JsonResponse("Password reset successfully", safe=False)
+        else:
+            return HttpResponseServerError("Passwords don't match.")
+    except Exception as e:
+        logger.error('Error reset password: %s', e)
+        return HttpResponseServerError("Error reset password")
+
+    
+def send_email(sender_email:str,receiver_email: str, message: str) -> None:
+    try:
+        # Create the base text message.
+        msg = EmailMessage()
+        msg["Subject"] = 'איפוס סיסמה'
+        msg["From"] = formataddr(("Weather", f"{sender_email}"))
+        msg["To"] = receiver_email
+
+        msg.set_content(message)
+
+        with smtplib.SMTP(EMAIL_SERVER, PORT) as server:
+            server.starttls()
+            server.login(sender_email, PASSWORD_EMAIL)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+
+    except Exception as e:
+        logger.error('Error send email: %s', e)
+        return HttpResponseServerError("Error send email")
     

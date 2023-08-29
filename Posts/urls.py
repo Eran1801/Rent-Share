@@ -11,7 +11,4 @@ urlpatterns = [
     re_path(r'^update_description_post/$', views.update_description_post, name='update_description_post'),
     re_path(r'^delete_post/$', views.delete_post, name='delete_post'),
     re_path(r"^get_post_by_parm/$", views.get_post_by_parm, name="get_post_by_parm"),
-    re_path(r'^get_cities/$', views.get_cities, name='get_cities'),
-    re_path(r'^get_streets/$', views.get_streets, name='get_streets'),
-
 ]

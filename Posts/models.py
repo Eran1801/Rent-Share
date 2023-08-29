@@ -20,7 +20,7 @@ class Post(models.Model):
 
     #  relation with Users table, this means each post is associated with a user from the Users model.
     #  if user delete his account, all of it's post removes also.
-    post_user_id = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') #
+    post_user_id = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') 
 
     post_city = models.CharField(max_length=50, null=False, blank=False)
     post_street = models.CharField(max_length=50, null=False, blank=False)

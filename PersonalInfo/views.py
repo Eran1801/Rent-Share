@@ -10,6 +10,7 @@ from Users.views import *
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+
 @api_view(['PUT'])
 @csrf_exempt
 def change_personal_info(request):
@@ -42,7 +43,7 @@ def change_personal_info(request):
                 return HttpResponseServerError("Phone number already exists in our system")
             user.user_phone = user_data['user_phone']
 
-        user.save()  # Save changes to the database
+        user.save()  # save changes to the database
         return JsonResponse("Personal info updated successfully", safe=False)
 
     except Users.DoesNotExist:
@@ -86,22 +87,24 @@ def change_password(request):
         logger.error(f'Error: {e}')
         return HttpResponseServerError("An error occurred")
     
-@api_view(['PUT'])
-@csrf_exempt
-def change_profile_picture(request):
-    '''This function will be used to change the user's profile picture'''
+# @api_view(['PUT'])
+# @csrf_exempt
+# def change_profile_picture(request):
+#     '''This function will be used to change the user's profile picture'''
 
-    try:
-        user_data = request.data
+#     try:
+#         user_data = request.data
 
-        user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
+#         user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
 
-        user.user_profile_picture = user_data['user_profile_picture'] # update the profile picture
-        user.save() # save changes to the database
+#         user.user_profile_picture = user_data['user_profile_picture'] # update the profile picture
+#         user.save() # save changes to the database
 
-    except Users.DoesNotExist:
-        return HttpResponseServerError("User not found")
+#     except Users.DoesNotExist:
+#         return HttpResponseServerError("User not found")
     
-    except Exception as e:
-        logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred")
+#     except Exception as e:
+#         logger.error(f'Error: {e}')
+#         return HttpResponseServerError("An error occurred")
+    
+

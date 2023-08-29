@@ -163,6 +163,7 @@ def get_post_by_parm(request):
     try:
 
         data = request.data
+        logger.info('data: ' + str(data))
 
         # Maybe needs to add the '' as a default. first I need to understand when the front is sending when 
         # the user didn't insert any value/just the city and etc. it will be an empty string or None or what?
@@ -216,10 +217,9 @@ def get_post_by_parm(request):
 def get_post_by_id(request):
     #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
     '''This function will be used to get a post by its ID'''
-    #! To understand how the front send me the post_id var 
     try:
-        post_id = int(request.data)
-        logger.info('post_id: ' + str(post_id) + type(post_id))
+        post_id = request.data #? needs to check if the data is a number in a string
+        logger.info('post_id: ' + post_id)
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
 
@@ -234,7 +234,7 @@ def get_post_by_id(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_user_id(request):
-    '''This function will be used to get a post by the user ID'''
+    '''This function will be used to get all the posts (one or more) by the user ID for the "הדירות שלי"'''
     try:
         user_id = request.data
 
@@ -292,12 +292,15 @@ def update_description_post(request):
 
     post_data = request.data
 
+    # extract from request data
     post_id = post_data.get('post_id')
     post_description = post_data.get('post_description')
 
     try:
-        post = Post.objects.get(post_id=post_id) # get the post using post_id
-        post.post_description = post_description # update the description
+        post = Post.objects.get(post_id=post_id) 
+        post.post_description = post_description 
+
+        #! NEEDS TO CHANGE THE POST IS_CONFIRMED TO FALSE AGAIN AFTER THE USER UPDATE THE DESCRIPTION
 
         post_serializer = PostSerializerAll(data=post)
         if post_serializer.is_valid():
@@ -329,13 +332,3 @@ def delete_post(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
-
-def get_cities(request):
-    with open('Posts/json/cities.json', 'r') as cities_file:
-        cities_data = json.load(cities_file)
-    return JsonResponse(cities_data)
-
-def get_streets(request):
-    with open('Posts/json/streets.json', 'r') as streets_file:
-        streets_data = json.load(streets_file)
-    return JsonResponse(streets_data)
