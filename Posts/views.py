@@ -162,32 +162,34 @@ def get_post_by_parm(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
     try:
 
-        post_city = request.GET.get('post_city', None)
+        post_city = request.GET.get('post_city') 
         logger.info('post_city: ' + str(post_city))
-        post_street = request.GET.get('post_street', None)
+
+        post_street = request.GET.get('post_street')
         logger.info('post_street: ' + str(post_street))
-        post_apartment_number = request.GET.get('post_apartment_number', None)
+
+        post_apartment_number = request.GET.get('post_apartment_number')
         logger.info('post_apartment_number: ' + str(post_apartment_number))
         
-        if not any([post_city, post_street, post_apartment_number]): 
+        if post_city == '' and post_street is None and post_apartment_number is None: 
             #! IF MOR GETS THIS RESPONSE HE NEEDS TO TELL THE USER TO ENTER AT LEAST ONE FIELD
             return HttpResponseBadRequest("At least one field is required")
 
-        if post_city is None:
+        if post_city == '':
             #! IF MOR GETS THIS RESPONSE HE NEEDS TO TELL THE USER THAT THE CITY FIELD IS REQUIRED
             return HttpResponseBadRequest("City field is required")
 
         # Construct the queryset conditions based on available parameters
         filter_conditions = {}
 
-        if post_city:
+        if len(post_city) > 0:
             filter_conditions['post_city'] = post_city
         if post_street:
             filter_conditions['post_street'] = post_street
         if post_apartment_number:
             filter_conditions['post_apartment_number'] = post_apartment_number
 
-        post_v1 = Post.objects.filter(filter_conditions)
+        post_v1 = Post.objects.filter(**filter_conditions)
 
         # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
         #post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
