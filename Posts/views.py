@@ -178,13 +178,11 @@ def get_post_by_parm(request):
             return HttpResponseBadRequest("City field is required")
 
         # Construct the queryset conditions based on available parameters
-        filter_conditions = {}
+        filter_conditions = {'post_city': post_city}
 
-        if len(post_city) > 0:
-            filter_conditions['post_city'] = post_city
-        if post_street:
+        if post_street != 'null':
             filter_conditions['post_street'] = post_street
-        if post_apartment_number:
+        if post_apartment_number != 'null':
             filter_conditions['post_apartment_number'] = post_apartment_number
 
         post_v1 = Post.objects.filter(**filter_conditions)
