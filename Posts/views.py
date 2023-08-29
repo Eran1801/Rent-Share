@@ -180,9 +180,9 @@ def get_post_by_parm(request):
         # Construct the queryset conditions based on available parameters
         filter_conditions = {'post_city': post_city}
 
-        if post_street != 'null' or post_street != '':
+        if post_street != 'null' and post_street != '':
             filter_conditions['post_street'] = post_street
-        if post_apartment_number != 'null' or post_apartment_number != '':
+        if post_apartment_number != 'null' and post_apartment_number != '':
             filter_conditions['post_apartment_number'] = post_apartment_number
 
         logger.info(f'filter_conditions: {filter_conditions}')
