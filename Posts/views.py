@@ -184,7 +184,6 @@ def get_posts(request):
                     post_serializer = PostSerializerAll(post_v1)
                     return JsonResponse(post_serializer.data, safe=False)
                 except :
-                    logger.debug(post_serializer.errors)
                     return HttpResponseServerError("An error occurred while serialize the post in get_posts")
             else:
                 return HttpResponseServerError("Post not found")
