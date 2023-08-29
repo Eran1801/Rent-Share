@@ -171,12 +171,10 @@ def get_post_by_parm(request):
         post_apartment_number = request.GET.get('post_apartment_number')
         logger.info(f'post_apartment_number: {post_apartment_number} and his type is {type(post_apartment_number)}')
         
-        if post_city == '' and post_street == None and post_apartment_number == None: 
-            #! IF MOR GETS THIS RESPONSE HE NEEDS TO TELL THE USER TO ENTER AT LEAST ONE FIELD
+        if post_city == '' and post_street == 'null' and post_apartment_number == 'null': 
             return HttpResponseBadRequest("At least one field is required")
 
         if post_city == '':
-            #! IF MOR GETS THIS RESPONSE HE NEEDS TO TELL THE USER THAT THE CITY FIELD IS REQUIRED
             return HttpResponseBadRequest("City field is required")
 
         # Construct the queryset conditions based on available parameters
