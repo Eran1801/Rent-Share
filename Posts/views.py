@@ -7,10 +7,11 @@ from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
 from Users.models import Users
-from django.http import HttpResponseBadRequest, HttpResponseServerError
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from Posts.models import Post
 import base64
 from django.core.files.base import ContentFile
+import json
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -143,50 +144,68 @@ def add_post(request):
 
 @api_view(['GET'])
 @csrf_exempt
-def get_posts(request):
+def get_all_posts(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
     try:
 
-        if not request.query_params: # if data is empty returns all posts
-            all_posts = Post.objects.all()
-            all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
-            return JsonResponse(all_posts_serialize.data, safe=False)
+        all_posts = Post.objects.all()
+        all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
+        return JsonResponse(all_posts_serialize.data, safe=False)
+
+    except Exception as e:
+         logger.error(f"get_all_posts : {e}")
+         return HttpResponseServerError("An error occurred during get_all_posts")
+    
+@api_view(['GET'])
+@csrf_exempt
+def get_post_by_parm(request):
+    '''This function will be used to get all the posts in the db 'Pots' table'''
+    try:
+
+        data = request.data
+
+        # Maybe needs to add the '' as a default. first I need to understand when the front is sending when 
+        # the user didn't insert any value/just the city and etc. it will be an empty string or None or what?
+        post_city = data.get('post_city')
+        post_street = data.get('post_street')
+        post_apartment_number = data.get('post_apartment_number')
+
+        #? PRINT THE DATA TO SEE IT
+        logger.info('post_city: ' + str(post_city))
+        logger.info('post_street: ' + str(post_street))
+        logger.info('post_apartment_number: ' + str(post_apartment_number))
+        
+        if not any([post_city, post_street, post_apartment_number]): 
+            #! IF MOR GETS THIS RESPONSE HE NEEDS TO TELL THE USER TO ENTER AT LEAST ONE FIELD
+            return HttpResponseBadRequest("At least one field is required")
+
+        if post_city is None:
+            #! IF MOR GETS THIS RESPONSE HE NEEDS TO TELL THE USER THAT THE CITY FIELD IS REQUIRED
+            return HttpResponseBadRequest("City field is required")
+
+        # Construct the queryset conditions based on available parameters
+        filter_conditions = {}
+
+        if post_city:
+            filter_conditions['post_city'] = post_city
+        if post_street:
+            filter_conditions['post_street'] = post_street
+        if post_apartment_number:
+            filter_conditions['post_apartment_number'] = post_apartment_number
+
+        post_v1 = Post.objects.filter(filter_conditions)
+
+        # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
+        #post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
+
+        if post_v1.exists():
+            try:
+                post_serializer = PostSerializerAll(post_v1)
+                return JsonResponse(post_serializer.data, safe=False)
+            except :
+                return HttpResponseServerError("An error occurred while serialize the post in get_posts")
         else:
-            #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
-            post_city = request.query_params.get('post_city', '')
-            post_street = request.query_params.get('post_street', '')
-            post_apartment_number = request.query_params.get('post_apartment_number', '')
-
-            logger.info('post_city: ' + str(post_city) + ' ' + str(type(post_city)))
-
-            if post_city == '' and post_street == '' and post_apartment_number == '':
-                return HttpResponseBadRequest("All fields are empty")
-            if post_city is None:
-                return HttpResponseBadRequest("City field is required")
-
-            # Construct the queryset conditions based on available parameters
-            filter_conditions = {}
-
-            if post_city != '':
-                filter_conditions['post_city'] = post_city
-            if post_street != '':
-                filter_conditions['post_street'] = post_street
-            if post_apartment_number != '':
-                filter_conditions['post_apartment_number'] = post_apartment_number
-
-            post_v1 = Post.objects.filter(**filter_conditions)
-
-            # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
-            #post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
-
-            if len(post_v1) > 0:
-                try:
-                    post_serializer = PostSerializerAll(post_v1)
-                    return JsonResponse(post_serializer.data, safe=False)
-                except :
-                    return HttpResponseServerError("An error occurred while serialize the post in get_posts")
-            else:
-                return HttpResponseServerError("Post not found")
+            return HttpResponseNotFound("Post not found")
 
     except Exception as e:
          logger.error(f"get_posts : {e}")
@@ -311,4 +330,12 @@ def delete_post(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
 
+def get_cities(request):
+    with open('Posts/json/cities.json', 'r') as cities_file:
+        cities_data = json.load(cities_file)
+    return JsonResponse(cities_data)
 
+def get_streets(request):
+    with open('Posts/json/streets.json', 'r') as streets_file:
+        streets_data = json.load(streets_file)
+    return JsonResponse(streets_data)
