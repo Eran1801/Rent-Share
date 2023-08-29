@@ -180,9 +180,9 @@ def get_post_by_parm(request):
         # Construct the queryset conditions based on available parameters
         filter_conditions = {'post_city': post_city}
 
-        if post_street != 'null':
+        if post_street != 'null' or post_street != '':
             filter_conditions['post_street'] = post_street
-        if post_apartment_number != 'null':
+        if post_apartment_number != 'null' or post_apartment_number != '':
             filter_conditions['post_apartment_number'] = post_apartment_number
 
         logger.info(f'filter_conditions: {filter_conditions}')
@@ -197,7 +197,7 @@ def get_post_by_parm(request):
                 post_serializer = PostSerializerAll(post_v1, many=True)
                 return JsonResponse(post_serializer.data, safe=False)
             except :
-                logger.debug(post_serializer.errors)
+                
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
         else:
             return HttpResponseNotFound("Post not found")
