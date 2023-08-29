@@ -153,13 +153,13 @@ def get_posts(request):
             return JsonResponse(all_posts_serialize.data, safe=False)
         else:
             #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
-            post_city = request.query_params.get('post_city', None)
-            post_street = request.query_params.get('post_street', None)
-            post_apartment_number = request.query_params.get('post_apartment_number', None)
+            post_city = request.query_params.get('post_city', '')
+            post_street = request.query_params.get('post_street', '')
+            post_apartment_number = request.query_params.get('post_apartment_number', '')
 
             logger.info('post_city: ' + str(post_city) + ' ' + str(type(post_city)))
 
-            if post_city is None and post_street is None and post_apartment_number is None:
+            if post_city == '' and post_street == '' and post_apartment_number == '':
                 return HttpResponseBadRequest("All fields are empty")
             if post_city is None:
                 return HttpResponseBadRequest("City field is required")
@@ -167,11 +167,11 @@ def get_posts(request):
             # Construct the queryset conditions based on available parameters
             filter_conditions = {}
 
-            if post_city is not None:
+            if post_city != '':
                 filter_conditions['post_city'] = post_city
-            if post_street is not None:
+            if post_street != '':
                 filter_conditions['post_street'] = post_street
-            if post_apartment_number is not None:
+            if post_apartment_number != '':
                 filter_conditions['post_apartment_number'] = post_apartment_number
 
             post_v1 = Post.objects.filter(**filter_conditions)
