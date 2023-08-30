@@ -18,30 +18,33 @@ def change_personal_info(request):
 
     try:
         user_data = request.data
-        user_id = user_data['user_id']
+        user_id = user_data.get('user_id')
+        full_name = user_data.get('user_full_name')
+        phone = user_data.get('user_phone')
+        email = user_data.get('user_email')
         
         user = Users.objects.get(user_id=user_id)  # Get the user from the database by user_id
 
         # Check if fields have changed
-        if user_data['user_full_name'] != user.user_full_name:
-            if Users.full_name_check(user_data['user_full_name']) == False:
+        if full_name != user.user_full_name:
+            if Users.full_name_check(full_name) == False:
                 return HttpResponseServerError("Full name is invalid")
             else:
-                user.user_full_name = user_data['user_full_name']
+                user.user_full_name = full_name
 
-        if user_data['user_email'] != user.user_email:
-            if Users.validate_email(user_data['user_email']) == False:
+        if email != user.user_email:
+            if Users.validate_email(email) == False:
                 return HttpResponseServerError("Email is invalid")
-            if Users.email_exists(user_data['user_email']) == True:
+            if Users.email_exists(email) == True:
                 return HttpResponseServerError("Email already exists in our system")
-            user.user_email = user_data['user_email']
+            user.user_email = email
 
-        if user_data['user_phone'] != user.user_phone:
-            if Users.phone_number_check(user_data['user_phone']) == False:
+        if phone != user.user_phone:
+            if Users.phone_number_check(phone) == False:
                 return HttpResponseServerError("Phone number is invalid")
-            if Users.phone_exists(user_data['user_phone']) == True:
+            if Users.phone_exists(phone) == True:
                 return HttpResponseServerError("Phone number already exists in our system")
-            user.user_phone = user_data['user_phone']
+            user.user_phone = phone
 
         user.save()  # save changes to the database
         return JsonResponse("Personal info updated successfully", safe=False)
@@ -61,11 +64,11 @@ def change_password(request):
     try:
         user_data = request.data
 
-        old_password = hash_password(user_data['old_password'])
-        new_password = user_data['new_password']
-        new_password_confirm = user_data['new_password_confirm']
+        old_password = hash_password(user_data.get('old_password')) # encrypt the old password
+        new_password = user_data.get('new_password')
+        new_password_confirm = user_data.get('new_password_confirm')
 
-        user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
+        user = Users.objects.get(user_id=user_data.get('user_id')) # get the user from the database by user_id
         
         # check if the old password is correct
         if user.user_password != old_password:
@@ -74,7 +77,7 @@ def change_password(request):
         if new_password != new_password_confirm:
             return HttpResponseServerError("Passwords don't match")
         
-        if not Users.validate_password(new_password):
+        if check_valid_password(new_password) == False:
             return HttpResponseServerError("Password is invalid")
         
         user.user_password = hash_password(new_password) # update the password
@@ -97,7 +100,7 @@ def change_password(request):
 
 #         user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
 
-#         user.user_profile_picture = user_data['user_profile_picture'] # update the profile picture
+#         user.user_profile_picture = user_data.get('user_profile_picture') # update the profile picture
 #         user.save() # save changes to the database
 
 #     except Users.DoesNotExist:

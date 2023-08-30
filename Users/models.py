@@ -5,13 +5,13 @@ import uuid
 from typing import Any
 
 
-def generate_unique_filename(instance: Any, filename: str):
-    _, ext = os.path.splitext(filename)
+# def generate_unique_filename(instance: Any, filename: str):
+#     _, ext = os.path.splitext(filename)
 
-    # Generate a unique filename using a combination of UUID, timestamp, and original filename
-    unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
+#     # Generate a unique filename using a combination of UUID, timestamp, and original filename
+#     unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
     
-    return os.path.join('Users', str(instance.user_id), filename[:filename.index('.')] ,unique_filename)
+#     return os.path.join('Users', str(instance.user_id), filename[:filename.index('.')] ,unique_filename)
 
 
 class Users(models.Model):
