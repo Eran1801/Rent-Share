@@ -97,6 +97,9 @@ def change_password(request):
         user.user_password = hash_password(new_password) # update the password
         user.save() # save changes to the database
 
+        return JsonResponse("Password updated successfully", safe=False)
+
+
     except Users.DoesNotExist:
         return HttpResponseServerError("User not found")
     
