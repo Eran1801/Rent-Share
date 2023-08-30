@@ -18,33 +18,47 @@ def change_personal_info(request):
 
     try:
         user_data = request.data
+
         user_id = user_data.get('user_id')
+        logger.info(f'User ID: {user_id}')
+
         full_name = user_data.get('user_full_name')
+        logger.info(f'Full name: {full_name}')
+
         phone = user_data.get('user_phone')
+        logger.info(f'Phone: {phone}')
+
         email = user_data.get('user_email')
+        logger.info(f'Email: {email}')
         
         user = Users.objects.get(user_id=user_id)  # Get the user from the database by user_id
 
         # Check if fields have changed
         if full_name != user.user_full_name:
-            if Users.full_name_check(full_name) == False:
+            if full_name_check(full_name) == False:
                 return HttpResponseServerError("Full name is invalid")
             else:
                 user.user_full_name = full_name
 
+        logger.info('Passed full name check')
+
         if email != user.user_email:
-            if Users.validate_email(email) == False:
+            if validate_email(email) == False:
                 return HttpResponseServerError("Email is invalid")
-            if Users.email_exists(email) == True:
+            if email_exists(email) == True:
                 return HttpResponseServerError("Email already exists in our system")
             user.user_email = email
 
+        logger.info('Passed email check')
+
         if phone != user.user_phone:
-            if Users.phone_number_check(phone) == False:
+            if phone_number_check(phone) == False:
                 return HttpResponseServerError("Phone number is invalid")
-            if Users.phone_exists(phone) == True:
+            if phone_exists(phone) == True:
                 return HttpResponseServerError("Phone number already exists in our system")
             user.user_phone = phone
+        
+        logger.info('Passed phone check')
 
         user.save()  # save changes to the database
         return JsonResponse("Personal info updated successfully", safe=False)
