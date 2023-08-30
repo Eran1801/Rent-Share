@@ -127,6 +127,7 @@ def change_profile_picture(request):
         logger.info(f'User: {user}')
 
         data = {'user_profile_pic': proof_image_file}
+        # some
         
         user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
         if user_serializer.is_valid():
