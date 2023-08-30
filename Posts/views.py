@@ -210,7 +210,7 @@ def get_post_by_parm(request):
 def get_post_by_post_id(request):
     '''This function will be used to get a post by its ID'''
     try:
-        post_id = request.GET.data('post_id')
+        post_id = request.GET.get('post_id')
         logger.info('post_id: ' + post_id)
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
