@@ -5,7 +5,9 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 import Users
+from Users.serializers import UserSerializerPicture
 from Users.views import *
+from Posts.views import *
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -107,24 +109,36 @@ def change_password(request):
         logger.error(f'Error: {e}')
         return HttpResponseServerError("An error occurred")
     
-# @api_view(['PUT'])
-# @csrf_exempt
-# def change_profile_picture(request):
-#     '''This function will be used to change the user's profile picture'''
+@api_view(['PUT'])
+@csrf_exempt
+def change_profile_picture(request):
+    '''This function will be used to change the user's profile picture'''
 
-#     try:
-#         user_data = request.data
+    try:
+        user_data = request.data
+        user_id = user_data.get('user_id')
 
-#         user = Users.objects.get(user_id=user_data['user_id']) # get the user from the database by user_id
+        profile_image_base64 = user_data.get('profile_image')[0]  # Extract the first item from the list
+        proof_image_file = convert_base64_to_image(profile_image_base64, "profile_image")
 
-#         user.user_profile_picture = user_data.get('user_profile_picture') # update the profile picture
-#         user.save() # save changes to the database
+        user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
 
-#     except Users.DoesNotExist:
-#         return HttpResponseServerError("User not found")
+        data = {'user_profile_pic': proof_image_file}
+        
+        user_serializer = UserSerializerPicture(user, data=data, partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()  # Attempt to save to the database
+            logger.info("Saved to the database")
+            return JsonResponse("Profile picture successfully saved in db", safe=False)
+        else:
+            logger.debug(user_serializer.errors)
+            return HttpResponseServerError("Post validation failed")
+
+    except Users.DoesNotExist:
+        return HttpResponseServerError("User not found")
     
-#     except Exception as e:
-#         logger.error(f'Error: {e}')
-#         return HttpResponseServerError("An error occurred")
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred")
     
 

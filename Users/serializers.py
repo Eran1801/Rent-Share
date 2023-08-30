@@ -7,4 +7,10 @@ from Users.models import Users
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = '__all__'
+        fields = ('user_id', 'user_full_name', 'user_password', 'user_email', 'user_phone')
+
+
+class UserSerializerPicture(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ('profile_pic')
