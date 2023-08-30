@@ -191,9 +191,6 @@ def get_post_by_parm(request):
 
         post_v1 = Post.objects.filter(**filter_conditions)
 
-        # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
-        #post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
-
         if post_v1.exists():
             try:
                 post_serializer = PostSerializerAll(post_v1, many=True)
@@ -210,11 +207,10 @@ def get_post_by_parm(request):
 
 @api_view(['GET'])
 @csrf_exempt
-def get_post_by_id(request):
-    #! TODO : NEEDS TO TELL MOR TO CHANGE THE REQUEST TO BE A GET REQUEST FROM THE FRONT END
+def get_post_by_post_id(request):
     '''This function will be used to get a post by its ID'''
     try:
-        post_id = request.data #? needs to check if the data is a number in a string
+        post_id = request.GET.data('post_id')
         logger.info('post_id: ' + post_id)
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
