@@ -128,7 +128,7 @@ def change_profile_picture(request):
 
         data = {'user_profile_pic': proof_image_file}
         
-        user_serializer = UserSerializerPicture(user, data=data, partial=True)
+        user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
         if user_serializer.is_valid():
             user_serializer.save()  # Attempt to save to the database
             logger.info("Saved to the database")
