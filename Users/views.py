@@ -22,8 +22,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 PORT = 587
 EMAIL_SERVER = "smtp-mail.outlook.com"  # Adjust server address, if you are not using @outlook
-FROM_EMAIL = "rentbuzz@outlook.co.il"
-PASSWORD_EMAIL = 'RentBuzz11'
+FROM_EMAIL = "rentbuzz@outlook.com"
+PASSWORD_EMAIL = 'MorEran1302'
 
 def check_valid_password(pas:str) -> bool:
     '''check if the password is valid'''

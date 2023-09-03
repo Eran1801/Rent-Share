@@ -119,7 +119,7 @@ def change_profile_picture(request):
         user_id = user_data.get('user_id')
         logger.info(f'User ID: {user_id}')
 
-        profile_image_base64 = user_data.get('profile_image')[0]  # Extract the first item from the list
+        profile_image_base64 = user_data.get('profile_image')  # Extract the first item from the list
         logger.info(f'Profile image: {profile_image_base64}')
         proof_image_file = convert_base64_to_image(profile_image_base64, "profile_image")
 
