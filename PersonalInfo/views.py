@@ -145,4 +145,22 @@ def change_profile_picture(request):
         logger.error(f'Error: {e}')
         return HttpResponseServerError("An error occurred during profile picture upload")
     
+@api_view(['GET'])
+@csrf_exempt
+def get_profile_pic(request):
+    try:
 
+        user_id = request.GET.get('user_id')
+        logger.info(f'User ID: {user_id}')
+
+        user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
+
+        user_serializer = UserSerializerPicture(instance = user, many=False, partial=True)
+        logger.info(f'User serializer successful')
+        return JsonResponse(user_serializer.data, safe=False)
+    except Users.DoesNotExist:
+        return HttpResponseServerError("User not found")
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred during profile picture upload")
+    
