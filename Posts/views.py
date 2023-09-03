@@ -178,16 +178,16 @@ def get_post_by_parm(request):
             return HttpResponseBadRequest("City field is required")
 
         # Construct the queryset conditions based on available parameters
-        filter_conditions = {'post_city': post_city}
+        filter_conditions = {'post_city': post_city} # post_city is definitely not null
 
-        if post_street != 'null' and post_street != '':
+        if post_street != 'null' and post_street != '': # needs to check this 2 conditions
             logger.info(f'filter_conditions 1: {filter_conditions}')
             filter_conditions['post_street'] = post_street
         if post_apartment_number != 'null' and post_apartment_number != '':
             logger.info(f'filter_conditions 2: {filter_conditions}')
             filter_conditions['post_apartment_number'] = post_apartment_number
 
-        logger.info(f'filter_conditions 3: {filter_conditions}')
+        logger.info(f'filter_conditions final: {filter_conditions}')
 
         post_v1 = Post.objects.filter(**filter_conditions)
 
@@ -196,7 +196,6 @@ def get_post_by_parm(request):
                 post_serializer = PostSerializerAll(post_v1, many=True)
                 return JsonResponse(post_serializer.data, safe=False)
             except :
-                
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
         else:
             return HttpResponseNotFound("Post not found")
@@ -228,10 +227,12 @@ def get_post_by_post_id(request):
 def get_post_by_user_id(request):
     '''This function will be used to get all the posts (one or more) by the user ID for the "הדירות שלי"'''
     try:
-        user_id = request.data
+        user_id = request.GET.get('user_id')
+        logger.info(f'User ID: {user_id}')
 
         posts = Post.objects.filter(post_user_id=user_id) # get the post using post_id
         post_serializer = PostSerializerAll(posts, many=True) # more than one post
+        logger.info(f'Post serializer: {post_serializer}')
 
         return JsonResponse(post_serializer.data, safe=False)
     except Post.DoesNotExist:    

@@ -31,7 +31,7 @@ class Post(models.Model):
     post_rent_end = models.DateField(null=False, blank=False) 
 
     # Files to confirm that the user rent the house
-    proof_image = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False) # TODO: MAYBE WRONG HERE BECAUSE SENDIN
+    proof_image = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
     driving_license = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
 
     apartment_pic_1 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)

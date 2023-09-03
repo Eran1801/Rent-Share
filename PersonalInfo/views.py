@@ -12,7 +12,6 @@ from Posts.views import *
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-
 @api_view(['PUT'])
 @csrf_exempt
 def change_personal_info(request):
@@ -149,7 +148,6 @@ def change_profile_picture(request):
 @csrf_exempt
 def get_profile_pic(request):
     try:
-
         user_id = request.GET.get('user_id')
         logger.info(f'User ID: {user_id}')
 
