@@ -239,44 +239,6 @@ def get_post_by_user_id(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
-
-# @api_view(['GET'])
-# @csrf_exempt
-# def get_post_by_city_street_apartment(request):
-    '''
-    This function will be used to get a post by its city, street, and apartment number.
-    If the apartment number is not provided, the function will return all posts that match the city and street.
-    If the street is not provided, the function will return all posts that match the city.
-    '''
-
-    try:
-        post_data = request.data
-        logger.info(f'post_data = {post_data} and his type is {type(post_data)}')
-
-        post_city = post_data.get('post_city',None)
-        post_street = post_data.get('post_street', None)
-        post_apartment_number = post_data.get('post_apartment_number', None)
-
-        if post_city is None and post_street is None and post_apartment_number is None:
-            return HttpResponseBadRequest("All fields are empty")
-        if post_city is None:
-            return HttpResponseBadRequest("City field is required")
-
-        # filter() method on a Django queryset returns an empty queryset if no results match the filtering criteria. 
-        post_v1 = Post.objects.filter(post_city=post_city, post_street=post_street,post_apartment_number=post_apartment_number)
-
-        if len(post_v1) > 0:
-            try:
-                post_serializer = PostSerializerAll(post_v1)
-                return JsonResponse(post_serializer.data, safe=False)
-            except :
-                logger.debug(post_serializer.errors)
-                return HttpResponseServerError("An error occurred while serialize the post in get_post_by_city_street_apartment")
-        else:
-            return HttpResponseServerError("Post not found")  # all fields are missing
-
-    except Exception as e:
-            return HttpResponseBadRequest(f"An error occurred, get_post_by_city.. : {e}")
     
 @api_view(['PUT'])
 @csrf_exempt
@@ -299,7 +261,7 @@ def update_description_post(request):
         if post_serializer.is_valid():
             logger.info("Successfully serialized the post after update the description")
             post.save() # save the updated post to the db
-            return JsonResponse(post_serializer.data, safe=False)  # return the updated post to frontend
+            return JsonResponse("Description info updated successfully", safe=False)
         else:
             logger.debug(post_serializer.errors)
             return HttpResponseServerError("An error occurred while serialize the post after update the description")
