@@ -245,11 +245,8 @@ def get_post_by_user_id(request):
 def update_description_post(request):
     '''This function will be used to update the description of a post'''
 
-    post_data = request.data
-
-    # extract from request data
-    post_id = post_data.get('post_id')
-    post_description = post_data.get('post_description')
+    post_id = request.GET.get('post_id')
+    post_description = request.GET.get('post_description')
 
     try:
         post = Post.objects.get(post_id=post_id) 
