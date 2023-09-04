@@ -276,7 +276,7 @@ def update_description_post(request):
 def delete_post(request):
     '''This function will be used to delete a post'''
     try:
-        post_id = request.data
+        post_id = request.GET.get('post_id')
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
