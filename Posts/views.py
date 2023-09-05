@@ -67,8 +67,6 @@ def add_post(request):
     except Users.DoesNotExist:
         return HttpResponseServerError('User not found')    
 
-    #! tell mor to handle the date error in the front end but also in the backend
-
     post_city = post_data.get('post_city')
     post_street = post_data.get('post_street')
     post_apartment_number = post_data.get('post_apartment_number')
