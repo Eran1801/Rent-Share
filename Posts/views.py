@@ -294,7 +294,7 @@ def delete_post(request):
 
         # delete S3 folder corresponding to this post
         s3_bucket_name = 'rent-buzz'
-        s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}'  # adjust the path accordingly
+        s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}/'  # adjust the path accordingly
 
         logger.info(f's3_folder_name: {s3_folder_name}')
 
