@@ -14,7 +14,6 @@ from Users.serializers import UsersSerializer
 import re
 import hashlib
 import logging
-from validate_email import validate_email
 from email.message import EmailMessage
 
 logger = logging.getLogger(__name__)
@@ -84,7 +83,6 @@ def register(request, user_id = 0):
 
         # checks valid register input from user
         check_full_name: bool = full_name_check(user_full_name)
-        check_email = validate_email(user_email)
         check_phone_number = phone_number_check(user_phone_number)
         check_password = check_valid_password(user_password)
 
@@ -106,9 +104,6 @@ def register(request, user_id = 0):
             
             if not check_password:
                 return HttpResponseServerError('Invalid password')
-            
-            if not check_email:
-                return HttpResponseServerError('Invalid email')
 
             del user_data['user_password_2'] # don't needs to be save in the db
             
@@ -246,8 +241,7 @@ def reset_password(request):
     except Exception as e:
         logger.error('Error reset password: %s', e)
         return HttpResponseServerError("Error reset password")
-
-    
+  
 def send_email(sender_email:str,receiver_email: str, message: str) -> None:
     try:
         # Create the base text message.
