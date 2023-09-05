@@ -10,6 +10,7 @@ from Users.models import Users
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from Posts.models import Post
 import base64
+import boto3
 from django.core.files.base import ContentFile
 
 # Define the logger at the module level
@@ -264,13 +265,42 @@ def update_description_post(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, update_description_post: {e}")
-    
+
+def delete_s3_folder(bucket_name, folder_name):
+    try:
+        s3 = boto3.client('s3')
+        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
+
+        # Iterate through the objects in the folder and delete them
+        for obj in response.get('Contents', []):
+            s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+
+        # Delete the folder itself
+        s3.delete_object(Bucket=bucket_name, Key=folder_name + '/')
+
+    except boto3.NoCredentialsError:
+        return HttpResponseBadRequest("AWS credentials not found. Make sure they are configured correctly.")
+    except Exception as e:
+        return HttpResponseBadRequest(f"An error occurred while deleting the S3 folder: {e}")
+
 @api_view(['DELETE'])
 @csrf_exempt
 def delete_post(request):
     '''This function will be used to delete a post'''
     try:
         post_id = request.GET.get('post_id')
+        post_user_id = request.GET.get('post_user_id')
+
+        logger.info(f'post_id: {post_id}')
+        logger.info(f'post_user_id: {post_user_id}')
+
+        # delete S3 folder corresponding to this post
+        s3_bucket_name = 'rent-buzz'
+        s3_folder_name = f'rent buzz/Posts/{post_user_id}/{post_id}'  # adjust the path accordingly
+
+        logger.info(f's3_folder_name: {s3_folder_name}')
+
+        delete_s3_folder(s3_bucket_name, s3_folder_name)
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
