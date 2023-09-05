@@ -12,7 +12,7 @@ def generate_unique_filename(instance:Any, filename:str):
     # Generate a unique filename using a combination of UUID, timestamp, and original filename
     unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
     
-    return os.path.join('Posts', str(instance.post_user_id), filename[:filename.index('.')] ,unique_filename)
+    return os.path.join('Posts', str(instance.post_user_id),str(instance.post_id),filename[:filename.index('.')] ,unique_filename)
 
 class Post(models.Model):
     

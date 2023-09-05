@@ -8,7 +8,6 @@ from django.views.decorators.csrf import \
 from rest_framework.parsers import JSONParser
 from django.http import *
 from rest_framework.decorators import api_view
-from Posts.views import convert_base64_to_image
 from Users.models import Users
 from Users.serializers import UsersSerializer
 import re
