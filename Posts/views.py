@@ -58,6 +58,8 @@ def convert_base64_to_image(base64_str, filename):
 def add_post(request):
     '''This function will be used to add a new post'''
 
+    global post_id
+
     post_data = request.data
 
     post_user_email = post_data.get('user', {}).get('user_email')
@@ -111,7 +113,6 @@ def add_post(request):
         'apartment_pic_1': apartment_pic_1_file,
         'post_description': post_description,
     }
-    post_id += 1
 
     # ADD this to the dict 
     """
@@ -134,6 +135,7 @@ def add_post(request):
     if post_serializer.is_valid():
         try:
             post_serializer.save()  # Attempt to save to the database
+            post_id += 1
             logger.info("Saved to the database")
             return JsonResponse("Post successfully saved in db", safe=False)
         except Exception as e:
