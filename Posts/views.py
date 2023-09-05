@@ -270,9 +270,11 @@ def delete_s3_folder(bucket_name, folder_name):
     try:
         s3 = boto3.client('s3')
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
+        logger.info(f'response: {response}')
 
         # Iterate through the objects in the folder and delete them
         for obj in response.get('Contents', []):
+            logger.info(f'obj: {obj}')
             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
 
         # Delete the folder itself
@@ -290,7 +292,7 @@ def delete_post(request):
         post_user_id = request.GET.get('post_user_id')
 
         logger.info(f'post_id: {post_id}')
-        logger.info(f'post_user_id: {post_user_id}')
+        logger.info(f'post_user_id: {post_user_id}') 
 
         # delete S3 folder corresponding to this post
         s3_bucket_name = 'rent-buzz'
