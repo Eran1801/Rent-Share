@@ -244,25 +244,16 @@ def get_post_by_user_id(request):
 @csrf_exempt
 def update_description_post(request):
     '''This function will be used to update the description of a post'''
-
-    data = request.data
-
-    post_id = data.get('post_id')
-    logger.info(f'post_id: {str(post_id)}')
-
-    post_description = data.get('post_description')
-    logger.info(f'post_description: {str(post_description)}')
-
     try:
-        post = Post.objects.get(post_id=post_id) 
-        logger.info(f'Post: {post}')
+        data = request.data
 
-        logger.info(f'post_description before change: {post.post_description}')
+        post_id = data.get('post_id')
+        post_description = data.get('post_description')
+    
+        post = Post.objects.get(post_id=post_id) 
         post.post_description = post_description 
-        logger.info(f'post_description after change: {post.post_description}')
 
         #! NEEDS TO CHANGE THE POST IS_CONFIRMED TO FALSE AGAIN AFTER THE USER UPDATE THE DESCRIPTION
-
         post.save() # save the updated post to the db
         return JsonResponse("Description info updated successfully", safe=False)
 

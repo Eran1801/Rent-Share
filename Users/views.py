@@ -192,15 +192,22 @@ def generate_random_digits() -> str:
 def forget_password(request):
     try:
 
-        user_email = request.GET.get('user_email').lower() # lower case email\
+        user_email = request.GET.get('user_email').lower() # lower case email
 
         confirm_code = generate_random_digits()
-        msg = f'קוד האימות שלך הוא: {confirm_code}'
+        msg = f'קוד האימות שלך הוא : {confirm_code}\nהקוד תקף ל-5 דקות'
 
         # send email to user email with a 6 digit code
         send_email(FROM_EMAIL,user_email,msg)
-        #! needs to figure out how to send the confirm_code and the user_email to the front
-        return JsonResponse(f"Email sent successfully with code : {confirm_code} with email {user_email}", safe=False)
+        
+        response_data = {
+            'user': {
+                'user_email': user_email,
+                'confirm_code': confirm_code,
+            },
+                'message': f"Email sent successfully with code : {confirm_code} with email {user_email}"
+        }
+        return JsonResponse(response_data, safe=False)
 
     except Exception as e:
         logger.error('Error forget password: %s', e)
