@@ -294,29 +294,20 @@ import logging  # Import the logging module
 # Set up a logger instance
 logger = logging.getLogger(__name__)
 
-def delete_folder(bucket, post_id):
-    """
-    Removes a folder (prefix) with the specified post_id from a bucket.
-    
-    :param bucket: The bucket that contains the folder. This is a Boto3 Bucket resource.
-    :param post_id: The post_id used as the folder name to delete.
-    :return: The response that contains data about which objects were deleted and any that could not be deleted.
-    """
+def delete_s3_folder(bucket_name, folder_name):
     try:
-        # Construct the list of object_keys to delete, including all objects under the folder
-        object_keys_to_delete = [obj.key for obj in bucket.objects.filter(Prefix=post_id)]
+        s3 = boto3.client('s3')
+        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
         
-        # Check if there are objects to delete
-        if object_keys_to_delete:
-            try:
-                response = bucket.delete_objects(Delete={'Objects': [{'Key': key} for key in object_keys_to_delete]})
-            except Exception as e:
-                logger.error(f"delete_folder: {e}")
-                return HttpResponseBadRequest(f"An error occurred inside the if in delete_folder {e}")
-             
-    except Exception as e:
-        logger.error(f"delete_folder: {e}")
-        return HttpResponseBadRequest(f"An error occurred while delete_folder function {e}")
+        # Iterate through the objects in the folder and delete them
+        for obj in response.get('Contents', []):
+            s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+
+        # Delete the folder itself (empty folder)
+        s3.delete_object(Bucket=bucket_name, Key=folder_name)
+
+    except ClientError as e:
+        raise e  # Rethrow the exception for higher-level handling
 
 # Your existing Django view function
 @api_view(['DELETE'])
@@ -334,7 +325,7 @@ def delete_post(request):
         s3_bucket_name = 'rent-buzz'
         s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}/'  # Specify '9' as the folder name
 
-        delete_folder(s3_bucket_name, s3_folder_name) 
+        delete_s3_folder(s3_bucket_name, s3_folder_name) 
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
