@@ -247,15 +247,18 @@ def update_description_post(request):
 
     post_id = request.GET.get('post_id')
     logger.info('post_id: ' + post_id)
-    post_description = request.GET.get('post_description')
-    logger.info('post_description: ' + post_description)
-
+    try:
+        post_description = request.GET.get('post_description')
+        logger.info('post_description: ' + post_description)
+    except Exception as e:
+        logger.error(f"update_description_post: {e}")
+        return HttpResponseServerError("An error occurred while getting the post_description")
     try:
         post = Post.objects.get(post_id=post_id) 
         logger.info(f'Post: {post}')
 
         logger.info(f'post_description before change: {post.post_description}')
-        
+
         post.post_description = post_description 
         logger.info(f'post_description after change: {post.post_description}')
 
