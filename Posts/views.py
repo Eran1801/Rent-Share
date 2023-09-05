@@ -11,11 +11,12 @@ from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpRespon
 from Posts.models import Post
 import base64
 from django.core.files.base import ContentFile
-import json
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+post_id = 1
 
 def convert_base64_to_image(base64_str, filename):
     '''
@@ -97,6 +98,7 @@ def add_post(request):
 
     # creating a dict to pass to the serializer as the post
     post_data_dict = {
+        'post_id': post_id,
         'post_user_id': user.user_id,
         'post_city': post_city,
         'post_street': post_street,
@@ -109,6 +111,7 @@ def add_post(request):
         'apartment_pic_1': apartment_pic_1_file,
         'post_description': post_description,
     }
+    post_id += 1
 
     # ADD this to the dict 
     """
