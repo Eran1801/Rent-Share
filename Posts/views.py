@@ -245,14 +245,14 @@ def get_post_by_user_id(request):
 def update_description_post(request):
     '''This function will be used to update the description of a post'''
 
-    post_id = request.GET.get('post_id')
+    data = request.data
+
+    post_id = data.get('post_id')
     logger.info(f'post_id: {str(post_id)}')
-    try:
-        post_description = request.GET.get('post_description')
-        logger.info(f'post_description: {str(post_description)}')
-    except Exception as e:
-        logger.error(f"update_description_post: {e}")
-        return HttpResponseServerError("An error occurred while getting the post_description")
+
+    post_description = data.get('post_description')
+    logger.info(f'post_description: {str(post_description)}')
+
     try:
         post = Post.objects.get(post_id=post_id) 
         logger.info(f'Post: {post}')
