@@ -221,19 +221,23 @@ def forget_password(request):
 @csrf_exempt
 def reset_password(request):
     try:
-        user_email = request.data.get('user_email').lower() # lower case email
-        user_code_input = request.data.get('user_code_input')
-        user_code_send = request.data.get('user_code_send')
-        user_password = request.data.get('user_password')
-        user_password_2 = request.data.get('user_password_2')
+
+        data = request.data
+
+        user_email = data.get('user_email').lower() # lower case email
+        user_code_input = data.get('user_code_input')
+        user_code_send = data.get('user_code_send')
+        user_password = data.get('user_password')
+        user_password_2 = data.get('user_password_2')
 
         if user_code_input != user_code_send:
             return HttpResponseServerError("Code is incorrect")
+        
+        if not check_valid_password(user_password):
+            return HttpResponseServerError("Password is invalid")
 
         if user_password == user_password_2: # checking if 2 user passwords are equal
             user = Users.objects.get(user_email=user_email) # retrieve user from db based on email
-            if not check_valid_password(user_password):
-                return HttpResponseServerError("Password is invalid")
             user.user_password = hash_password(user_password) # encrypt before saving
             user.save()
             return JsonResponse("Password reset successfully", safe=False)
