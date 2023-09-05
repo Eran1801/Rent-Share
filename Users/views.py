@@ -179,11 +179,12 @@ def tenant_review(request, user_id):
 
 @api_view(['DELETE'])
 @csrf_exempt    
-def delete_user(request, user_id):
+def delete_user(request):
     '''
     This function will be used to delete a user from the db.
     '''
     try:
+        user_id = request.GET.get('user_id')
         user = Users.objects.get(user_id=user_id)
         user.delete()
         return JsonResponse('Delete successfully', safe=False)
@@ -199,7 +200,7 @@ def generate_random_digits() -> str:
 def forget_password(request):
     try:
 
-        user_email = request.data.get('user_email').lower() # lower case email\
+        user_email = request.GET.get('user_email').lower() # lower case email\
 
         confirm_code = generate_random_digits()
         msg = f'קוד האימות שלך הוא: {confirm_code}'
@@ -228,6 +229,8 @@ def reset_password(request):
 
         if user_password == user_password_2: # checking if 2 user passwords are equal
             user = Users.objects.get(user_email=user_email) # retrieve user from db based on email
+            if not check_valid_password(user_password):
+                return HttpResponseServerError("Password is invalid")
             user.user_password = hash_password(user_password) # encrypt before saving
             user.save()
             return JsonResponse("Password reset successfully", safe=False)

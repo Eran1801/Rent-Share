@@ -246,11 +246,18 @@ def update_description_post(request):
     '''This function will be used to update the description of a post'''
 
     post_id = request.GET.get('post_id')
+    logger.info('post_id: ' + post_id)
     post_description = request.GET.get('post_description')
+    logger.info('post_description: ' + post_description)
 
     try:
         post = Post.objects.get(post_id=post_id) 
+        logger.info(f'Post: {post}')
+
+        logger.info(f'post_description before change: {post.post_description}')
+        
         post.post_description = post_description 
+        logger.info(f'post_description after change: {post.post_description}')
 
         #! NEEDS TO CHANGE THE POST IS_CONFIRMED TO FALSE AGAIN AFTER THE USER UPDATE THE DESCRIPTION
 
