@@ -194,6 +194,10 @@ def forget_password(request):
 
         user_email = request.GET.get('user_email').lower() # lower case email
 
+        # First check if the email is in the DB, if the user doesn't exist, return error
+        if not email_exists(user_email):
+            return HttpResponseServerError('Email not exists')
+
         confirm_code = generate_random_digits()
         msg = f'קוד האימות שלך הוא : {confirm_code}\nהקוד תקף ל-5 דקות'
 
@@ -245,7 +249,7 @@ def send_email(sender_email:str,receiver_email: str, message: str) -> None:
         # Create the base text message.
         msg = EmailMessage()
         msg["Subject"] = 'איפוס סיסמה'
-        msg["From"] = formataddr(("Weather", f"{sender_email}"))
+        msg["From"] = formataddr(("RentBuzz", f"{sender_email}"))
         msg["To"] = receiver_email
 
         msg.set_content(message)
