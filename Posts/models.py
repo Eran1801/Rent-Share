@@ -23,13 +23,10 @@ class Post(models.Model):
     #  if user delete his account, all of it's post removes also.
     post_user_id = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') 
 
-    def generate_unique_filename(instance:Any, filename:str):
+    def generate_unique_filename(self, filename: str):
         _, ext = os.path.splitext(filename)
-
-        # Generate a unique filename using a combination of UUID, timestamp, and original filename
         unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
-        
-        return os.path.join('Posts', str(instance.post_user_id),str(instance.post_id),filename[:filename.index('.')] ,unique_filename)
+        return os.path.join('Posts', str(self.post_user_id), str(self.post_id), filename[:filename.index('.')] , unique_filename)
 
     post_city = models.CharField(max_length=50, null=False, blank=False)
     post_street = models.CharField(max_length=50, null=False, blank=False)
