@@ -278,8 +278,6 @@ def delete_s3_folder(bucket_name, folder_name):
         # Delete the folder itself
         s3.delete_object(Bucket=bucket_name, Key=folder_name + '/')
 
-    except boto3.NoCredentialsError:
-        return HttpResponseBadRequest("AWS credentials not found. Make sure they are configured correctly.")
     except Exception as e:
         return HttpResponseBadRequest(f"An error occurred while deleting the S3 folder: {e}")
 
