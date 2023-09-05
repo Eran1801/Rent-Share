@@ -282,6 +282,18 @@ def update_description_post(request):
 #     except Exception as e:
 #         return HttpResponseBadRequest(f"An error occurred while deleting the S3 folder: {e}")
 
+import boto3
+from botocore.exceptions import ClientError
+from django.http import HttpResponseBadRequest, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+import logging  # Import the logging module
+
+# Add the necessary imports for Django and AWS SDK
+
+# Set up a logger instance
+logger = logging.getLogger(__name__)
+
 def delete_folder(bucket, post_id):
     """
     Removes a folder (prefix) with the specified post_id from a bucket.
@@ -306,6 +318,7 @@ def delete_folder(bucket, post_id):
         logger.error(f"delete_folder: {e}")
         return HttpResponseBadRequest(f"An error occurred while delete_folder function {e}")
 
+# Your existing Django view function
 @api_view(['DELETE'])
 @csrf_exempt
 def delete_post(request):
@@ -319,9 +332,9 @@ def delete_post(request):
 
         # delete S3 folder corresponding to this post
         s3_bucket_name = 'rent-buzz'
-        #s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}/'  # adjust the path accordingly
+        s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}/'  # Specify '9' as the folder name
 
-        delete_folder(s3_bucket_name, post_id)
+        delete_folder(s3_bucket_name, s3_folder_name) 
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
