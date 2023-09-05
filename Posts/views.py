@@ -258,20 +258,13 @@ def update_description_post(request):
         logger.info(f'Post: {post}')
 
         logger.info(f'post_description before change: {post.post_description}')
-
         post.post_description = post_description 
         logger.info(f'post_description after change: {post.post_description}')
 
         #! NEEDS TO CHANGE THE POST IS_CONFIRMED TO FALSE AGAIN AFTER THE USER UPDATE THE DESCRIPTION
 
-        post_serializer = PostSerializerAll(data=post)
-        if post_serializer.is_valid():
-            logger.info("Successfully serialized the post after update the description")
-            post.save() # save the updated post to the db
-            return JsonResponse("Description info updated successfully", safe=False)
-        else:
-            logger.debug(post_serializer.errors)
-            return HttpResponseServerError("An error occurred while serialize the post after update the description")
+        post.save() # save the updated post to the db
+        return JsonResponse("Description info updated successfully", safe=False)
 
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")

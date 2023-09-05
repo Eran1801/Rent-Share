@@ -169,14 +169,6 @@ def login(request):
         logger.error('Error parsing user login data: %s', e)
         return HttpResponseServerError("Error parsing user login data")
 
-@api_view(['GET'])
-@csrf_exempt
-def tenant_review(request, user_id):
-    '''
-    This function will returns the tenant reviews that owners will give on the tenant.
-    '''
-    pass
-
 @api_view(['DELETE'])
 @csrf_exempt    
 def delete_user(request):
