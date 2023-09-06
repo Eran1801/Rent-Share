@@ -289,8 +289,8 @@ def delete_post(request):
         post_id = request.GET.get('post_id')
         post_user_id = request.GET.get('post_user_id')
 
-        logger.info(f'post_id: {post_id}')
-        logger.info(f'post_user_id: {post_user_id}') 
+        logger.info(f'post_id: {str(post_id)}')
+        logger.info(f'post_user_id: {str(post_user_id)}') 
 
         # delete S3 folder corresponding to this post
         s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}/'  # Specify '9' as the folder name
