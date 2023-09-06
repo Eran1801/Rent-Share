@@ -6,11 +6,13 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
+from TelAviv.settings import AWS_STORAGE_BUCKET_NAME
 from Users.models import Users
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from Posts.models import Post
 import base64
 import boto3
+from botocore.exceptions import ClientError
 from django.core.files.base import ContentFile
 
 # Define the logger at the module level
@@ -266,45 +268,14 @@ def update_description_post(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, update_description_post: {e}")
 
-# def delete_s3_folder(bucket_name, folder_name):
-#     try:
-#         s3 = boto3.client('s3')
-#         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
-#         logger.info(f'response: {response}')
-
-#         # Iterate through the objects in the folder and delete them
-#         for obj in response.get('Objects', []):
-#             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
-
-#         # Delete the folder itself
-#         s3.delete_object(Bucket=bucket_name, Key=folder_name + '/')
-
-#     except Exception as e:
-#         return HttpResponseBadRequest(f"An error occurred while deleting the S3 folder: {e}")
-
-import boto3
-from botocore.exceptions import ClientError
-from django.http import HttpResponseBadRequest, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
-import logging  # Import the logging module
-
-# Add the necessary imports for Django and AWS SDK
-
-# Set up a logger instance
-logger = logging.getLogger(__name__)
-
-def delete_s3_folder(bucket_name, folder_name):
+def delete_s3_folder(bucket_name, folder_path):
     try:
         s3 = boto3.client('s3')
-        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
+        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
         
         # Iterate through the objects in the folder and delete them
         for obj in response.get('Contents', []):
             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
-
-        # Delete the folder itself (empty folder)
-        s3.delete_object(Bucket=bucket_name, Key=folder_name)
 
     except ClientError as e:
         raise e  # Rethrow the exception for higher-level handling
@@ -322,10 +293,9 @@ def delete_post(request):
         logger.info(f'post_user_id: {post_user_id}') 
 
         # delete S3 folder corresponding to this post
-        s3_bucket_name = 'rent-buzz'
         s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}/'  # Specify '9' as the folder name
 
-        delete_s3_folder(s3_bucket_name, s3_folder_name) 
+        delete_s3_folder(AWS_STORAGE_BUCKET_NAME, s3_folder_name) 
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
