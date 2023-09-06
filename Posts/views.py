@@ -271,29 +271,32 @@ def update_description_post(request):
 def delete_s3_folder(bucket_name, folder_path):
     try:
         s3 = boto3.client('s3')
+        logger.info('after s3 client')
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
+        logger.info('after response')
         
-        # Iterate through the objects in the folder and delete them
+        # iterate through the objects in the folder and delete them
         for obj in response.get('Contents', []):
+            logger.info('inside for loop')
             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+            logger.info('after delete object')
 
     except ClientError as e:
-        raise e  # Rethrow the exception for higher-level handling
+        raise e
 
-# Your existing Django view function
 @api_view(['DELETE'])
 @csrf_exempt
 def delete_post(request):
     '''This function will be used to delete a post'''
     try:
         post_id = request.GET.get('post_id')
-        post_user_id = request.GET.get('post_user_id')
+        user_id = request.GET.get('user_id')
 
-        logger.info(f'post_id: {str(post_id)}')
-        logger.info(f'post_user_id: {str(post_user_id)}') 
+        logger.info(f'post_id: {post_id}')
+        logger.info(f'post_user_id: {user_id}') 
 
         # delete S3 folder corresponding to this post
-        s3_folder_name = f'rent-buzz/Posts/Users object ({post_user_id})/{post_id}/'  # Specify '9' as the folder name
+        s3_folder_name = f'rent-buzz/Posts/Users object ({user_id})/{post_id}/'
 
         delete_s3_folder(AWS_STORAGE_BUCKET_NAME, s3_folder_name) 
 
