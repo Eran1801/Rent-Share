@@ -19,8 +19,6 @@ from django.core.files.base import ContentFile
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-post_id = 1
-
 def convert_base64_to_image(base64_str, filename):
     '''
     Convert base64-encoded images to actual files.
@@ -61,17 +59,16 @@ def convert_base64_to_image(base64_str, filename):
 def add_post(request):
     '''This function will be used to add a new post'''
 
-    global post_id
-
     post_data = request.data
 
+    post_id = post_data.get('post_id')
     post_user_email = post_data.get('user', {}).get('user_email')
 
     # Fetch the Users object based on the email
     try:
         user = Users.objects.get(user_email=post_user_email)
     except Users.DoesNotExist:
-        return HttpResponseServerError('User not found')    
+        return HttpResponseServerError('User not found')  
 
     post_city = post_data.get('post_city')
     post_street = post_data.get('post_street')
@@ -138,7 +135,6 @@ def add_post(request):
     if post_serializer.is_valid():
         try:
             post_serializer.save()  # Attempt to save to the database
-            post_id += 1
             logger.info("Saved to the database")
             return JsonResponse("Post successfully saved in db", safe=False)
         except Exception as e:
