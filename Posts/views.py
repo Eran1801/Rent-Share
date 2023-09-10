@@ -14,6 +14,7 @@ import base64
 import boto3
 from botocore.exceptions import ClientError
 from django.core.files.base import ContentFile
+from Users.views import *
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -148,6 +149,9 @@ def add_post(request):
         try:
             post.save()  # Attempt to save to the database
             logger.info("Saved to the database")
+            msg = f"New post was added to S3.\nUser : {user.user_id}\nPost ID : {post.post_id}"
+            subject = "New post"
+            send_email(FROM_EMAIL,FROM_EMAIL,msg,subject)
             return JsonResponse("Post successfully saved in db", safe=False)
         except Exception as e:
             logger.error(f"add_post : {e}")
@@ -192,7 +196,7 @@ def get_post_by_parm(request):
             return HttpResponseBadRequest("City field is required")
 
         # Construct the queryset conditions based on available parameters
-        filter_conditions = {'post_city': post_city} # post_city is definitely not null
+        filter_conditions = {'post_city': post_city, 'proof_image_confirmed': True} # post_city is definitely not null
 
         if post_street != 'null' and post_street != '': # needs to check this 2 conditions
             logger.info(f'filter_conditions 1: {filter_conditions}')
@@ -278,23 +282,6 @@ def update_description_post(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, update_description_post: {e}")
 
-# def delete_s3_folder(bucket_name, folder_path):
-#     try:
-#         s3 = boto3.client('s3')
-
-#         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
-#         logger.info('after list objects: {response}}')
-        
-#         # iterate through the objects in the folder and delete them
-#         for obj in response.get('Contents', []):
-#             logger.info('inside for loop')
-#             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
-#             logger.info('after delete object')
-
-#     except ClientError as e:
-#         logger.info('inside except ClientError')
-#         raise e
-
 @api_view(['DELETE'])
 @csrf_exempt
 def delete_post(request):
@@ -323,3 +310,21 @@ def delete_post(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
+
+# def delete_s3_folder(bucket_name, folder_path):
+#     try:
+#         s3 = boto3.client('s3')
+
+#         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
+#         logger.info('after list objects: {response}}')
+        
+#         # iterate through the objects in the folder and delete them
+#         for obj in response.get('Contents', []):
+#             logger.info('inside for loop')
+#             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+#             logger.info('after delete object')
+
+#     except ClientError as e:
+#         logger.info('inside except ClientError')
+#         raise e
+

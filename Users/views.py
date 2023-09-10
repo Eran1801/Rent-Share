@@ -194,9 +194,10 @@ def forget_password(request):
 
         confirm_code = generate_random_digits()
         msg = f'קוד האימות שלך הוא : {confirm_code}\nהקוד תקף ל-5 דקות'
+        subject = 'איפוס סיסמה'
 
         # send email to user email with a 6 digit code
-        send_email(FROM_EMAIL,user_email,msg)
+        send_email(FROM_EMAIL,user_email,msg,subject)
         
         response_data = {
             'user': {
@@ -241,11 +242,11 @@ def reset_password(request):
         logger.error('Error reset password: %s', e)
         return HttpResponseServerError("Error reset password")
   
-def send_email(sender_email:str,receiver_email: str, message: str) -> None:
+def send_email(sender_email,receiver_email,message,subject):
     try:
         # Create the base text message.
         msg = EmailMessage()
-        msg["Subject"] = 'איפוס סיסמה'
+        msg["Subject"] = subject
         msg["From"] = formataddr(("RentBuzz", f"{sender_email}"))
         msg["To"] = receiver_email
 
