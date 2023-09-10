@@ -61,10 +61,10 @@ def add_post(request):
 
     post_data = request.data
 
-    post_id = post_data.get('post_id')
+    #post_id = post_data.get('post_id')
     post_user_email = post_data.get('user', {}).get('user_email')
 
-    logger.info(f'post_id: {post_id}')
+    #logger.info(f'post_id: {post_id}')
     logger.info(f'post_user_email: {post_user_email}')
 
     # Fetch the Users object based on the email
@@ -111,7 +111,6 @@ def add_post(request):
 
     # creating a dict to pass to the serializer as the post
     post_data_dict = {
-        'post_id': post_id,
         'post_user_id': user.user_id,
         'post_city': post_city,
         'post_street': post_street,
@@ -181,7 +180,7 @@ def get_post_by_parm(request):
         logger.info(f'post_city: {post_city} and his type is {type(post_city)}')
 
         post_street = request.GET.get('post_street')
-        logger.info(f'post_street:  + {post_street} and his type is {type(post_street)}')
+        logger.info(f'post_street: {post_street} and his type is {type(post_street)}')
 
         post_apartment_number = request.GET.get('post_apartment_number')
         logger.info(f'post_apartment_number: {post_apartment_number} and his type is {type(post_apartment_number)}')
@@ -205,9 +204,11 @@ def get_post_by_parm(request):
         logger.info(f'filter_conditions final: {filter_conditions}')
 
         post_v1 = Post.objects.filter(**filter_conditions)
+        logger.info(f'post_v1: {post_v1}')
 
         if post_v1.exists():
             try:
+                logger.info('After post_v1.exists()')
                 post_serializer = PostSerializerAll(post_v1, many=True)
                 return JsonResponse(post_serializer.data, safe=False)
             except :

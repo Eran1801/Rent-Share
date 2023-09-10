@@ -13,7 +13,7 @@ def generate_unique_filename(instance, filename: str):
 
 class Post(models.Model):
     
-    post_id = models.CharField(primary_key=True)  # create primary key
+    post_id = models.AutoField(primary_key=True)  # create primary key
 
     #  relation with Users table, this means each post is associated with a user from the Users model.
     #  if user delete his account, all of it's post removes also.
@@ -39,4 +39,23 @@ class Post(models.Model):
     post_description = models.CharField(max_length=2000)
 
     proof_image_confirmed = models.BooleanField(default=False) # after confirm from admin turn to True
+
+    # Override the save method to customize post_id behavior.
+    def save(self, *args, **kwargs):
+        # Check if post_id is not set (i.e., it's a new post).
+        if not self.post_id:
+            # Query the database for the last post.
+            last_post = Post.objects.last()
+            # If there is a last post, increment its post_id.
+            if last_post:
+                self.post_id = last_post.post_id + 1
+            else:
+                # If there are no existing posts, set post_id to 1.
+                self.post_id = 1
+        # Call the original save method to save the model instance to the database.
+        super().save(*args, **kwargs)
+
+    # Define a __str__ method to return a string representation of the post_id.
+    def __str__(self):
+        return str(self.post_id)
 
