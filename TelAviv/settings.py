@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from env import DB_NAME
 import os
 
 # --------- .env Variables ---------
@@ -99,7 +100,7 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'railway', 
+        'NAME': DB_NAME, 
         'USER': 'root', 
         'PASSWORD': 'e2qx7q9qBVnEWKDjPsAC',
         'HOST': 'containers-us-west-36.railway.app',
