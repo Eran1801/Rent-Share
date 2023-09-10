@@ -40,11 +40,11 @@ class Post(models.Model):
 
     proof_image_confirmed = models.BooleanField(default=False) # after confirm from admin turn to True
 
-    # Override the save method to customize post_id behavior.
+    # override the save method to customize post_id behavior.
     def save(self, *args, **kwargs):
-        # Check if post_id is not set (i.e., it's a new post).
+        # check if post_id is not set (it's a new post).
         if not self.post_id:
-            # Query the database for the last post.
+            # query the database for the last post.
             last_post = Post.objects.last()
             # If there is a last post, increment its post_id.
             if last_post:

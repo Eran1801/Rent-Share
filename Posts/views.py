@@ -278,40 +278,41 @@ def update_description_post(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, update_description_post: {e}")
 
-def delete_s3_folder(bucket_name, folder_path):
-    try:
-        s3 = boto3.client('s3')
-        logger.info('after s3 client')
-        logger.info(f's3: {str(s3)}')
+# def delete_s3_folder(bucket_name, folder_path):
+#     try:
+#         s3 = boto3.client('s3')
 
-        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
-        logger.info('after list objects: {response}}')
+#         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
+#         logger.info('after list objects: {response}}')
         
-        # iterate through the objects in the folder and delete them
-        for obj in response.get('Contents', []):
-            logger.info('inside for loop')
-            s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
-            logger.info('after delete object')
+#         # iterate through the objects in the folder and delete them
+#         for obj in response.get('Contents', []):
+#             logger.info('inside for loop')
+#             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+#             logger.info('after delete object')
 
-    except ClientError as e:
-        raise e
+#     except ClientError as e:
+#         logger.info('inside except ClientError')
+#         raise e
 
 @api_view(['DELETE'])
 @csrf_exempt
 def delete_post(request):
     '''This function will be used to delete a post'''
     try:
+        # getting data from the frontend
         post_id = request.GET.get('post_id')
-        user_id = request.GET.get('user_id')
+        # user_id = request.GET.get('user_id')
 
+        # logging the data (for debugging purposes)
         logger.info(f'post_id: {post_id}')
-        logger.info(f'post_user_id: {user_id}') 
+        # logger.info(f'user_id: {user_id}') 
 
         # delete S3 folder corresponding to this post
-        s3_folder_name = f'rent-buzz/Posts/Users object ({user_id})/{post_id}/'
-        logger.info(f's3_folder_name: {s3_folder_name}')
+        # folder_path = f'rent-buzz/Posts/Users object ({user_id})/{post_id}/'
+        # logger.info(f's3_folder_name: {folder_path}')
 
-        delete_s3_folder(AWS_STORAGE_BUCKET_NAME, s3_folder_name) 
+        # delete_s3_folder(AWS_STORAGE_BUCKET_NAME, folder_path) 
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
