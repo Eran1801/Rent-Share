@@ -9,12 +9,14 @@ djangorestframework==3.14.0
 gunicorn==20.0.4
 jmespath==1.0.1
 mysql-connector-python==8.1.0
+mysqlclient==2.2.0
 olefile==0.46
 Pillow==9.1.0
 protobuf==4.21.12
 pycparser==2.21
 PyMySQL==1.1.0
 python-dateutil==2.8.2
+python-decouple==3.8
 pytz==2023.3
 s3transfer==0.6.2
 six==1.16.0

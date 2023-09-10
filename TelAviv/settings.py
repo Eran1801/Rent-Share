@@ -10,23 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from decouple import config
 from pathlib import Path
-from env import DB_NAME
 import os
-
-# --------- .env Variables ---------
-
-# SECRET_KEY_DJANGO = os.environ['SECRET_KEY']
-# DB_NAME = os.environ['DB_NAME']
-# DB_PASSWORD = os.environ['DB_PAS_SQL']
-# ROOT = os.environ['ROOT']
-# HOST_DB_SQL = os.environ['HOST_DB_SQL']
-# PORT = os.environ['PORT']
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -100,7 +90,7 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': DB_NAME, 
+        'NAME': config('DB_NAME'), 
         'USER': 'root', 
         'PASSWORD': 'e2qx7q9qBVnEWKDjPsAC',
         'HOST': 'containers-us-west-36.railway.app',
