@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f--g3ey-1mxjm&)po*vlg0%h+%u=zg4-$6r^4z&pca5pxn@cj%' # todo: put var to env
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -89,29 +89,17 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 # todo: put vars to env
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': config('DB_ENGINE'),
         'NAME': config('DB_NAME'), 
-        'USER': 'root', 
-        'PASSWORD': 'e2qx7q9qBVnEWKDjPsAC',
-        'HOST': 'containers-us-west-36.railway.app',
-        'PORT': 7970,
+        'USER': config('DB_USER'), 
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
         'OPTIONS': {
             'charset': 'utf8',  # Example character encoding setting
         },
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'rent-buzz-db', 
-#         'USER': 'admin', 
-#         'PASSWORD': 'Eran1302',
-#         'HOST': 'runt-buzz-db.cwbbnuwtlmzz.us-east-1.rds.amazonaws.com',
-#         'PORT': 3306,
-#     }
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -184,11 +172,11 @@ LOGGING = {
 # S3 BUCKETS CONFIG
 
 # credentials used to authenticate and authorize your application to interact with the AWS services.
-AWS_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
-AWS_SECRET_ACCESS_KEY = 'LhN05bF5khOATlmzAJSPxmKmc/drY4VggvEIBDB+'
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
 
 # the name of the S3 bucket where you want to store your static and media files.
-AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
 
 # specifies the version of the signature to use for requests to S3.
 # 's3v4' indicates the AWS Signature Version 4.
@@ -198,7 +186,7 @@ AWS_S3_SIGNATURE_VERSION = 's3v4'
 # Setting it to None allows you to control the access through bucket policies or IAM roles.
 AWS_DEFAULT_ACL = None
 
-AWS_S3_REGION_NAME = 'eu-west-3'
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 
 # the custom domain to use for serving static and media files.
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
