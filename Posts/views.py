@@ -64,6 +64,9 @@ def add_post(request):
     post_id = post_data.get('post_id')
     post_user_email = post_data.get('user', {}).get('user_email')
 
+    logger.info(f'post_id: {post_id}')
+    logger.info(f'post_user_email: {post_user_email}')
+
     # Fetch the Users object based on the email
     try:
         user = Users.objects.get(user_email=post_user_email)
@@ -79,6 +82,14 @@ def add_post(request):
     post_rent_end = post_data.get('post_rent_end')
 
     post_description = post_data.get('post_description')
+
+    logger.info(f'post_city: {post_city}')
+    logger.info(f'post_street: {post_street}')
+    logger.info(f'post_apartment_number: {post_apartment_number}')
+    logger.info(f'post_apartment_price: {post_apartment_price}')
+    logger.info(f'post_rent_start: {post_rent_start}')
+    logger.info(f'post_rent_end: {post_rent_end}')
+    logger.info(f'post_description: {post_description}')
 
     proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
     proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
@@ -114,6 +125,8 @@ def add_post(request):
         'post_description': post_description,
     }
 
+    logger.info(f'post_data_dict: {post_data_dict}')
+
     # ADD this to the dict 
     """
     # todo : add the rest of the images int the above dict
@@ -131,17 +144,17 @@ def add_post(request):
     # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
     # apartment_pic_4_filename = apartment_pic_4_instance.name
 
-    post_serializer = PostSerializerAll(data=post_data_dict)
-    if post_serializer.is_valid():
+    post = PostSerializerAll(data=post_data_dict)
+    if post.is_valid():
         try:
-            post_serializer.save()  # Attempt to save to the database
+            post.save()  # Attempt to save to the database
             logger.info("Saved to the database")
             return JsonResponse("Post successfully saved in db", safe=False)
         except Exception as e:
             logger.error(f"add_post : {e}")
             return HttpResponseServerError("An error occurred while saving the post")
     else:
-        logger.debug(post_serializer.errors)
+        logger.debug(post.errors)
         return HttpResponseServerError("Post validation failed")
 
 @api_view(['GET'])
