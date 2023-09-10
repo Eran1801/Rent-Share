@@ -13,7 +13,7 @@ def generate_unique_filename(instance, filename: str):
 
 class Post(models.Model):
     
-    post_id = models.IntegerField(primary_key=True)  # create primary key
+    post_id = models.CharField(primary_key=True)  # create primary key
 
     #  relation with Users table, this means each post is associated with a user from the Users model.
     #  if user delete his account, all of it's post removes also.
