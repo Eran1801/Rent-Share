@@ -170,13 +170,12 @@ def delete_user(request):
     This function will be used to delete a user from the db.
     '''
     try:
-        data = request.data
-        user_id = data.get('user_id')
-        logger.info('Deleting user with id: %s', user_id)
+        user_id = request.GET.get('user_id')
+        logger.info(f'Deleting user with id: {user_id}')
 
         user = Users.objects.get(user_id=user_id) # from db
-        logger.info('Deleting user: %s', user)
-        
+        logger.info(f'User with id: {user_id} found')
+
         user.delete() # delete user from db and also his posts
         return JsonResponse('Delete successfully', safe=False)
     except Exception as e:
@@ -265,4 +264,3 @@ def send_email(sender_email,receiver_email,message,subject):
     except Exception as e:
         logger.error('Error send email: %s', e)
         return HttpResponseServerError("Error send email")
-    
