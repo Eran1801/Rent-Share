@@ -2,7 +2,6 @@ from django.db.models import Q
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
-from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
@@ -10,10 +9,10 @@ from Users.models import Users
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from Posts.models import Post
 import base64
-import boto3
-from botocore.exceptions import ClientError
 from django.core.files.base import ContentFile
 from Users.views import *
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, parser_classes
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -55,6 +54,7 @@ def convert_base64_to_image(base64_str, filename):
         return None
 
 @api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
 @csrf_exempt
 def add_post(request):
     '''This function will be used to add a new post'''
@@ -83,14 +83,24 @@ def add_post(request):
 
     post_description = post_data.get('post_description')
 
-    proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
+    proof_image_base64 = post_data.get('proof_image')[0]
     proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
 
     driving_license_base64 = post_data.get('driving_license')[0]
     driving_license_file = convert_base64_to_image(driving_license_base64, "driving_license")
 
-    apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
-    apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
+    apartment_pics_base64 = post_data.getlist('apartment_pics')
+
+    logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
+
+    apartment_pics_files = []
+
+    for i, base64_str in enumerate(apartment_pics_base64):
+        apartment_pic_file = convert_base64_to_image(base64_str, f"apartment_pic_{i}")
+        if apartment_pic_file:
+            apartment_pics_files.append(apartment_pic_file)
+
+    logger.info(f'apartment_pics_files: {apartment_pics_files}')
 
     # creating a dict to pass to the serializer as the post
     post_data_dict = {
@@ -103,7 +113,7 @@ def add_post(request):
         'post_rent_end': post_rent_end,
         'proof_image': proof_image_file,
         'driving_license': driving_license_file,
-        'apartment_pic_1': apartment_pic_1_file,
+        'apartment_pics': apartment_pics_files,
         'post_description': post_description,
     }
 
@@ -276,20 +286,4 @@ def delete_post(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
 
-# def delete_s3_folder(bucket_name, folder_path):
-#     try:
-#         s3 = boto3.client('s3')
-
-#         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
-#         logger.info('after list objects: {response}}')
-        
-#         # iterate through the objects in the folder and delete them
-#         for obj in response.get('Contents', []):
-#             logger.info('inside for loop')
-#             s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
-#             logger.info('after delete object')
-
-#     except ClientError as e:
-#         logger.info('inside except ClientError')
-#         raise e
 
