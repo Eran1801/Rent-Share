@@ -6,7 +6,6 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
-from TelAviv.settings import AWS_STORAGE_BUCKET_NAME
 from Users.models import Users
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from Posts.models import Post
@@ -84,14 +83,6 @@ def add_post(request):
 
     post_description = post_data.get('post_description')
 
-    logger.info(f'post_city: {post_city}')
-    logger.info(f'post_street: {post_street}')
-    logger.info(f'post_apartment_number: {post_apartment_number}')
-    logger.info(f'post_apartment_price: {post_apartment_price}')
-    logger.info(f'post_rent_start: {post_rent_start}')
-    logger.info(f'post_rent_end: {post_rent_end}')
-    logger.info(f'post_description: {post_description}')
-
     proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
     proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
 
@@ -100,15 +91,6 @@ def add_post(request):
 
     apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
     apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
-
-    # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
-    # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")
-
-    # apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
-    # apartment_pic_3_file = convert_base64_to_image(apartment_pic_3_base64, "apartment_pic_3")
-
-    # apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
-    # apartment_pic_4_file = convert_base64_to_image(apartment_pic_4_base64, "apartment_pic_4")
 
     # creating a dict to pass to the serializer as the post
     post_data_dict = {
@@ -126,23 +108,6 @@ def add_post(request):
     }
 
     logger.info(f'post_data_dict: {post_data_dict}')
-
-    # ADD this to the dict 
-    """
-    # todo : add the rest of the images int the above dict
-    'apartment_pic_2' : apartment_pic_2_file,
-    'apartment_pic_3' : apartment_pic_3_file,
-    'apartment_pic_4' : apartment_pic_4_file,
-    """
-
-    # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
-    # apartment_pic_2_filename = apartment_pic_2_instance.name
-
-    # apartment_pic_3_instance = post_data_dict['apartment_pic_3']
-    # apartment_pic_3_filename = apartment_pic_3_instance.name
-
-    # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
-    # apartment_pic_4_filename = apartment_pic_4_instance.name
 
     post = PostSerializerAll(data=post_data_dict)
     if post.is_valid():
