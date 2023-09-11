@@ -89,7 +89,7 @@ def add_post(request):
     driving_license_base64 = post_data.get('driving_license')[0]
     driving_license_file = convert_base64_to_image(driving_license_base64, "driving_license")
 
-    apartment_pics_base64 = post_data.getlist('apartment_pics')
+    apartment_pics_base64 = post_data.getlist('apartment_pics[]')
 
     logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
 

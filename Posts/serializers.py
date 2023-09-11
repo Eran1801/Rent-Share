@@ -1,7 +1,14 @@
 from rest_framework import serializers
-from Posts.models import Post
+from Posts.models import Post, ApartmentImage
 
-class PostSerializerAll(serializers.ModelSerializer):
+class ApartmentImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApartmentImage
+        fields = '__all__'
+
+class PostSerializer(serializers.ModelSerializer):
+    apartment_images = ApartmentImageSerializer(many=True, read_only=True)  # Include related images
+
     class Meta:
         model = Post
-        fields = '__all__'  # This will serialize all fields in the Post model
+        fields = '__all__'
