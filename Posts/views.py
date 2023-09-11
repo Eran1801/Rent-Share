@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
+from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
@@ -11,8 +12,6 @@ from Posts.models import Post
 import base64
 from django.core.files.base import ContentFile
 from Users.views import *
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.decorators import api_view, parser_classes
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -54,7 +53,6 @@ def convert_base64_to_image(base64_str, filename):
         return None
 
 @api_view(['POST'])
-# @parser_classes([MultiPartParser, FormParser])
 @csrf_exempt
 def add_post(request):
     '''This function will be used to add a new post'''
@@ -83,24 +81,31 @@ def add_post(request):
 
     post_description = post_data.get('post_description')
 
-    proof_image_base64 = post_data.get('proof_image')[0]
+    logger.info(f'post_city: {post_city}')
+    logger.info(f'post_street: {post_street}')
+    logger.info(f'post_apartment_number: {post_apartment_number}')
+    logger.info(f'post_apartment_price: {post_apartment_price}')
+    logger.info(f'post_rent_start: {post_rent_start}')
+    logger.info(f'post_rent_end: {post_rent_end}')
+    logger.info(f'post_description: {post_description}')
+
+    proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
     proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
 
     driving_license_base64 = post_data.get('driving_license')[0]
     driving_license_file = convert_base64_to_image(driving_license_base64, "driving_license")
 
-    apartment_pics_base64 = post_data.getlist('apartment_pics[]')
+    apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
+    apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
 
-    logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
+    # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
+    # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")
 
-    apartment_pics_files = []
+    # apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
+    # apartment_pic_3_file = convert_base64_to_image(apartment_pic_3_base64, "apartment_pic_3")
 
-    for i, base64_str in enumerate(apartment_pics_base64):
-        apartment_pic_file = convert_base64_to_image(base64_str, f"apartment_pic_{i}")
-        if apartment_pic_file:
-            apartment_pics_files.append(apartment_pic_file)
-
-    logger.info(f'apartment_pics_files: {apartment_pics_files}')
+    # apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
+    # apartment_pic_4_file = convert_base64_to_image(apartment_pic_4_base64, "apartment_pic_4")
 
     # creating a dict to pass to the serializer as the post
     post_data_dict = {
@@ -113,11 +118,28 @@ def add_post(request):
         'post_rent_end': post_rent_end,
         'proof_image': proof_image_file,
         'driving_license': driving_license_file,
-        'apartment_pics': apartment_pics_files,
+        'apartment_pic_1': apartment_pic_1_file,
         'post_description': post_description,
     }
 
     logger.info(f'post_data_dict: {post_data_dict}')
+
+    # ADD this to the dict 
+    """
+    # todo : add the rest of the images int the above dict
+    'apartment_pic_2' : apartment_pic_2_file,
+    'apartment_pic_3' : apartment_pic_3_file,
+    'apartment_pic_4' : apartment_pic_4_file,
+    """
+
+    # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
+    # apartment_pic_2_filename = apartment_pic_2_instance.name
+
+    # apartment_pic_3_instance = post_data_dict['apartment_pic_3']
+    # apartment_pic_3_filename = apartment_pic_3_instance.name
+
+    # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
+    # apartment_pic_4_filename = apartment_pic_4_instance.name
 
     post = PostSerializerAll(data=post_data_dict)
     if post.is_valid():
@@ -270,12 +292,6 @@ def delete_post(request):
         logger.info(f'post_id: {post_id}')
         # logger.info(f'user_id: {user_id}') 
 
-        # delete S3 folder corresponding to this post
-        # folder_path = f'rent-buzz/Posts/Users object ({user_id})/{post_id}/'
-        # logger.info(f's3_folder_name: {folder_path}')
-
-        # delete_s3_folder(AWS_STORAGE_BUCKET_NAME, folder_path) 
-
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
 
@@ -285,5 +301,3 @@ def delete_post(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
-
-
