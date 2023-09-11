@@ -170,8 +170,10 @@ def delete_user(request):
     This function will be used to delete a user from the db.
     '''
     try:
-        user_id = request.GET.get('user_id')
+        user_id = request.get('user_id')
+        logger.info('Deleting user with id: %s', user_id)
         user = Users.objects.get(user_id=user_id)
+        logger.info('Deleting user: %s', user)
         user.delete()
         return JsonResponse('Delete successfully', safe=False)
     except Exception as e:
