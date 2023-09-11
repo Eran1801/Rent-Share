@@ -6,7 +6,7 @@ class ApartmentImageSerializer(serializers.ModelSerializer):
         model = ApartmentImage
         fields = '__all__'
 
-class PostSerializer(serializers.ModelSerializer):
+class PostSerializerAll(serializers.ModelSerializer):
     apartment_images = ApartmentImageSerializer(many=True, read_only=True)  # Include related images
 
     class Meta:
