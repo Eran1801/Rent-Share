@@ -54,7 +54,7 @@ def convert_base64_to_image(base64_str, filename):
         return None
 
 @api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser])
+# @parser_classes([MultiPartParser, FormParser])
 @csrf_exempt
 def add_post(request):
     '''This function will be used to add a new post'''
