@@ -17,7 +17,7 @@ from Users.views import *
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-def convert_base64_to_image(base64_str, filename):
+def convert_base64(base64_str, filename):
     '''
     Convert base64-encoded images to actual files.
     
@@ -90,17 +90,13 @@ def add_post(request):
     logger.info(f'post_description: {post_description}')
 
     proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
-    proof_image_file = convert_base64_to_image(proof_image_base64, "proof_image")
+    proof_image_file = convert_base64(proof_image_base64, "proof_image")
 
     driving_license_base64 = post_data.get('driving_license')[0]
-    driving_license_file = convert_base64_to_image(driving_license_base64, "driving_license")
+    driving_license_file = convert_base64(driving_license_base64, "driving_license")
 
     apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
-    apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
-
-    check = post_data.get('check')[0]
-    # First we check with Image
-    check_file = convert_base64_to_image(check, "check")
+    apartment_pic_1_file = convert_base64(apartment_pic_1_base64, "apartment_pic_1")
 
     # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
     # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")
@@ -124,7 +120,6 @@ def add_post(request):
         'driving_license': driving_license_file,
         'apartment_pic_1': apartment_pic_1_file,
         'post_description': post_description,
-        'check_field': check_file,
     }
 
     logger.info(f'post_data_dict: {post_data_dict}')
@@ -272,12 +267,16 @@ def update_description_post(request):
         post_id = data.get('post_id')
         post_description = data.get('post_description')
     
-        post = Post.objects.get(post_id=post_id) 
-        post.post_description = post_description 
+        post = Post.objects.get(post_id=post_id)
 
-        #! NEEDS TO CHANGE THE POST IS_CONFIRMED TO FALSE AGAIN AFTER THE USER UPDATE THE DESCRIPTION
-        post.save() # save the updated post to the db
-        return JsonResponse("Description info updated successfully", safe=False)
+        if post.post_description == post_description:
+            return JsonResponse("The description is the same")
+        else: 
+            post.post_description = post_description
+            post.proof_image_confirmed = False
+            post.save() # save the updated post to the db
+            send_email(FROM_EMAIL,FROM_EMAIL,f"User : {post.post_user_id}\nPost : {post_id}\ndescription has changed","Post description changed")
+            return JsonResponse("Description info updated successfully", safe=False)
 
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")

@@ -120,7 +120,7 @@ def change_profile_picture(request):
 
         profile_image_base64 = user_data.get('profile_image')  # Extract the first item from the list
         logger.info(f'Profile image: {profile_image_base64}')
-        proof_image_file = convert_base64_to_image(profile_image_base64, "profile_image")
+        proof_image_file = convert_base64(profile_image_base64, "profile_image")
 
         user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
         logger.info(f'User: {user}')
