@@ -270,7 +270,7 @@ def update_description_post(request):
         post = Post.objects.get(post_id=post_id)
 
         if post.post_description == post_description:
-            return JsonResponse("The description is the same")
+            return JsonResponse("The description is the same", safe=False)
         else: 
             post.post_description = post_description
             post.proof_image_confirmed = False
