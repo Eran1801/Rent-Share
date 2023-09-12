@@ -36,9 +36,9 @@ class Post(models.Model):
     driving_license = models.FileField(upload_to=generate_unique_filename,null=False,blank=False)
 
     apartment_pic_1 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
-    # apartment_pic_2 = models.ImageField(upload_to='posts/images',blank=True, null=True)
-    # apartment_pic_3 = models.ImageField(upload_to='posts/images',blank=True, null=True)
-    # apartment_pic_4 = models.ImageField(upload_to='posts/images',blank=True, null=True)
+    apartment_pic_2 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
+    apartment_pic_3 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
+    apartment_pic_4 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
 
     # override the save method to customize post_id behavior.
     def save(self, *args, **kwargs):

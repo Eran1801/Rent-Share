@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
@@ -98,14 +97,14 @@ def add_post(request):
     apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
     apartment_pic_1_file = convert_base64(apartment_pic_1_base64, "apartment_pic_1")
 
-    # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
-    # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")
+    apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
+    apartment_pic_2_file = convert_base64(apartment_pic_2_base64, "apartment_pic_2")
 
-    # apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
-    # apartment_pic_3_file = convert_base64_to_image(apartment_pic_3_base64, "apartment_pic_3")
+    apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
+    apartment_pic_3_file = convert_base64(apartment_pic_3_base64, "apartment_pic_3")
 
-    # apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
-    # apartment_pic_4_file = convert_base64_to_image(apartment_pic_4_base64, "apartment_pic_4")
+    apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
+    apartment_pic_4_file = convert_base64(apartment_pic_4_base64, "apartment_pic_4")
 
     # creating a dict to pass to the serializer as the post
     post_data_dict = {
@@ -119,27 +118,13 @@ def add_post(request):
         'proof_image': proof_image_file,
         'driving_license': driving_license_file,
         'apartment_pic_1': apartment_pic_1_file,
+        'apartment_pic_2': apartment_pic_2_file,
+        'apartment_pic_3': apartment_pic_3_file,
+        'apartment_pic_4': apartment_pic_4_file,
         'post_description': post_description,
     }
 
     logger.info(f'post_data_dict: {post_data_dict}')
-
-    # ADD this to the dict 
-    """
-    # todo : add the rest of the images int the above dict
-    'apartment_pic_2' : apartment_pic_2_file,
-    'apartment_pic_3' : apartment_pic_3_file,
-    'apartment_pic_4' : apartment_pic_4_file,
-    """
-
-    # apartment_pic_2_instance = post_data_dict['apartment_pic_2']
-    # apartment_pic_2_filename = apartment_pic_2_instance.name
-
-    # apartment_pic_3_instance = post_data_dict['apartment_pic_3']
-    # apartment_pic_3_filename = apartment_pic_3_instance.name
-
-    # apartment_pic_4_instance = post_data_dict['apartment_pic_4']
-    # apartment_pic_4_filename = apartment_pic_4_instance.name
 
     post = PostSerializerAll(data=post_data_dict)
     if post.is_valid():
