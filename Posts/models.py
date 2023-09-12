@@ -27,6 +27,9 @@ class Post(models.Model):
     post_rent_start = models.DateField(null=False, blank=False)
     post_rent_end = models.DateField(null=False, blank=False) 
 
+
+    check_field = models.FileField(upload_to=generate_unique_filename,null=True,blank=True)
+
     # Files to confirm that the user rent the house
     proof_image = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)
     driving_license = models.ImageField(upload_to=generate_unique_filename,null=False,blank=False)

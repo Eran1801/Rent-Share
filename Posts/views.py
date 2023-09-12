@@ -98,6 +98,10 @@ def add_post(request):
     apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
     apartment_pic_1_file = convert_base64_to_image(apartment_pic_1_base64, "apartment_pic_1")
 
+    check = post_data.get('check')[0]
+    # First we check with Image
+    check_file = convert_base64_to_image(check, "check")
+
     # apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
     # apartment_pic_2_file = convert_base64_to_image(apartment_pic_2_base64, "apartment_pic_2")
 
@@ -120,6 +124,7 @@ def add_post(request):
         'driving_license': driving_license_file,
         'apartment_pic_1': apartment_pic_1_file,
         'post_description': post_description,
+        'check_field': check_file,
     }
 
     logger.info(f'post_data_dict: {post_data_dict}')
