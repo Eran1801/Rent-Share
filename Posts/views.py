@@ -72,6 +72,7 @@ def add_post(request):
 
     post_city = post_data.get('post_city')
     post_street = post_data.get('post_street')
+    post_building_number = post_data.get('post_building_number')
     post_apartment_number = post_data.get('post_apartment_number')
     post_apartment_price = post_data.get('post_apartment_price')
     
@@ -111,6 +112,7 @@ def add_post(request):
         'post_user_id': user.user_id,
         'post_city': post_city,
         'post_street': post_street,
+        'post_building_number': post_building_number,
         'post_apartment_number': post_apartment_number,
         'post_apartment_price': post_apartment_price,
         'post_rent_start': post_rent_start,
@@ -168,10 +170,13 @@ def get_post_by_parm(request):
         post_street = request.GET.get('post_street')
         logger.info(f'post_street: {post_street} and his type is {type(post_street)}')
 
+        post_building_number = request.GET.get('post_building_number')
+        logger.info(f'post_building_number: {post_building_number} and his type is {type(post_building_number)}')
+
         post_apartment_number = request.GET.get('post_apartment_number')
         logger.info(f'post_apartment_number: {post_apartment_number} and his type is {type(post_apartment_number)}')
         
-        if post_city == '' and post_street == 'null' and post_apartment_number == 'null': 
+        if post_city == '' and post_street == 'null' and post_apartment_number == 'null' and post_building_number == 'null': 
             return HttpResponseBadRequest("At least one field is required")
 
         if post_city == '':
@@ -183,9 +188,17 @@ def get_post_by_parm(request):
         if post_street != 'null' and post_street != '': # needs to check this 2 conditions
             logger.info(f'filter_conditions 1: {filter_conditions}')
             filter_conditions['post_street'] = post_street
-        if post_apartment_number != 'null' and post_apartment_number != '':
+
+        if post_building_number != 'null' and post_building_number != '':
             logger.info(f'filter_conditions 2: {filter_conditions}')
-            filter_conditions['post_apartment_number'] = post_apartment_number
+            filter_conditions['post_building_number'] = post_building_number
+
+        if post_apartment_number != 'null' and post_apartment_number != '':
+            logger.info(f'filter_conditions 3: {filter_conditions}')
+             # because how we can find a apartment number without building number
+            if filter_conditions.get('post_building_number') != None:
+                filter_conditions['post_apartment_number'] = post_apartment_number
+
 
         logger.info(f'filter_conditions final: {filter_conditions}')
 
@@ -275,11 +288,9 @@ def delete_post(request):
     try:
         # getting data from the frontend
         post_id = request.GET.get('post_id')
-        # user_id = request.GET.get('user_id')
 
         # logging the data (for debugging purposes)
         logger.info(f'post_id: {post_id}')
-        # logger.info(f'user_id: {user_id}') 
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post.delete() # delete the post
