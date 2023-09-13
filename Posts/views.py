@@ -290,3 +290,37 @@ def delete_post(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
+
+@api_view(['POST'])
+@csrf_exempt
+def add_review_to_post(request):
+
+    try:
+        data = request.data
+
+        post_id = data.get('post_id')
+        post_review = data.get('post_review')
+        post_user = data.get('post_user')
+
+        post_rent_agreement_base64 = data.get('post_rent_agreement')
+        post_rent_agreement_file = convert_base64(post_rent_agreement_base64, "post_rent_agreement")
+
+        post_id_card_base64 = data.get('post_id_card')
+        post_id_card_file = convert_base64(post_id_card_base64, "post_id_card")
+        
+        logger.info(f'post_id: {post_id}')
+        logger.info(f'post_review: {post_review}')
+        logger.info(f'post_user: {post_user}')
+
+        #! change to ArrayField the reviews
+
+        # maybe I need to create another post but with only the review,user,rent_agreement,id_card
+        # 
+
+        post = Post.objects.get(post_id=post_id)
+        return JsonResponse("Review successfully added", safe=False)
+    
+    except Post.DoesNotExist:
+        return HttpResponseBadRequest("Post with the given ID does not exist.")
+    
+

@@ -21,6 +21,7 @@ class Post(models.Model):
 
     post_city = models.CharField(max_length=50, null=False, blank=False)
     post_street = models.CharField(max_length=50, null=False, blank=False)
+    post_building_number = models.CharField(max_length=50, null=False, blank=False)
     post_apartment_number = models.CharField(max_length=50, null=False, blank=False)
     post_apartment_price = models.CharField(max_length=10, null=False, blank=False)
 
