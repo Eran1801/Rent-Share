@@ -96,15 +96,13 @@ def add_post(request):
     driving_license_file = convert_base64(driving_license_base64, "driving_license")
 
     apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
-    apartment_pic_1_file = convert_base64(apartment_pic_1_base64, "apartment_pic_1")
-
     apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
-    apartment_pic_2_file = convert_base64(apartment_pic_2_base64, "apartment_pic_2")
-
-    apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
-    apartment_pic_3_file = convert_base64(apartment_pic_3_base64, "apartment_pic_3")
-
     apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
+    apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
+
+    apartment_pic_1_file = convert_base64(apartment_pic_1_base64, "apartment_pic_1")
+    apartment_pic_2_file = convert_base64(apartment_pic_2_base64, "apartment_pic_2")
+    apartment_pic_3_file = convert_base64(apartment_pic_3_base64, "apartment_pic_3")
     apartment_pic_4_file = convert_base64(apartment_pic_4_base64, "apartment_pic_4")
 
     # creating a dict to pass to the serializer as the post
