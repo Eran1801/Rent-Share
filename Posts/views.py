@@ -89,16 +89,16 @@ def add_post(request):
     logger.info(f'post_rent_end: {post_rent_end}')
     logger.info(f'post_description: {post_description}')
 
-    proof_image_base64 = post_data.get('proof_image')[0]  # Extract the first item from the list
+    proof_image_base64 = post_data.get('proof_image')  # Extract the first item from the list
     proof_image_file = convert_base64(proof_image_base64, "proof_image")
 
-    driving_license_base64 = post_data.get('driving_license')[0]
+    driving_license_base64 = post_data.get('driving_license')
     driving_license_file = convert_base64(driving_license_base64, "driving_license")
 
-    apartment_pic_1_base64 = post_data.get('apartment_pic_1')[0]
-    apartment_pic_2_base64 = post_data.get('apartment_pic_2')[0]
-    apartment_pic_4_base64 = post_data.get('apartment_pic_4')[0]
-    apartment_pic_3_base64 = post_data.get('apartment_pic_3')[0]
+    apartment_pic_1_base64 = post_data.get('apartment_pic_1')
+    apartment_pic_2_base64 = post_data.get('apartment_pic_2')
+    apartment_pic_4_base64 = post_data.get('apartment_pic_4')
+    apartment_pic_3_base64 = post_data.get('apartment_pic_3')
 
     apartment_pic_1_file = convert_base64(apartment_pic_1_base64, "apartment_pic_1")
     apartment_pic_2_file = convert_base64(apartment_pic_2_base64, "apartment_pic_2")
