@@ -63,7 +63,7 @@ def add_post(request):
 
     # fetch the data into post_data_dict
     user = post_data.get('user', {})
-    post_data_dict['post_user_id'] = user.user_id
+    post_data_dict['post_user_id'] = user.get('user_id')
 
     post_data_dict['post_city'] = post_data.get('post_city')
     post_data_dict['post_street'] = post_data.get('post_street')
@@ -99,7 +99,7 @@ def add_post(request):
     # convert base64 to file, apartment_pics
     
     apartment_pics_base64 = []
-    for i in range(1,number_of_pics = 4):
+    for i in range(1,number_of_pics):
         apartment_pics_base64.append(post_data.get(f'apartment_pic_{i}'))
 
     logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
