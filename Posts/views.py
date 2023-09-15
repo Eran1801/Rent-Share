@@ -56,77 +56,67 @@ def convert_base64(base64_str, filename):
 def add_post(request):
     '''This function will be used to add a new post'''
 
+    number_of_pics = 4
+    post_data_dict = {} # for serialize the data
+
     post_data = request.data
 
-    #post_id = post_data.get('post_id')
-    post_user_email = post_data.get('user', {}).get('user_email')
+    # fetch the data into post_data_dict
+    user = post_data.get('user', {})
+    post_data_dict['post_user_id'] = user.user_id
 
-    #logger.info(f'post_id: {post_id}')
-    logger.info(f'post_user_email: {post_user_email}')
+    post_data_dict['post_city'] = post_data.get('post_city')
+    post_data_dict['post_street'] = post_data.get('post_street')
+    post_data_dict['post_building_number'] = post_data.get('post_building_number')
+    post_data_dict['post_apartment_number'] = post_data.get('post_apartment_number')
+    post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
 
-    # Fetch the Users object based on the email
-    try:
-        user = Users.objects.get(user_email=post_user_email)
-    except Users.DoesNotExist:
-        return HttpResponseServerError('User not found')  
+    post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
+    post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
 
-    post_city = post_data.get('post_city')
-    post_street = post_data.get('post_street')
-    post_building_number = post_data.get('post_building_number')
-    post_apartment_number = post_data.get('post_apartment_number')
-    post_apartment_price = post_data.get('post_apartment_price')
+    post_data_dict['post_description'] = post_data.get('post_description')
+
+    # convert base64 to file, proof_image and driving_license
+
+    #! a function that gets the base64 and convert it to file and added to the post_data_dict
+
+    try :
+        proof_image_base64 = post_data.get('proof_image')
+        post_data['proof_image'] = convert_base64(proof_image_base64, "proof_image")
+
+    except Exception as e:
+        logger.error(f"add_post, convert proof_image : {e}")
+        return HttpResponseServerError("a rented agreement is required")
+
+    try :
+        driving_license_base64 = post_data.get('driving_license')
+        post_data['driving_license'] = convert_base64(driving_license_base64, "driving_license")
+
+    except Exception as e:
+        logger.error(f"add_post, convert driving license : {e}")
+        return HttpResponseServerError("a driving license is required")
     
-    post_rent_start = post_data.get('post_rent_start')
-    post_rent_end = post_data.get('post_rent_end')
+    # convert base64 to file, apartment_pics
+    
+    apartment_pics_base64 = []
+    for i in range(1,number_of_pics = 4):
+        apartment_pics_base64.append(post_data.get(f'apartment_pic_{i}'))
 
-    post_description = post_data.get('post_description')
+    logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
 
-    logger.info(f'post_city: {post_city}')
-    logger.info(f'post_street: {post_street}')
-    logger.info(f'post_apartment_number: {post_apartment_number}')
-    logger.info(f'post_apartment_price: {post_apartment_price}')
-    logger.info(f'post_rent_start: {post_rent_start}')
-    logger.info(f'post_rent_end: {post_rent_end}')
-    logger.info(f'post_description: {post_description}')
+    try:
+         
+        for i,pic in enumerate(apartment_pics_base64):
+            if pic is not None:
+                post_data_dict[f'apartment_pic_{i+1}'] = convert_base64(apartment_pics_base64[i], f"apartment_pic_{i+1}")
 
-    proof_image_base64 = post_data.get('proof_image')  # Extract the first item from the list
-    proof_image_file = convert_base64(proof_image_base64, "proof_image")
-
-    driving_license_base64 = post_data.get('driving_license')
-    driving_license_file = convert_base64(driving_license_base64, "driving_license")
-
-    apartment_pic_1_base64 = post_data.get('apartment_pic_1')
-    apartment_pic_2_base64 = post_data.get('apartment_pic_2')
-    apartment_pic_4_base64 = post_data.get('apartment_pic_4')
-    apartment_pic_3_base64 = post_data.get('apartment_pic_3')
-
-    apartment_pic_1_file = convert_base64(apartment_pic_1_base64, "apartment_pic_1")
-    apartment_pic_2_file = convert_base64(apartment_pic_2_base64, "apartment_pic_2")
-    apartment_pic_3_file = convert_base64(apartment_pic_3_base64, "apartment_pic_3")
-    apartment_pic_4_file = convert_base64(apartment_pic_4_base64, "apartment_pic_4")
-
-    # creating a dict to pass to the serializer as the post
-    post_data_dict = {
-        'post_user_id': user.user_id,
-        'post_city': post_city,
-        'post_street': post_street,
-        'post_building_number': post_building_number,
-        'post_apartment_number': post_apartment_number,
-        'post_apartment_price': post_apartment_price,
-        'post_rent_start': post_rent_start,
-        'post_rent_end': post_rent_end,
-        'proof_image': proof_image_file,
-        'driving_license': driving_license_file,
-        'apartment_pic_1': apartment_pic_1_file,
-        'apartment_pic_2': apartment_pic_2_file,
-        'apartment_pic_3': apartment_pic_3_file,
-        'apartment_pic_4': apartment_pic_4_file,
-        'post_description': post_description,
-    }
+    except Exception as e:
+        logger.error(f"add_post : {e}")
+        return HttpResponseServerError("problem with the apartment pics converting to base64")
 
     logger.info(f'post_data_dict: {post_data_dict}')
 
-    post = PostSerializerAll(data=post_data_dict)
+    post = PostSerializerAll(data=post_data_dict, partial=True)
     if post.is_valid():
         try:
             post.save()  # Attempt to save to the database
