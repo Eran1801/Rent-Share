@@ -61,6 +61,8 @@ def add_post(request):
 
     post_data = request.data
 
+    print(f'post_data :' , post_data)
+
     # fetch the data into post_data_dict
     user = post_data.get('user', {})
     post_data_dict['post_user_id'] = user.get('user_id')
