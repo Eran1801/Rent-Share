@@ -78,45 +78,55 @@ def add_post(request):
 
     post_data_dict['post_description'] = post_data.get('post_description')
 
+    logger.info(f'post_data_dict _ 1 : {post_data_dict}')
+
     # convert base64 to file, proof_image and driving_license
 
     #! a function that gets the base64 and convert it to file and added to the post_data_dict
 
     try :
         proof_image_base64 = post_data.get('proof_image')
+        if proof_image_base64 is None:
+            return HttpResponseServerError("a rented agreement is required")
         post_data['proof_image'] = convert_base64(proof_image_base64, "proof_image")
 
     except Exception as e:
         logger.error(f"add_post, convert proof_image : {e}")
         return HttpResponseServerError("a rented agreement is required")
+    
+    logger.info(f'post_data_dict _ 2 : {post_data_dict}')
 
     try :
         driving_license_base64 = post_data.get('driving_license')
+        if driving_license_base64 is None:
+            return HttpResponseServerError("a driving license is required")
         post_data['driving_license'] = convert_base64(driving_license_base64, "driving_license")
 
     except Exception as e:
         logger.error(f"add_post, convert driving license : {e}")
         return HttpResponseServerError("a driving license is required")
     
-    # convert base64 to file, apartment_pics
+    logger.info(f'post_data_dict _ 3 : {post_data_dict}')
     
-    apartment_pics_base64 = []
-    for i in range(1,number_of_pics):
-        apartment_pics_base64.append(post_data.get(f'apartment_pic_{i}'))
+    # convert base64 to file, apartment_pics
 
-    logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
+    try:      
+        apartment_pics_base64 = []
+        for i in range(1,number_of_pics):
+            apartment_pics_base64.append(post_data.get(f'apartment_pic_{i}'))
 
-    try:
-         
-        for i,pic in enumerate(apartment_pics_base64):
+        logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
+            
+        for i,pic in enumerate(1,apartment_pics_base64):
             if pic is not None:
-                post_data_dict[f'apartment_pic_{i+1}'] = convert_base64(apartment_pics_base64[i], f"apartment_pic_{i+1}")
+                logger.info(f'apartment_pic_{i} is not None')
+                post_data_dict[f'apartment_pic_{i}'] = convert_base64(pic, f"apartment_pic_{i}")
 
     except Exception as e:
         logger.error(f"add_post : {e}")
         return HttpResponseServerError("problem with the apartment pics converting to base64")
 
-    logger.info(f'post_data_dict: {post_data_dict}')
+    logger.info(f'post_data_dict _ 4: {post_data_dict}')
 
     post = PostSerializerAll(data=post_data_dict, partial=True)
     if post.is_valid():
