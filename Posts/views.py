@@ -82,8 +82,6 @@ def add_post(request):
 
     # convert base64 to file, proof_image and driving_license
 
-    #! a function that gets the base64 and convert it to file and added to the post_data_dict
-
     try :
         proof_image_base64 = post_data.get('proof_image')
         if proof_image_base64 is None:

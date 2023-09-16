@@ -5,6 +5,7 @@ from Users.models import Users
 import os
 import uuid
 from django.db import models
+from TelAviv import settings
 
 def generate_unique_filename(instance, filename: str):
     _, ext = os.path.splitext(filename)
@@ -25,8 +26,8 @@ class Post(models.Model):
     post_apartment_number = models.CharField(max_length=50, null=False, blank=False)
     post_apartment_price = models.CharField(max_length=10, null=False, blank=False)
 
-    post_rent_start = models.DateField(null=False, blank=False)
-    post_rent_end = models.DateField(null=False, blank=False)
+    post_rent_start = models.DateField(null=False, blank=False,input_formats=settings.DATE_INPUT_FORMATS)
+    post_rent_end = models.DateField(null=False, blank=False,input_formats=settings.DATE_INPUT_FORMATS)
 
     post_description = models.CharField(max_length=2000,null=False, blank=False)
 
