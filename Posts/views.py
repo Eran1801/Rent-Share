@@ -1,3 +1,4 @@
+import datetime
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
@@ -73,14 +74,20 @@ def add_post(request):
     post_data_dict['post_apartment_number'] = post_data.get('post_apartment_number')
     post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
 
-    post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
-    post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
+    post_rent_start = post_data.get('post_rent_start')
+    date_obj = datetime.strptime(post_rent_start, '%d/%m/%Y')
+    post_data_dict['post_rent_start'] = date_obj.strftime('%Y-%m-%d')
+
+    post_rent_end = post_data.get('post_rent_end')
+    date_obj = datetime.strptime(post_rent_end, '%d/%m/%Y')
+    post_data_dict['post_rent_end'] = date_obj.strftime('%Y-%m-%d')
 
     post_data_dict['post_description'] = post_data.get('post_description')
 
     logger.info(f'post_data_dict _ 1 : {post_data_dict}')
 
     # convert base64 to file, proof_image and driving_license
+
 
     try :
         proof_image_base64 = post_data.get('proof_image')
