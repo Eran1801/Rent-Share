@@ -88,7 +88,8 @@ def add_post(request):
         proof_image_base64 = post_data.get('proof_image')
         if proof_image_base64 is None:
             return HttpResponseServerError("a rented agreement is required")
-        post_data['proof_image'] = convert_base64(proof_image_base64, "proof_image")
+        post_data_dict['proof_image'] = convert_base64(proof_image_base64, "proof_image")
+        
 
     except Exception as e:
         logger.error(f"add_post, convert proof_image : {e}")
@@ -100,7 +101,7 @@ def add_post(request):
         driving_license_base64 = post_data.get('driving_license')
         if driving_license_base64 is None:
             return HttpResponseServerError("a driving license is required")
-        post_data['driving_license'] = convert_base64(driving_license_base64, "driving_license")
+        post_data_dict['driving_license'] = convert_base64(driving_license_base64, "driving_license")
 
     except Exception as e:
         logger.error(f"add_post, convert driving license : {e}")
@@ -112,8 +113,8 @@ def add_post(request):
 
     try:      
         apartment_pics_base64 = []
-        for i in range(1,number_of_pics):
-            apartment_pics_base64.append(post_data.get(f'apartment_pic_{i}'))
+        for i in range(number_of_pics):
+            apartment_pics_base64.append(post_data.get(f'apartment_pic_{i+1}'))
 
         logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
             
@@ -126,7 +127,7 @@ def add_post(request):
         logger.error(f"add_post : {e}")
         return HttpResponseServerError("problem with the apartment pics converting to base64")
 
-    logger.info(f'post_data_dict _ 4: {post_data_dict}')
+    logger.info(f'post_data_dict_4: {post_data_dict}')
 
     post = PostSerializerAll(data=post_data_dict, partial=True)
     if post.is_valid():

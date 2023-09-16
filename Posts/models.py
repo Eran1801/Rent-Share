@@ -48,14 +48,10 @@ class Post(models.Model):
             # query the database for the last post.
             last_post = Post.objects.last()
             # If there is a last post, increment its post_id.
-            if last_post:
+            if last_post is not None:
                 self.post_id = last_post.post_id + 1
             else:
                 # If there are no existing posts, set post_id to 1.
                 self.post_id = 1
         # Call the original save method to save the model instance to the database.
         super().save(*args, **kwargs)
-
-    # Define a __str__ method to return a string representation of the post_id.
-    def __str__(self):
-        return str(self.post_id)
