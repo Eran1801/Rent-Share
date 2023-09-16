@@ -117,10 +117,10 @@ def add_post(request):
 
         logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
             
-        for i,pic in enumerate(1,apartment_pics_base64):
+        for i,pic in enumerate(apartment_pics_base64):
             if pic is not None:
-                logger.info(f'apartment_pic_{i} is not None')
-                post_data_dict[f'apartment_pic_{i}'] = convert_base64(pic, f"apartment_pic_{i}")
+                logger.info(f'apartment_pic_{i+1} is not None')
+                post_data_dict[f'apartment_pic_{i+1}'] = convert_base64(pic, f"apartment_pic_{i+1}")
 
     except Exception as e:
         logger.error(f"add_post : {e}")
