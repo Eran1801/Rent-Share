@@ -141,7 +141,7 @@ def add_post(request):
         try:
             post.save()  # Attempt to save to the database
             logger.info("Saved to the database")
-            msg = f"New post was added to S3.\nUser : {user.user_id}"
+            msg = f"New post was added to S3.\nUser : {user.get('user_id')}"
             subject = "New post"
             send_email(FROM_EMAIL,FROM_EMAIL,msg,subject)
             return JsonResponse("Post successfully saved in db", safe=False)
