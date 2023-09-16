@@ -67,6 +67,7 @@ def add_post(request):
 
     # fetch the data into post_data_dict
     user = post_data.get('user', {})
+    logger.info(f'user: {user}')
     post_data_dict['post_user_id'] = user.get('user_id')
 
     post_data_dict['post_city'] = post_data.get('post_city')
