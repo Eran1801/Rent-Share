@@ -1,4 +1,3 @@
-import datetime
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
@@ -12,6 +11,8 @@ from Posts.models import Post
 import base64
 from django.core.files.base import ContentFile
 from Users.views import *
+from datetime import datetime
+
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
