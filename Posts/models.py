@@ -26,7 +26,7 @@ class Post(models.Model):
     post_apartment_price = models.CharField(max_length=10, null=False, blank=False)
 
     post_rent_start = models.DateField(null=False, blank=False)
-    post_rent_end = models.DateField(null=False, blank=False) 
+    post_rent_end = models.DateField(null=False, blank=False)
 
     post_description = models.CharField(max_length=2000,null=False, blank=False)
 
