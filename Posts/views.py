@@ -1,3 +1,4 @@
+from collections import Counter
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
@@ -12,11 +13,56 @@ import base64
 from django.core.files.base import ContentFile
 from Users.views import *
 from datetime import datetime
+from collections import OrderedDict
+import json
 
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+def process_apartments(apartment_data):
+    '''This function will be used to process the apartments data and hold each apartment in a list'''
+    apartments_list = []
+
+    for apr in apartment_data:
+        apartments_list.append(apr)
+
+    return apartments_list
+
+# Function N.2
+# Group apartments by location based on city, address, building number, and apartment number
+def group_apartments_by_location(apartments_data):
+
+    grouped_apartments = {}
+
+    # Iterate over each apartment in the list and get only the relevant fields
+    for apartment_data in apartments_data:
+        location_key = (
+            apartment_data['post_city'],
+            apartment_data['post_street'],
+            apartment_data['post_building_number'],
+            apartment_data['post_apartment_number']
+        )
+
+        # If the location key is not in the dictionary, add it with an empty list as the value
+        if location_key not in grouped_apartments:
+            # create a new key in the dictionary only if it doesn't exist
+            # because if we have the same address we can post more then one on apartment
+            grouped_apartments[location_key] = []
+
+        grouped_apartments[location_key].append(apartment_data)
+
+    return grouped_apartments
+
+# Convert the grouped apartments to a JSON format
+def convert_to_json(grouped_apartments):
+    json_result = []
+
+    for apartment_list in grouped_apartments.values():
+        json_result.append(apartment_list)
+
+    return json.dumps(json_result)
 
 def convert_base64(base64_str, filename):
     '''
@@ -76,14 +122,8 @@ def add_post(request):
     post_data_dict['post_apartment_number'] = post_data.get('post_apartment_number')
     post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
 
-    post_rent_start = post_data.get('post_rent_start')
-    logger.info(f'post_rent_start: {post_rent_start}, and his type is {type(post_rent_start)}')
-    post_data_dict['post_rent_start'] = post_rent_start
-
-    post_rent_end = post_data.get('post_rent_end')
-    logger.info(f'post_rent_end: {post_rent_end}, and his type is {type(post_rent_end)}')
-
-    post_data_dict['post_rent_end'] = post_rent_end
+    post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
+    post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
 
     post_data_dict['post_description'] = post_data.get('post_description')
 
@@ -152,11 +192,6 @@ def add_post(request):
         logger.debug(post.errors)
         return HttpResponseServerError("Post validation failed")
 
-# def date_format(date):
-#     logger.info(f'date: {date}')
-#     year, month, day = date.split('/')
-#     return f'{year}-{month}-{day}'
-
 @api_view(['GET'])
 @csrf_exempt
 def get_all_posts(request):
@@ -222,9 +257,15 @@ def get_post_by_parm(request):
             try:
                 logger.info('After post_v1.exists()')
                 post_serializer = PostSerializerAll(post, many=True)
-                logger.info(f'post_serializer_len: {len(post_serializer.data)}')
-                reformat_post_data(post_serializer.data)
-                return JsonResponse(post_serializer.data, safe=False)
+                # if len(post_serializer.data) > 1:
+                # deals with the case of more then post on the same apartment and in general
+                apartments = process_apartments(post_serializer.data)
+                grouped_apartments = group_apartments_by_location(apartments) 
+                json_result = convert_to_json(grouped_apartments)                  
+                return JsonResponse(json_result, safe=False)
+                # else:
+                #     # only one post
+                #     return JsonResponse(post_serializer.data, safe=False)
             except :
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
         else:
@@ -233,22 +274,6 @@ def get_post_by_parm(request):
     except Exception as e:
          logger.error(f"get_posts : {e}")
          return HttpResponseServerError("An error occurred get_posts")
-
-def reformat_post_data(post_data):
-    logger.info("Inside the reformat_post_data function")
-
-    posts = []
-
-    for post in post_data:
-        logger.info(f'post: {post} and his type is {type(post)}')
-        post_city = post.get('post_city')
-        post_street = post.get('post_street')
-        post_building_number = post.get('post_building_number')
-        post_apartment_number = post.get('post_apartment_number')
-        for p in posts:
-            if p.get('post_city') == post_city:
-                 pass
-
 
 @api_view(['GET'])
 @csrf_exempt
@@ -364,5 +389,4 @@ def add_review_to_post(request):
     
     except Post.DoesNotExist:
         return HttpResponseBadRequest("Post with the given ID does not exist.")
-    
 
