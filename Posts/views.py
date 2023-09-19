@@ -78,12 +78,12 @@ def add_post(request):
 
     post_rent_start = post_data.get('post_rent_start')
     logger.info(f'post_rent_start: {post_rent_start}, and his type is {type(post_rent_start)}')
-    post_data_dict['post_rent_start'] = date_format(post_rent_start)
+    post_data_dict['post_rent_start'] = post_rent_start
 
     post_rent_end = post_data.get('post_rent_end')
     logger.info(f'post_rent_end: {post_rent_end}, and his type is {type(post_rent_end)}')
 
-    post_data_dict['post_rent_end'] = date_format(post_rent_end)
+    post_data_dict['post_rent_end'] = post_rent_end
 
     post_data_dict['post_description'] = post_data.get('post_description')
 
@@ -152,10 +152,10 @@ def add_post(request):
         logger.debug(post.errors)
         return HttpResponseServerError("Post validation failed")
 
-def date_format(date):
-    logger.info(f'date: {date}')
-    year, month, day = date.split('/')
-    return f'{year}-{month}-{day}'
+# def date_format(date):
+#     logger.info(f'date: {date}')
+#     year, month, day = date.split('/')
+#     return f'{year}-{month}-{day}'
 
 @api_view(['GET'])
 @csrf_exempt
