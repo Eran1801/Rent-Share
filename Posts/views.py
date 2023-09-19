@@ -77,12 +77,14 @@ def add_post(request):
     post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
 
     post_rent_start = post_data.get('post_rent_start')
-    date_obj = datetime.strptime(post_rent_start, '%d/%m/%Y')
-    post_data_dict['post_rent_start'] = date_obj.strftime('%Y-%m-%d')
+    # date_obj = datetime.strptime(post_rent_start, '%d/%m/%Y')
+    # date_obj.strftime('%Y-%m-%d')
+    post_data_dict['post_rent_start'] = post_rent_start
 
     post_rent_end = post_data.get('post_rent_end')
-    date_obj = datetime.strptime(post_rent_end, '%d/%m/%Y')
-    post_data_dict['post_rent_end'] = date_obj.strftime('%Y-%m-%d')
+    # date_obj = datetime.strptime(post_rent_end, '%d/%m/%Y')
+    # date_obj.strftime('%Y-%m-%d')
+    post_data_dict['post_rent_end'] = post_rent_start
 
     post_data_dict['post_description'] = post_data.get('post_description')
 
