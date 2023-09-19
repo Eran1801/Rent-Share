@@ -157,7 +157,7 @@ def login(request):
             return HttpResponseServerError("Passwords don't match. Login fail")
         
     except Users.DoesNotExist:
-        return HttpResponseServerError("User not found.")
+        return HttpResponseServerError("Email don't exists. Login fail")
     
     except Exception as e:
         logger.error('Error parsing user login data: %s', e)

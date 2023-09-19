@@ -59,14 +59,14 @@ def add_post(request):
     '''This function will be used to add a new post'''
 
     number_of_pics = 4
-    post_data_dict = {} # for serialize the data
+    post_data_dict = {} # stor the values of post to the db
 
     post_data = request.data
 
     print(f'post_data :' , post_data)
 
     # fetch the data into post_data_dict
-    user = post_data.get('user', {})
+    user = post_data.get('user')
     logger.info(f'user: {user}')
     post_data_dict['post_user_id'] = user.get('user_id')
 
@@ -89,7 +89,6 @@ def add_post(request):
     logger.info(f'post_data_dict _ 1 : {post_data_dict}')
 
     # convert base64 to file, proof_image and driving_license
-
 
     try :
         proof_image_base64 = post_data.get('proof_image')
@@ -217,6 +216,7 @@ def get_post_by_parm(request):
             try:
                 logger.info('After post_v1.exists()')
                 post_serializer = PostSerializerAll(post_v1, many=True)
+                logger.info(f'post_serializer_data: {post_serializer.data}, and his type is {type(post_serializer.data)}')
                 return JsonResponse(post_serializer.data, safe=False)
             except :
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
