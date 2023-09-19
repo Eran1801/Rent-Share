@@ -246,7 +246,8 @@ def reformat_post_data(post_data):
         post_building_number = post.get('post_building_number')
         post_apartment_number = post.get('post_apartment_number')
         for p in posts:
-            if p.get('post_city') == post_city
+            if p.get('post_city') == post_city:
+                 pass
 
 
 @api_view(['GET'])
