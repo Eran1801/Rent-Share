@@ -154,7 +154,7 @@ def add_post(request):
 
 def date_format(date):
     logger.info(f'date: {date}')
-    day, month, year = date.split('/')
+    year, month, day = date.split('/')
     return f'{year}-{month}-{day}'
 
 @api_view(['GET'])
