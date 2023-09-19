@@ -154,7 +154,7 @@ def add_post(request):
 
 def date_format(date):
     day, month, year = date.split('/')
-    return f'{year}/{month}/{day}'
+    return f'{year}-{month}-{day}'
 
 
 @api_view(['GET'])
