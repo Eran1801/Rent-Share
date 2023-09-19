@@ -153,9 +153,9 @@ def add_post(request):
         return HttpResponseServerError("Post validation failed")
 
 def date_format(date):
+    logger.info(f'date: {date}')
     day, month, year = date.split('/')
     return f'{year}-{month}-{day}'
-
 
 @api_view(['GET'])
 @csrf_exempt
@@ -215,14 +215,15 @@ def get_post_by_parm(request):
 
         logger.info(f'filter_conditions final: {filter_conditions}')
 
-        post_v1 = Post.objects.filter(**filter_conditions)
-        logger.info(f'post_v1: {post_v1}')
+        post = Post.objects.filter(**filter_conditions)
+        logger.info(f'post: {post}')
 
-        if post_v1.exists():
+        if post.exists():
             try:
                 logger.info('After post_v1.exists()')
-                post_serializer = PostSerializerAll(post_v1, many=True)
-                logger.info(f'post_serializer_data: {post_serializer.data}, and his type is {type(post_serializer.data)}')
+                post_serializer = PostSerializerAll(post, many=True)
+                logger.info(f'post_serializer_len: {len(post_serializer.data)}')
+                reformat_post_data(post_serializer.data)
                 return JsonResponse(post_serializer.data, safe=False)
             except :
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
@@ -232,6 +233,21 @@ def get_post_by_parm(request):
     except Exception as e:
          logger.error(f"get_posts : {e}")
          return HttpResponseServerError("An error occurred get_posts")
+
+def reformat_post_data(post_data):
+    logger.info("Inside the reformat_post_data function")
+
+    posts = []
+
+    for post in post_data:
+        logger.info(f'post: {post} and his type is {type(post)}')
+        post_city = post.get('post_city')
+        post_street = post.get('post_street')
+        post_building_number = post.get('post_building_number')
+        post_apartment_number = post.get('post_apartment_number')
+        for p in posts:
+            if p.get('post_city') == post_city
+
 
 @api_view(['GET'])
 @csrf_exempt
