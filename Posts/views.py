@@ -148,10 +148,14 @@ def add_post(request):
 
     try:
         post_data = request.data
+        logger.info(f'post_data: {post_data}')
         post_data_dict = convert_images_to_files(post_data)
+        logger.info(f'post_data_dict: {post_data_dict}')
         post = PostSerializerAll(data=post_data_dict, partial=True)
+        logger.info(f'post: {post}')
 
         if post.is_valid():
+            logger.info('after post.is_valid')
             post.save()
             msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
             subject = "New post"
