@@ -30,9 +30,8 @@ def process_apartments(apartment_data):
 
     return apartments_list
 
-# Function N.2
-# Group apartments by location based on city, address, building number, and apartment number
 def group_apartments_by_location(apartments_data):
+    '''This function will be used to group the apartments by location based on city, address, building number, and apartment number'''
 
     grouped_apartments = {}
 
@@ -55,7 +54,6 @@ def group_apartments_by_location(apartments_data):
 
     return grouped_apartments
 
-# Convert the grouped apartments to a JSON format
 def convert_to_json(grouped_apartments):
     json_result = []
 
@@ -97,23 +95,29 @@ def convert_base64(base64_str, filename):
     
     except Exception as e:
         logger.error(f"convert_base64_to_image: {e}")
-        return None
+        return HttpResponseServerError('An error occurred while converting base64 to image')
 
 def extract_post_data(post_data):
-    post_data_dict = {}
 
-    user = post_data.get('user')
-    post_data_dict['post_user_id'] = user.get('user_id')
-    post_data_dict['post_city'] = post_data.get('post_city')
-    post_data_dict['post_street'] = post_data.get('post_street')
-    post_data_dict['post_building_number'] = post_data.get('post_building_number')
-    post_data_dict['post_apartment_number'] = post_data.get('post_apartment_number')
-    post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
-    post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
-    post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
-    post_data_dict['post_description'] = post_data.get('post_description')
+    try:
+        post_data_dict = {}
 
-    return post_data_dict
+        user = post_data.get('user')
+        post_data_dict['post_user_id'] = user.get('user_id')
+        post_data_dict['post_city'] = post_data.get('post_city')
+        post_data_dict['post_street'] = post_data.get('post_street')
+        post_data_dict['post_building_number'] = post_data.get('post_building_number')
+        post_data_dict['post_apartment_number'] = post_data.get('post_apartment_number')
+        post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
+        post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
+        post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
+        post_data_dict['post_description'] = post_data.get('post_description')
+
+        logger.info(f'post_data_dict: {post_data_dict}')
+        return post_data_dict
+    except Exception as e:
+        logger.error(f"extract_post_data: {e}")
+        return HttpResponseServerError('An error occurred while extracting post data')
 
 def convert_images_to_files(post_data):
     number_of_pics = 4
@@ -141,7 +145,8 @@ def convert_images_to_files(post_data):
         return post_data_dict
 
     except Exception as e:
-        raise e
+        logger.error(f"convert_images_to_files: {e}")
+        return HttpResponseServerError('An error occurred while converting images to files')
 
 @api_view(['POST'])
 @csrf_exempt
@@ -149,7 +154,7 @@ def add_post(request):
     '''This function will be used to add a new post'''
 
     try:
-        post_data = request.data
+        post_data = request.data    
         logger.info(f'post_data: {post_data}')
         post_data_dict = convert_images_to_files(post_data)
         logger.info(f'post_data_dict: {post_data_dict}')
@@ -175,7 +180,6 @@ def add_post(request):
 def get_all_posts(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
     try:
-
         all_posts = Post.objects.all()
         all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
         return JsonResponse(all_posts_serialize.data, safe=False)
@@ -189,24 +193,23 @@ def get_all_posts(request):
 def get_post_by_parm(request):
     '''This function will be used to get all the posts in the db 'Pots' table'''
     try:
-
+        
         post_city = request.GET.get('post_city') 
-        logger.info(f'post_city: {post_city} and his type is {type(post_city)}')
-
         post_street = request.GET.get('post_street')
-        logger.info(f'post_street: {post_street} and his type is {type(post_street)}')
-
         post_building_number = request.GET.get('post_building_number')
-        logger.info(f'post_building_number: {post_building_number} and his type is {type(post_building_number)}')
-
         post_apartment_number = request.GET.get('post_apartment_number')
-        logger.info(f'post_apartment_number: {post_apartment_number} and his type is {type(post_apartment_number)}')
+
+        '''function that gets the search_parm and check if post_city, post_street, post_building_number, post_apartment_number are not null'''
         
         if post_city == '' and post_street == 'null' and post_apartment_number == 'null' and post_building_number == 'null': 
             return HttpResponseBadRequest("At least one field is required")
 
         if post_city == '':
             return HttpResponseBadRequest("City field is required")
+        
+        #! A function that create a dict with filter_condtions and she gets as a parm the search_parm and then 
+        #! check if post_city, post_street, post_building_number, post_apartment_number are not null
+        #! and then return the dict with the filter_condtions accrording to the search_parm
 
         # Construct the queryset conditions based on available parameters
         filter_conditions = {'post_city': post_city, 'proof_image_confirmed': True} # post_city is definitely not null
@@ -233,20 +236,13 @@ def get_post_by_parm(request):
 
         if post.exists():
             try:
-                logger.info('After post_v1.exists()')
                 post_serializer = PostSerializerAll(post, many=True)
-                logger.info('After post_serializer')
 
+                # process the apartments to send it as json to the frontend 
                 apartments = process_apartments(post_serializer.data)
-                logger.info('After process_apartments')
-                logger.info(f'apartments: {apartments}')
-                
                 grouped_apartments = group_apartments_by_location(apartments) 
-                logger.info('After group_apartments_by_location')
-                logger.info(f'grouped_apartments: {grouped_apartments}')
-
                 json_result = convert_to_json(grouped_apartments)
-                logger.info(f'json_result: {json_result}')        
+
                 return JsonResponse('{' + json_result + '}', safe=False)   
             except :
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
