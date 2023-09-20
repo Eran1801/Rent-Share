@@ -62,7 +62,7 @@ def convert_to_json(grouped_apartments):
     for apartment_list in grouped_apartments.values():
         json_result.append(apartment_list)
 
-    return json.dumps(json_result)
+    return json.dumps(json_result,ensure_ascii=False)
 
 def convert_base64(base64_str, filename):
     '''
