@@ -230,8 +230,7 @@ def get_post_by_parm(request):
                 logger.info('After post_v1.exists()')
                 post_serializer = PostSerializerAll(post, many=True)
                 logger.info('After post_serializer')
-                # if len(post_serializer.data) > 1:
-                # deals with the case of more then post on the same apartment and in general
+
                 apartments = process_apartments(post_serializer.data)
                 logger.info('After process_apartments')
                 logger.info(f'apartments: {apartments}')
@@ -240,11 +239,9 @@ def get_post_by_parm(request):
                 logger.info('After group_apartments_by_location')
                 logger.info(f'grouped_apartments: {grouped_apartments}')
 
-                json_result = convert_to_json(grouped_apartments)        
-                return JsonResponse('{' + json_result + '}', safe=False)
-                # else:
-                #     # only one post
-                #     return JsonResponse(post_serializer.data, safe=False)
+                json_result = convert_to_json(grouped_apartments)
+                logger.info(f'json_result: {json_result}')        
+                return JsonResponse('{' + json_result + '}', safe=False)   
             except :
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
         else:
