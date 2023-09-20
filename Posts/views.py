@@ -241,8 +241,7 @@ def get_post_by_parm(request):
                 logger.info(f'grouped_apartments: {grouped_apartments}')
 
                 json_result = convert_to_json(grouped_apartments)        
-                logger.info(f'json_result: {json_result}')          
-                return JsonResponse(json_result, safe=False)
+                return JsonResponse('{' + json_result + '}', safe=False)
                 # else:
                 #     # only one post
                 #     return JsonResponse(post_serializer.data, safe=False)
