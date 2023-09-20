@@ -143,6 +143,8 @@ def convert_images_to_files(post_data):
     except Exception as e:
         raise e
 
+@api_view(['POST'])
+@csrf_exempt
 def add_post(request):
     '''This function will be used to add a new post'''
 
