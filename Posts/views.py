@@ -99,98 +99,70 @@ def convert_base64(base64_str, filename):
         logger.error(f"convert_base64_to_image: {e}")
         return None
 
-@api_view(['POST'])
-@csrf_exempt
-def add_post(request):
-    '''This function will be used to add a new post'''
+def extract_post_data(post_data):
+    post_data_dict = {}
 
-    number_of_pics = 4
-    post_data_dict = {} # stor the values of post to the db
-
-    post_data = request.data
-
-    print(f'post_data :' , post_data)
-
-    # fetch the data into post_data_dict
     user = post_data.get('user')
-    logger.info(f'user: {user}')
     post_data_dict['post_user_id'] = user.get('user_id')
-
     post_data_dict['post_city'] = post_data.get('post_city')
     post_data_dict['post_street'] = post_data.get('post_street')
     post_data_dict['post_building_number'] = post_data.get('post_building_number')
     post_data_dict['post_apartment_number'] = post_data.get('post_apartment_number')
     post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
-
     post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
     post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
-
     post_data_dict['post_description'] = post_data.get('post_description')
 
-    logger.info(f'post_data_dict _ 1 : {post_data_dict}')
+    return post_data_dict
 
-    # convert base64 to file, proof_image and driving_license
+def convert_images_to_files(post_data):
+    number_of_pics = 4
+    post_data_dict = extract_post_data(post_data)
 
-    try :
+    try:
         proof_image_base64 = post_data.get('proof_image')
         if proof_image_base64 is None:
-            return HttpResponseServerError("a rented agreement is required")
+            raise ValueError("A rented agreement is required")
         post_data_dict['proof_image'] = convert_base64(proof_image_base64, "proof_image")
-        
 
-    except Exception as e:
-        logger.error(f"add_post, convert proof_image : {e}")
-        return HttpResponseServerError("a rented agreement is required")
-    
-    logger.info(f'post_data_dict _ 2 : {post_data_dict}')
-
-    try :
         driving_license_base64 = post_data.get('driving_license')
         if driving_license_base64 is None:
-            return HttpResponseServerError("a driving license is required")
+            raise ValueError("A driving license is required")
         post_data_dict['driving_license'] = convert_base64(driving_license_base64, "driving_license")
 
-    except Exception as e:
-        logger.error(f"add_post, convert driving license : {e}")
-        return HttpResponseServerError("a driving license is required")
-    
-    logger.info(f'post_data_dict _ 3 : {post_data_dict}')
-    
-    # convert base64 to file, apartment_pics
-
-    try:      
         apartment_pics_base64 = []
         for i in range(number_of_pics):
             apartment_pics_base64.append(post_data.get(f'apartment_pic_{i+1}'))
 
-        logger.info(f'apartment_pics_base64: {apartment_pics_base64}')
-            
-        for i,pic in enumerate(apartment_pics_base64):
+        for i, pic in enumerate(apartment_pics_base64):
             if pic is not None:
-                logger.info(f'apartment_pic_{i+1} is not None')
                 post_data_dict[f'apartment_pic_{i+1}'] = convert_base64(pic, f"apartment_pic_{i+1}")
+
+        return post_data_dict
+
+    except Exception as e:
+        raise e
+
+def add_post(request):
+    '''This function will be used to add a new post'''
+
+    try:
+        post_data = request.data
+        post_data_dict = convert_images_to_files(post_data)
+        post = PostSerializerAll(data=post_data_dict, partial=True)
+
+        if post.is_valid():
+            post.save()
+            msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
+            subject = "New post"
+            send_email(FROM_EMAIL, FROM_EMAIL, msg, subject)
+            return JsonResponse("Post successfully saved in db", safe=False)
+        else:
+            return HttpResponseServerError("Post validation failed")
 
     except Exception as e:
         logger.error(f"add_post : {e}")
-        return HttpResponseServerError("problem with the apartment pics converting to base64")
-
-    logger.info(f'post_data_dict_4: {post_data_dict}')
-
-    post = PostSerializerAll(data=post_data_dict, partial=True)
-    if post.is_valid():
-        try:
-            post.save()  # Attempt to save to the database
-            logger.info("Saved to the database")
-            msg = f"New post was added to S3.\nUser : {user.get('user_id')}"
-            subject = "New post"
-            send_email(FROM_EMAIL,FROM_EMAIL,msg,subject)
-            return JsonResponse("Post successfully saved in db", safe=False)
-        except Exception as e:
-            logger.error(f"add_post : {e}")
-            return HttpResponseServerError("An error occurred while saving the post")
-    else:
-        logger.debug(post.errors)
-        return HttpResponseServerError("Post validation failed")
+        return HttpResponseServerError(str(e)) #! needs to check older version and change in add_post
 
 @api_view(['GET'])
 @csrf_exempt
@@ -257,11 +229,19 @@ def get_post_by_parm(request):
             try:
                 logger.info('After post_v1.exists()')
                 post_serializer = PostSerializerAll(post, many=True)
+                logger.info('After post_serializer')
                 # if len(post_serializer.data) > 1:
                 # deals with the case of more then post on the same apartment and in general
                 apartments = process_apartments(post_serializer.data)
+                logger.info('After process_apartments')
+                logger.info(f'apartments: {apartments}')
+                
                 grouped_apartments = group_apartments_by_location(apartments) 
-                json_result = convert_to_json(grouped_apartments)                  
+                logger.info('After group_apartments_by_location')
+                logger.info(f'grouped_apartments: {grouped_apartments}')
+
+                json_result = convert_to_json(grouped_apartments)        
+                logger.info(f'json_result: {json_result}')          
                 return JsonResponse(json_result, safe=False)
                 # else:
                 #     # only one post
