@@ -71,6 +71,12 @@ def checks_inputs_register_form(user_data):
     user_password = user_data.get('user_password')
     user_password_2 = user_data.get('user_password_2')
 
+    logger.info(f'user_full_name: {user_full_name}')
+    logger.info(f'user_email: {user_email}')
+    logger.info(f'user_phone_number: {user_phone_number}')
+    logger.info(f'user_password: {user_password}')
+    logger.info(f'user_password_2: {user_password_2}')
+
     try:
 
         # checks valid register input from user
@@ -84,6 +90,8 @@ def checks_inputs_register_form(user_data):
 
             user_data['user_password'] = hash_password(user_password) # encrypt before saving
             del user_data['user_password_2'] # don't needs to be save in the db
+
+            logger.info(f'User data after checks after del: {user_data}')
             return user_data
         else:
             return HttpResponseServerError("Passwords don't match.")
@@ -106,6 +114,8 @@ def register(request, user_id = 0):
     try:
         
         user_data = checks_inputs_register_form(request.data)
+
+        logger.info(f'Adding user: {user_data}')
                     
         users_serializer = UsersSerializer(data=user_data)
         if users_serializer.is_valid():
