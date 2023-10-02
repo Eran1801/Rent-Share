@@ -90,11 +90,11 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 DATABASES = {
     'default': { 
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'railway', 
+        'NAME': os.environ.get('DB_NAME'), 
         'USER': 'root', 
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': 'containers-us-west-36.railway.app',
-        'PORT': 7970,
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
         'OPTIONS': {
             'charset': 'utf8',  # Example character encoding setting
         },
@@ -176,7 +176,7 @@ AWS_ACCESS_KEY_ID = 'AKIATGTS4CJ6H77C7XO2'
 AWS_SECRET_ACCESS_KEY = 'LhN05bF5khOATlmzAJSPxmKmc/drY4VggvEIBDB+'
 
 # the name of the S3 bucket where you want to store your static and media files.
-AWS_STORAGE_BUCKET_NAME = 'rent-buzz'
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME')
 
 # specifies the version of the signature to use for requests to S3.
 # 's3v4' indicates the AWS Signature Version 4.
