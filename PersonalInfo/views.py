@@ -44,8 +44,6 @@ def change_personal_info(request):
         logger.info('Passed full name check')
 
         if email != user.user_email:
-            if validate_email(email) == False:
-                return HttpResponseServerError("Email is invalid")
             if email_exists(email) == True:
                 return HttpResponseServerError("Email already exists in our system")
             user.user_email = email
