@@ -23,11 +23,10 @@ EMAIL_SERVER = "smtp-mail.outlook.com"  # Adjust server address, if you are not 
 FROM_EMAIL = "rentbuzz@outlook.com"
 PASSWORD_EMAIL = 'MorEran1302'
 
-def check_valid_password(pas:str):
+def check_valid_password(pas:str) -> bool:
     '''check if the password is valid'''
     pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)' # contains at least one upper and one lower letter and number.
-    if re.match(pattern,pas) is False or len(pas) < 8 :
-        return HttpResponseServerError('Invalid password')
+    return True if re.match(pattern,pas) and len(pas) >= 8 else False # adding the big&equal from 8
 
 def hash_password(plain_password:str) -> str:
     '''encrypt the password user using sha256 algorithm'''
@@ -37,74 +36,27 @@ def hash_password(plain_password:str) -> str:
 
     return hashed_password
 
-def email_exists(email:str):
+def email_exists(email:str) -> bool:
     '''exists() method returns True if user_email already in the db'''
-    if Users.objects.filter(user_email=email).exists():
-        return HttpResponseServerError('Email already exists')
-    
-def phone_exists(phone:str):
+    return Users.objects.filter(user_email=email).exists()
+
+def phone_exists(phone:str)-> bool:
     '''returns True if at least one record matches the filter, and False if no records match.'''
-    if Users.objects.filter(user_phone=phone).exists():
-        return HttpResponseServerError('Phone already exists')
-    
-def full_name_check(full_name:str):
+    return Users.objects.filter(user_phone=phone).exists()
+
+def full_name_check(full_name:str) -> bool:
     '''
     check if the full name is valid
     full name must be at least 4 characters and contain at least one space.
     '''
-    if full_name.count(' ') == 0:
-        return HttpResponseServerError('full name is invalid')
+    return True if len(full_name) >= 4 and full_name.count(' ') > 0 else False
 
-def phone_number_check(phone_number:str):
+def phone_number_check(phone_number:str) -> bool:
     '''
     check if the phone number is valid.
     phone number must be at least 10 characters.    
     '''
-    if len(phone_number) != 10:
-        return HttpResponseServerError('Invalid phone number')
-
-def checks_inputs_register_form(user_data):
-
-    user_full_name = user_data.get('user_full_name')
-    user_email = user_data.get('user_email').lower() # lower case email
-    user_phone_number = user_data.get('user_phone')
-    user_password = user_data.get('user_password')
-    user_password_2 = user_data.get('user_password_2')
-
-    logger.info(f'type of user_data : {type(user_data)}')
-
-    logger.info(f'user_full_name: {user_full_name}')
-    logger.info(f'user_email: {user_email}')
-    logger.info(f'user_phone_number: {user_phone_number}')
-    logger.info(f'user_password: {user_password}')
-    logger.info(f'user_password_2: {user_password_2}')
-
-    try:
-
-        # checks valid register input from user
-        email_exists(user_email)
-        logger.info(f'After email_exists')
-        phone_exists(user_phone_number)
-        logger.info(f'After phone_exists')
-        full_name_check(user_full_name)
-        logger.info(f'After full_name_check')
-        phone_number_check(user_phone_number)
-        logger.info(f'After phone_number_check')
-        check_valid_password(user_password)
-        logger.info(f'After check_valid_password')
-
-        if user_password == user_password_2: # checking if 2 user passwords are equal
-
-            user_data['user_password'] = hash_password(user_password) # encrypt before saving
-            del user_data['user_password_2'] # don't needs to be save in the db
-
-            logger.info(f'User data after checks and after del: {user_data}')
-            return user_data
-        else:
-            return HttpResponseServerError("Passwords don't match.")
-        
-    except ValueError as e:
-        return HttpResponseServerError(str(e))
+    return True if len(phone_number) == 10 else False
 
 @api_view(['POST'])
 @csrf_exempt
@@ -118,20 +70,52 @@ def register(request, user_id = 0):
     3. encrypt the password before saving it to the db.
     4. save the user to the db.
     '''
+
     try:
+        user_data = request.data 
         
-        user_data = checks_inputs_register_form(request.data)
+        user_full_name = user_data.get('user_full_name')
+        user_email = user_data.get('user_email').lower() # lower case email
+        user_phone_number = user_data.get('user_phone')
+        user_password = user_data.get('user_password')
+        user_password_2 = user_data.get('user_password_2')
 
-        logger.info(f'Adding user: {user_data}')
-                    
-        users_serializer = UsersSerializer(data=user_data)
-        if users_serializer.is_valid():
-            users_serializer.save() # save to db
-            return JsonResponse("Register Success",safe=False)
+        # checks valid register input from user
+        check_full_name: bool = full_name_check(user_full_name)
+        check_phone_number = phone_number_check(user_phone_number)
+        check_password = check_valid_password(user_password)
+
+        if user_password == user_password_2: # checking if 2 user passwords are equal
+
+            user_data['user_password'] = hash_password(user_password) # encrypt before saving
+
+            if email_exists(user_email): 
+                return HttpResponseServerError('Email already exists')
+            
+            if phone_exists(user_phone_number):
+                return HttpResponseServerError('Phone number already exists')
+            
+            if not check_full_name:
+                return HttpResponseServerError('Invalid full name')
+            
+            if not check_phone_number:
+                return HttpResponseServerError('Invalid phone number')
+            
+            if not check_password:
+                return HttpResponseServerError('Invalid password')
+
+            del user_data['user_password_2'] # don't needs to be save in the db
+            
+            users_serializer = UsersSerializer(data=user_data)
+            if users_serializer.is_valid():
+                users_serializer.save() # save to db
+                return JsonResponse("Register Success",safe=False)
+            else:
+                logger.debug(users_serializer.errors)
+                return HttpResponseServerError("Register Fails")
         else:
-            logger.debug(users_serializer.errors)
-            return HttpResponseServerError("Register Fails")
-
+            return HttpResponseServerError("Passwords don't match.")
+            
     except Exception as e:
         logger.error(e)
         return HttpResponseServerError("Error parsing user registering data")
@@ -199,7 +183,7 @@ def delete_user(request):
         return HttpResponseServerError("Error deleting user")
 
 def generate_random_digits() -> str:
-    return ''.join(random.choice('0123456789') for _ in range(4))
+    return ''.join(random.choice('0123456789') for _ in range(6))
 
 @api_view(['GET'])
 @csrf_exempt
