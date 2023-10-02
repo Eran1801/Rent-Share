@@ -21,34 +21,23 @@ def change_personal_info(request):
         user_data = request.data
 
         user_id = user_data.get('user_id')
-        logger.info(f'User ID: {user_id}')
-
         full_name = user_data.get('user_full_name')
-        logger.info(f'Full name: {full_name}')
-
         phone = user_data.get('user_phone')
-        logger.info(f'Phone: {phone}')
-
         email = user_data.get('user_email')
-        logger.info(f'Email: {email}')
         
         user = Users.objects.get(user_id=user_id)  # Get the user from the database by user_id
 
         # Check if fields have changed
         if full_name != user.user_full_name:
-            if full_name_check(full_name) == False:
+            if not full_name_check(full_name):
                 return HttpResponseServerError("Full name is invalid")
             else:
                 user.user_full_name = full_name
-
-        logger.info('Passed full name check')
 
         if email != user.user_email:
             if email_exists(email) == True:
                 return HttpResponseServerError("Email already exists in our system")
             user.user_email = email
-
-        logger.info('Passed email check')
 
         if phone != user.user_phone:
             if phone_number_check(phone) == False:
@@ -57,9 +46,7 @@ def change_personal_info(request):
                 return HttpResponseServerError("Phone number already exists in our system")
             user.user_phone = phone
         
-        logger.info('Passed phone check')
-
-        user.save()  # save changes to the database
+        user.save()  # save changes to the database, but only the one the user changed
         return JsonResponse("Personal info updated successfully", safe=False)
 
     except Users.DoesNotExist:
@@ -114,18 +101,15 @@ def change_profile_picture(request):
     try:
         user_data = request.data
         user_id = user_data.get('user_id')
-        logger.info(f'User ID: {user_id}')
 
         profile_image_base64 = user_data.get('profile_image')  # Extract the first item from the list
-        logger.info(f'Profile image: {profile_image_base64}')
         proof_image_file = convert_base64(profile_image_base64, "profile_image")
 
         user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
-        logger.info(f'User: {user}')
 
         data = {'user_profile_pic': proof_image_file}
-        # some
-        
+       
+        # serialize only the photo field that separates the image from the rest of the data
         user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
         if user_serializer.is_valid():
             user_serializer.save()  # Attempt to save to the database
@@ -147,12 +131,9 @@ def change_profile_picture(request):
 def get_profile_pic(request):
     try:
         user_id = request.GET.get('user_id')
-        logger.info(f'User ID: {user_id}')
-
         user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
 
         user_serializer = UserSerializerPicture(instance = user, many=False, partial=True)
-        logger.info(f'User serializer successful')
         return JsonResponse(user_serializer.data, safe=False)
     except Users.DoesNotExist:
         return HttpResponseServerError("User not found")
