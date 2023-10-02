@@ -53,7 +53,7 @@ def full_name_check(full_name:str):
     full name must be at least 4 characters and contain at least one space.
     '''
     if full_name.count(' ') == 0:
-        raise ValueError('Invalid full name')
+        return HttpResponseServerError('full name is invalid')
 
 def phone_number_check(phone_number:str):
     '''
@@ -99,7 +99,7 @@ def checks_inputs_register_form(user_data):
             del user_data['user_password_2'] # don't needs to be save in the db
 
             logger.info(f'User data after checks and after del: {user_data}')
-            return user_data.data
+            return user_data
         else:
             return HttpResponseServerError("Passwords don't match.")
         
