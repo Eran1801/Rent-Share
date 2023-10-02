@@ -52,7 +52,7 @@ def full_name_check(full_name:str) -> bool:
     check if the full name is valid
     full name must be at least 4 characters and contain at least one space.
     '''
-    if len(full_name) < 4 or full_name.count(' ') == 0:
+    if full_name.count(' ') == 0:
         return HttpResponseServerError('Invalid full name')
 
 def phone_number_check(phone_number:str) -> bool:
@@ -62,7 +62,6 @@ def phone_number_check(phone_number:str) -> bool:
     '''
     if len(phone_number) != 10:
         return HttpResponseServerError('Invalid phone number')
-
 
 def checks_inputs_register_form(user_data):
 
