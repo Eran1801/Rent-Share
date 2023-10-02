@@ -88,8 +88,7 @@ def register(request, user_id = 0):
 
         if user_password == user_password_2: # checking if 2 user passwords are equal
 
-            user_data['user_password'] = hash_password(user_password) # encrypt before saving
-
+            # return associated error message if the input is invalid
             if not check_full_name:
                 return HttpResponseServerError('Invalid full name')
 
@@ -106,7 +105,8 @@ def register(request, user_id = 0):
                 return HttpResponseServerError('Invalid password')
 
             del user_data['user_password_2'] # don't needs to be save in the db
-            
+            user_data['user_password'] = hash_password(user_password) # encrypt before saving
+
             users_serializer = UsersSerializer(data=user_data)
             if users_serializer.is_valid():
                 users_serializer.save() # save to db

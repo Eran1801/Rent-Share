@@ -103,7 +103,7 @@ def extract_post_data(post_data):
         post_data_dict = {}
 
         user = post_data.get('user')
-        post_data_dict['post_user_id'] = user.get('user_id')
+        post_data_dict['post_user_i'] = user.get('user_id')
         post_data_dict['post_city'] = post_data.get('post_city')
         post_data_dict['post_street'] = post_data.get('post_street')
         post_data_dict['post_building_number'] = post_data.get('post_building_number')
@@ -115,6 +115,7 @@ def extract_post_data(post_data):
 
         logger.info(f'post_data_dict: {post_data_dict}')
         return post_data_dict
+    
     except Exception as e:
         logger.error(f"extract_post_data: {e}")
         return HttpResponseServerError('An error occurred while extracting post data')
