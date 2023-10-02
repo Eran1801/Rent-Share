@@ -53,7 +53,7 @@ def full_name_check(full_name:str) -> bool:
     full name must be at least 4 characters and contain at least one space.
     '''
     if full_name.count(' ') == 0:
-        return HttpResponseServerError('Invalid full name')
+        raise ValueError('Invalid full name')
 
 def phone_number_check(phone_number:str) -> bool:
     '''
@@ -71,25 +71,25 @@ def checks_inputs_register_form(user_data):
     user_password = user_data.get('user_password')
     user_password_2 = user_data.get('user_password_2')
 
-    # checks valid register input from user
-    full_name_check(user_full_name)
-    phone_number_check(user_phone_number)
-    check_valid_password(user_password)
+    try:
 
-    if user_password == user_password_2: # checking if 2 user passwords are equal
-
+        # checks valid register input from user
         email_exists(user_email)
         phone_exists(user_phone_number)
         full_name_check(user_full_name)
         phone_number_check(user_phone_number)
         check_valid_password(user_password)
 
-        user_data['user_password'] = hash_password(user_password) # encrypt before saving
-        del user_data['user_password_2'] # don't needs to be save in the db
-        return user_data
-    
-    else:
-        return HttpResponseServerError("Passwords don't match.")
+        if user_password == user_password_2: # checking if 2 user passwords are equal
+
+            user_data['user_password'] = hash_password(user_password) # encrypt before saving
+            del user_data['user_password_2'] # don't needs to be save in the db
+            return user_data
+        else:
+            return HttpResponseServerError("Passwords don't match.")
+        
+    except ValueError as e:
+        return HttpResponseServerError(str(e))
 
 @api_view(['POST'])
 @csrf_exempt
