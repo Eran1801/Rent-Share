@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.DEBUG)
 PORT = os.environ.get('EMAIL_PORT')
 EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
 FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
-PASSWORD_EMAIL = os.environ.get('COMPANY_EMAIL_PASSWORD')
+PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
 
 def check_valid_password(pas:str) -> bool:
     '''check if the password is valid'''
