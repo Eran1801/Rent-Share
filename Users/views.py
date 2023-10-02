@@ -49,7 +49,8 @@ def full_name_check(full_name:str) -> bool:
     check if the full name is valid
     full name must be at least 4 characters and contain at least one space.
     '''
-    return True if len(full_name) >= 4 and full_name.count(' ') > 0 else False
+    space_place = full_name.find(' ') # to ensure that there is a space in the full name
+    return True if len(full_name) >= 3 and space_place != -1 and len(full_name[space_place:]) > 0 else False
 
 def phone_number_check(phone_number:str) -> bool:
     '''
@@ -89,14 +90,14 @@ def register(request, user_id = 0):
 
             user_data['user_password'] = hash_password(user_password) # encrypt before saving
 
+            if not check_full_name:
+                return HttpResponseServerError('Invalid full name')
+
             if email_exists(user_email): 
                 return HttpResponseServerError('Email already exists')
             
             if phone_exists(user_phone_number):
                 return HttpResponseServerError('Phone number already exists')
-            
-            if not check_full_name:
-                return HttpResponseServerError('Invalid full name')
             
             if not check_phone_number:
                 return HttpResponseServerError('Invalid phone number')
