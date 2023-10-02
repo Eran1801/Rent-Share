@@ -14,14 +14,15 @@ import re
 import hashlib
 import logging
 from email.message import EmailMessage
+import os
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-PORT = 587
-EMAIL_SERVER = "smtp-mail.outlook.com"  # Adjust server address, if you are not using @outlook
-FROM_EMAIL = "rentbuzz@outlook.com"
-PASSWORD_EMAIL = 'MorEran1302'
+PORT = os.environ.get('EMAIL_PORT')
+EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
+FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
+PASSWORD_EMAIL = os.environ.get('COMPANY_EMAIL_PASSWORD')
 
 def check_valid_password(pas:str) -> bool:
     '''check if the password is valid'''
@@ -252,7 +253,7 @@ def send_email(sender_email,receiver_email,message,subject):
         # Create the base text message.
         msg = EmailMessage()
         msg["Subject"] = subject
-        msg["From"] = formataddr(("RentBuzz", f"{sender_email}"))
+        msg["From"] = formataddr(("Rent Share", f"{sender_email}"))
         msg["To"] = receiver_email
 
         msg.set_content(message)
