@@ -185,7 +185,7 @@ def delete_user(request):
         return HttpResponseServerError("Error deleting user")
 
 def generate_random_digits() -> str:
-    return ''.join(random.choice('0123456789') for _ in range(6))
+    return ''.join(random.choice('0123456789') for _ in range(4))
 
 @api_view(['GET'])
 @csrf_exempt
