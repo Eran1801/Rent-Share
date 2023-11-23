@@ -226,13 +226,8 @@ def reset_password(request):
         data = request.data
 
         user_email = data.get('user_email').lower() # lower case email
-        user_code_input = data.get('user_code_input')
-        user_code_send = data.get('user_code_send')
         user_password = data.get('user_password')
         user_password_2 = data.get('user_password_2')
-
-        if user_code_input != user_code_send:
-            return HttpResponseServerError("Code is incorrect")
         
         if not check_valid_password(user_password):
             return HttpResponseServerError("Password is invalid")
@@ -244,9 +239,11 @@ def reset_password(request):
             return JsonResponse("Password reset successfully", safe=False)
         else:
             return HttpResponseServerError("Passwords don't match.")
+        
     except Exception as e:
         logger.error('Error reset password: %s', e)
         return HttpResponseServerError("Error reset password")
+
   
 def send_email(sender_email,receiver_email,message,subject):
     try:

@@ -86,7 +86,6 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# todo: put vars to env
 DATABASES = {
     'default': { 
         'ENGINE': 'django.db.backends.mysql',
