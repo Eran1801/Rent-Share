@@ -32,7 +32,7 @@ def change_personal_info(request):
             if not full_name_check(full_name):
                 return HttpResponseServerError("Full name is invalid")
             else:
-                user.user_full_name = full_name
+                user.user_full_name = full_name # changing the 
 
         if email != user.user_email:
             if email_exists(email) == True:

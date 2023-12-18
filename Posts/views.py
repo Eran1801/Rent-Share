@@ -21,38 +21,53 @@ import json
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-def process_apartments(apartment_data):
+def process_apartments(apartment_data) -> list:
     '''This function will be used to process the apartments data and hold each apartment in a list'''
-    apartments_list = []
+    try:
+        apartments_list = []
 
-    for apr in apartment_data:
-        apartments_list.append(apr)
+        logger.info(f'apartment_data: {apartment_data}')
 
-    return apartments_list
+        for apr in apartment_data:
+            apartments_list.append(apr)
+
+        return apartments_list
+    
+    except Exception as e:
+        logger.error(f"process_apartments: {e}")
+        return HttpResponseServerError('An error occurred while processing apartments')
 
 def group_apartments_by_location(apartments_data):
     '''This function will be used to group the apartments by location based on city, address, building number, and apartment number'''
 
-    grouped_apartments = {}
+    try:
+        grouped_apartments = {}
 
-    # Iterate over each apartment in the list and get only the relevant fields
-    for apartment_data in apartments_data:
-        location_key = (
-            apartment_data['post_city'],
-            apartment_data['post_street'],
-            apartment_data['post_building_number'],
-            apartment_data['post_apartment_number']
-        )
+        logger.info(f'apartments_data: {apartments_data}')
 
-        # If the location key is not in the dictionary, add it with an empty list as the value
-        if location_key not in grouped_apartments:
-            # create a new key in the dictionary only if it doesn't exist
-            # because if we have the same address we can post more then one on apartment
-            grouped_apartments[location_key] = []
+        # Iterate over each apartment in the list and get only the relevant fields
+        for apartment_data in apartments_data:
+            location_key = (
+                apartment_data['post_city'],
+                apartment_data['post_street'],
+                apartment_data['post_building_number'],
+                apartment_data['post_apartment_number']
+            )
 
-        grouped_apartments[location_key].append(apartment_data)
+            # If the location key is not in the dictionary, add it with an empty list as the value
+            if location_key not in grouped_apartments:
+                # create a new key in the dictionary only if it doesn't exist
+                # because if we have the same address we can post more then one on apartment
+                grouped_apartments[location_key] = []
+            else:
+                # if the key exist we append the apartment to the list
+                grouped_apartments[location_key].append(apartment_data)
 
-    return grouped_apartments
+        return grouped_apartments
+    
+    except Exception as e:
+        logger.error(f"group_apartments_by_location: {e}")
+        return HttpResponseServerError('An error occurred while grouping apartments by location')
 
 def convert_to_json(grouped_apartments):
     json_result = []
@@ -191,8 +206,8 @@ def get_all_posts(request):
 
 def filter_cond(city,street,building,apr_number):
     '''This function will gather all the values for the query to the db for extract the right post'''
-
     try:
+        # we add the proof_image_confirmed to the filter conditions because we want to show only the posts that the admin approved
         filter_conditions = {'post_city': city, 'proof_image_confirmed': True}
 
         if street != 'null' and street != '':
@@ -231,17 +246,22 @@ def get_post_by_parm(request):
             return HttpResponseBadRequest("City field is required")
         
         filter_conditions = filter_cond(post_city,post_street,post_building_number,post_apartment_number)
+        logger.info(f'filter_conditions: {filter_conditions}')
         post = Post.objects.filter(**filter_conditions)
         logger.info(f'post: {post}')
 
         if post.exists():
+            logger.info('inside post.exists')
             try:
                 post_serializer = PostSerializerAll(post, many=True)
 
                 # process the apartments to send it as json to the frontend 
                 apartments = process_apartments(post_serializer.data)
+                logger.info(f'apartments: {apartments}')
                 grouped_apartments = group_apartments_by_location(apartments) 
+                logger.info(f'grouped_apartments: {grouped_apartments}')
                 json_result = convert_to_json(grouped_apartments)
+                logger.info(f'json_result: {json_result}')
 
                 return JsonResponse('{' + json_result + '}', safe=False)   
             except :
