@@ -59,9 +59,9 @@ def group_apartments_by_location(apartments_data):
                 # create a new key in the dictionary only if it doesn't exist
                 # because if we have the same address we can post more then one on apartment
                 grouped_apartments[location_key] = []
-            else:
-                # if the key exist we append the apartment to the list
-                grouped_apartments[location_key].append(apartment_data)
+            
+            # if the key exist we append the apartment to the list
+            grouped_apartments[location_key].append(apartment_data)
 
         return grouped_apartments
     
