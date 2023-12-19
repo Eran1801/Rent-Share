@@ -189,7 +189,7 @@ def add_post(request):
 
     except Exception as e:
         logger.error(f"add_post : {e}")
-        return HttpResponseServerError(str(e)) #! needs to check older version and change in add_post
+        return HttpResponseServerError('An error occurred while adding a new post')
 
 @api_view(['GET'])
 @csrf_exempt
@@ -251,7 +251,6 @@ def get_post_by_parm(request):
         logger.info(f'post: {post}')
 
         if post.exists():
-            logger.info('inside post.exists')
             try:
                 post_serializer = PostSerializerAll(post, many=True)
 
@@ -328,7 +327,7 @@ def update_description_post(request):
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
-            return HttpResponseBadRequest(f"An error occurred, update_description_post: {e}")
+            return HttpResponseBadRequest("An error occurred update_description_post")
 
 @api_view(['DELETE'])
 @csrf_exempt
@@ -345,5 +344,5 @@ def delete_post(request):
     except Post.DoesNotExist:
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
-            return HttpResponseBadRequest(f"An error occurred, delete_post: {e}")
+            return HttpResponseBadRequest("An error occurred during delete_post")
 

@@ -12,6 +12,9 @@ from Posts.views import *
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+def check_email_valid(email:str)->bool:
+    return True if email.count('@') == 1 or email.count('.') >= 1 else False
+       
 @api_view(['PUT'])
 @csrf_exempt
 def change_personal_info(request):
@@ -30,20 +33,23 @@ def change_personal_info(request):
         # Check if fields have changed
         if full_name != user.user_full_name:
             if not full_name_check(full_name):
-                return HttpResponseServerError("Full name is invalid")
+                return HttpResponseServerError("Invalid full name")
             else:
                 user.user_full_name = full_name # changing the 
 
         if email != user.user_email:
             if email_exists(email) == True:
-                return HttpResponseServerError("Email already exists in our system")
-            user.user_email = email
+                return HttpResponseServerError("Email already exists")
+            elif check_email_valid(email):
+                return HttpResponseServerError("Email is invalid")
+            else:
+                user.user_email = email
 
         if phone != user.user_phone:
             if phone_number_check(phone) == False:
                 return HttpResponseServerError("Phone number is invalid")
             if phone_exists(phone) == True:
-                return HttpResponseServerError("Phone number already exists in our system")
+                return HttpResponseServerError("Phone number already exists")
             user.user_phone = phone
         
         user.save()  # save changes to the database, but only the one the user changed
@@ -54,7 +60,7 @@ def change_personal_info(request):
 
     except Exception as e:
         logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred")
+        return HttpResponseServerError("An error occurred during personal info update")
     
 @api_view(['PUT'])
 @csrf_exempt
@@ -75,7 +81,7 @@ def change_password(request):
             return HttpResponseServerError("Old password is incorrect")
         
         if new_password != new_password_confirm:
-            return HttpResponseServerError("Passwords don't match")
+            return HttpResponseServerError("Passwords don't match.")
         
         if check_valid_password(new_password) == False:
             return HttpResponseServerError("Password is invalid")
@@ -85,13 +91,12 @@ def change_password(request):
 
         return JsonResponse("Password updated successfully", safe=False)
 
-
     except Users.DoesNotExist:
         return HttpResponseServerError("User not found")
     
     except Exception as e:
         logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred")
+        return HttpResponseServerError("An error occurred during password update")
     
 @api_view(['PUT'])
 @csrf_exempt
@@ -103,11 +108,11 @@ def change_profile_picture(request):
         user_id = user_data.get('user_id')
 
         profile_image_base64 = user_data.get('profile_image')  # Extract the first item from the list
-        proof_image_file = convert_base64(profile_image_base64, "profile_image")
+        profile_image_file = convert_base64(profile_image_base64, "profile_image")
 
         user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
 
-        data = {'user_profile_pic': proof_image_file}
+        data = {'user_profile_pic': profile_image_file}
        
         # serialize only the photo field that separates the image from the rest of the data
         user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
@@ -117,7 +122,7 @@ def change_profile_picture(request):
             return JsonResponse("Profile picture successfully saved in db", safe=False)
         else:
             logger.debug(user_serializer.errors)
-            return HttpResponseServerError("Post validation failed")
+            return HttpResponseServerError("An error occurred during profile picture upload")
 
     except Users.DoesNotExist:
         return HttpResponseServerError("User not found")

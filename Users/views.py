@@ -58,20 +58,11 @@ def phone_number_check(phone_number:str) -> bool:
     check if the phone number is valid.
     phone number must be at least 10 characters.    
     '''
-    return True if len(phone_number) == 10 else False
+    return True if len(phone_number) == 10 and phone_number.isdigit() else False
 
 @api_view(['POST'])
 @csrf_exempt
 def register(request, user_id = 0): 
-    '''
-    This function will be used to add a new user.
-    user_id = 0, start user_id from 0 and increment by 1 each time a new user is added.
-    MORE FROM THE FUNCTION:
-    1. check if the email and phone number already exist in the db.
-    2. check if the full name, phone number, and password are valid.
-    3. encrypt the password before saving it to the db.
-    4. save the user to the db.
-    '''
 
     try:
         user_data = request.data 
@@ -156,7 +147,7 @@ def login(request):
             
             return JsonResponse(response_data)
         else:
-            return HttpResponseServerError("Passwords don't match. Login fail")
+            return HttpResponseServerError("Passwords Incorrect. Login fail")
         
     except Users.DoesNotExist:
         return HttpResponseServerError("Email don't exists. Login fail")
@@ -195,8 +186,8 @@ def forget_password(request):
         user_email = request.GET.get('user_email').lower() # lower case email
 
         # First check if the email is in the DB, if the user doesn't exist, return error
-        if not email_exists(user_email):
-            return HttpResponseServerError('Email not exists')
+        if email_exists(user_email) is False:
+            return HttpResponseServerError('Email dont exists')
 
         confirm_code = generate_random_digits()
         msg = f'קוד האימות שלך הוא : {confirm_code}\nהקוד תקף ל-5 דקות'
