@@ -30,6 +30,7 @@ class Post(models.Model):
     post_rent_end = models.DateField(null=False, blank=False)
 
     post_description = models.CharField(max_length=2000,null=False, blank=False)
+    post_rating = models.CharField(max_length=3,null=False, blank=False, default='0')
 
     confirmation_status = models.CharField(max_length=1,null=False,blank=False,default='0') # after confirm from admin turn to True
 
