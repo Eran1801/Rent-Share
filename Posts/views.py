@@ -127,6 +127,8 @@ def extract_post_data(post_data):
         post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
         post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
         post_data_dict['post_description'] = post_data.get('post_description')
+        # 0 - not confirmed, 1 - confirmed, 2 - decided in the future
+        post_data_dict['confirmation_status'] = '0'
 
         logger.info(f'post_data_dict: {post_data_dict}')
         return post_data_dict
@@ -172,8 +174,12 @@ def add_post(request):
     try:
         post_data = request.data    
         logger.info(f'post_data: {post_data}')
+
+        # inside convert_images_to_files we extract the post data and convert the images to files
         post_data_dict = convert_images_to_files(post_data)
+
         logger.info(f'post_data_dict: {post_data_dict}')
+
         post = PostSerializerAll(data=post_data_dict, partial=True)
         logger.info(f'post: {post}')
 
@@ -208,7 +214,7 @@ def filter_cond(city,street,building,apr_number):
     '''This function will gather all the values for the query to the db for extract the right post'''
     try:
         # we add the proof_image_confirmed to the filter conditions because we want to show only the posts that the admin approved
-        filter_conditions = {'post_city': city, 'proof_image_confirmed': True}
+        filter_conditions = {'post_city': city, 'confirmation_status': '1'}
 
         if street != 'null' and street != '':
             filter_conditions['post_street'] = street
@@ -319,7 +325,7 @@ def update_description_post(request):
             return JsonResponse("The description is the same", safe=False)
         else: 
             post.post_description = post_description
-            post.proof_image_confirmed = False
+            post.confirmation_status = '0'
             post.save() # save the updated post to the db
             send_email(FROM_EMAIL,FROM_EMAIL,f"User : {post.post_user_id}\nPost : {post_id}\ndescription has changed","Post description changed") # email to myself to notice the change
             return JsonResponse("Description info updated successfully", safe=False)

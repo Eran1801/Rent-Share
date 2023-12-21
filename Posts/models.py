@@ -5,7 +5,7 @@ from Users.models import Users
 import os
 import uuid
 from django.db import models
-from TelAviv import settings
+
 
 def generate_unique_filename(instance, filename: str):
     _, ext = os.path.splitext(filename)
@@ -31,7 +31,7 @@ class Post(models.Model):
 
     post_description = models.CharField(max_length=2000,null=False, blank=False)
 
-    proof_image_confirmed = models.BooleanField(default=False) # after confirm from admin turn to True
+    confirmation_status = models.CharField(max_length=1,null=False,blank=False,default='0') # after confirm from admin turn to True
 
     # Files to confirm that the user rent the house
     proof_image = models.FileField(upload_to=generate_unique_filename,null=False,blank=False)
