@@ -89,11 +89,11 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 DATABASES = {
     'default': { 
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME'), 
+        'NAME': 'railway',# os.environ.get('DB_NAME'), 
         'USER': 'root', 
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
+        'PASSWORD': 'CEC-3eCFcEGfg4-fc1aHH-eh2Add4gBH',#os.environ.get('DB_PASSWORD'),
+        'HOST': 'roundhouse.proxy.rlwy.net', # os.environ.get('DB_HOST'),
+        'PORT': '57645',#os.environ.get('DB_PORT'),
         'OPTIONS': {
             'charset': 'utf8',  # Example character encoding setting
         },
