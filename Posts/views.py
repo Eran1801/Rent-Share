@@ -127,7 +127,6 @@ def extract_post_data(post_data):
         post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
         post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
         post_data_dict['post_description'] = post_data.get('post_description')
-        # 0 - not confirmed, 1 - confirmed, 2 - decided in the future
         post_data_dict['confirmation_status'] = '0'
         post_data_dict['post_rating'] = post_data.get('post_rating')
 
