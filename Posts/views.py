@@ -115,6 +115,7 @@ def extract_post_data(post_data):
         post_data_dict = {}
 
         user = post_data.get('user')
+        logger.info(f'user: {user}')
         post_data_dict['post_user_id'] = user.get('user_id')
         post_data_dict['post_city'] = post_data.get('post_city')
         post_data_dict['post_street'] = post_data.get('post_street')
@@ -174,7 +175,6 @@ def add_post(request):
 
         # inside convert_images_to_files we extract the post data and convert the images to files
         post_data_dict = convert_images_to_files(post_data)
-
         logger.info(f'post_data_dict: {post_data_dict}')
 
         post = PostSerializerAll(data=post_data_dict, partial=True)
@@ -186,7 +186,8 @@ def add_post(request):
 
             # adding the right message to the user inbox
             user_id = post_data_dict.get('post_user_id')
-            message = confirmation_status_messages_dict(post_data_dict.get('user').get('user_full_name')).get('0')
+            user_full_name = post_data.get('user').get('user_full_name')
+            message = confirmation_status_messages_dict(user_full_name).get('0')
             adding_message_to_inbox(user_id,message,'user_message_1')
 
             # send email to the company email that a new post was added
