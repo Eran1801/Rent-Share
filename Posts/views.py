@@ -186,7 +186,7 @@ def add_post(request):
 
             # adding the right message to the user inbox
             user_id = post_data_dict.get('post_user_id')
-            message = confirmation_status_messages_dict(post_data_dict.get('user').user_full_name).get('0')
+            message = confirmation_status_messages_dict(post_data_dict.get('user').get('user_full_name')).get('0')
             adding_message_to_inbox(user_id,message,'user_message_1')
 
             # send email to the company email that a new post was added
