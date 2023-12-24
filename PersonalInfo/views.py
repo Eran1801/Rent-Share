@@ -8,13 +8,18 @@ import Users
 from Users.serializers import UserSerializerPicture
 from Users.views import *
 from Posts.views import *
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from Posts.models import Post
+from .models import Inbox
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-user_name = ""
+def confirmation_status_messages_dict(user_name):
 
-confirmation_status_messages = {
+    confirmation_status_messages = {
     "0": f"שלום {user_name}\nחוות הדעת שלך התקבלה אצלנו וממתינה לאישור.\nהודעה נוספת תישלח אלייך במידה וחוות הדעת תאושר.\nתוכל גם להתעדכן בסטטוס שלה באיזור \"הדירות שלי.\"",
     "1": f"שלום {user_name}\nחוות הדעת שלך אושרה.\nתודה רבה על תרומתך לקהילה.\nעכשיו תוכל למצוא אותה באזור חיפוש הדירות.",
     "2": f"שלום {user_name}\nזיהינו אי התאמה בין פרטי הדירה (עיר / רחוב / מספר בניין / דירה) לבין חוזה השכירות.\nאנא הוסף שנית את חוות הדעת עם הפרטים הנכונים.",
@@ -22,11 +27,55 @@ confirmation_status_messages = {
     "4": f"שלום {user_name}\nזיהינו אי התאמה בין העלאת הטופס אשר עוזר לנו לאמת שאכן השכרת את הדירה (חוזה שכירות / חשבון חשמל / חשבון ארנונה).\nאנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים.",
     "5": f"שלום {user_name}\nזיהינו אי התאמה בין הפרטים בתעודה מזהה שהועלתה בחוות הדעת לבין חוזה השכירו.\nאנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים.",
     "6": f"שלום {user_name}\nזיהינו שפה לא נאותה במתן חוות הדעת שלך.\nאנא היכנס ל\"דירות שלי\" ועדכן את חוות הדעת על ידי שינוי המלל בתיבת הטקסט ולחיצה על כפתור \"עדכן חוות דעת\""
-}
+    }
+
+    return confirmation_status_messages
+
+
+def adding_message_to_inbox(user_id,message,message_field):
+    '''This function will be used to add a message to the user inbox'''
+    try:  
+        # get the Inbox instance for the given user_id
+        inbox, created = Inbox.objects.get_or_create(user_id=user_id) # created = True if the object was created, False if it was retrieved from the database
+        
+        # Dynamically set the message to the specified field
+        if hasattr(inbox, message_field):
+            setattr(inbox, message_field, message)
+            inbox.save()
+        else:
+            return HttpResponseServerError(f'Invalid field: {message_field}')
+
+    except Exception as e:
+        logger.error(f"adding_message_to_inbox: {e}")
+        return HttpResponseServerError('An error occurred while adding message to inbox')
+    
+
+@receiver(post_save, sender=Post) # sender it from where the change will be made
+def confirmation_status_update(sender, instance, created, **kwargs):
+    if created is False:
+        # returns a dictionary of fields that have changed since the model was last saved
+        changed_fields = instance.get_dirty_fields()
+        logger.info(f'Changed fields: {changed_fields}')
+
+        if 'confirmation_status' in changed_fields:
+            # get the user that made the change in the database
+            user = Inbox.objects.get(user_id = instance.post_user_id)
+            logger.info(f'User:{user}')
+
+            # get the confirmation status of the post
+            confirmation_status = changed_fields.get('confirmation_status')
+            logger.info(f'Confirmation status: {confirmation_status}')
+
+            message = confirmation_status_messages_dict(user.user_id).get(confirmation_status)
+            logger.info(f'Message: {message}')
+
+            message_field = f'user_message_{confirmation_status+1}'
+            adding_message_to_inbox(user.user_id,message,message_field)
 
 def check_email_valid(email:str)->bool:
     return True if email.count('@') == 1 or email.count('.') >= 1 else False
        
+
 @api_view(['PUT'])
 @csrf_exempt
 def change_personal_info(request):
@@ -73,7 +122,8 @@ def change_personal_info(request):
     except Exception as e:
         logger.error(f'Error: {e}')
         return HttpResponseServerError("An error occurred during personal info update")
-    
+
+
 @api_view(['PUT'])
 @csrf_exempt
 def change_password(request):
@@ -109,7 +159,8 @@ def change_password(request):
     except Exception as e:
         logger.error(f'Error: {e}')
         return HttpResponseServerError("An error occurred during password update")
-    
+
+
 @api_view(['PUT'])
 @csrf_exempt
 def change_profile_picture(request):
@@ -142,6 +193,7 @@ def change_profile_picture(request):
     except Exception as e:
         logger.error(f'Error: {e}')
         return HttpResponseServerError("An error occurred during profile picture upload")
+  
     
 @api_view(['GET'])
 @csrf_exempt

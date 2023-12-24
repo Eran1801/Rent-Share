@@ -1,4 +1,3 @@
-from collections import Counter
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
@@ -6,15 +5,13 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
-from Users.models import Users
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from Posts.models import Post
 import base64
 from django.core.files.base import ContentFile
 from Users.views import *
-from datetime import datetime
-from collections import OrderedDict
 import json
+from PersonalInfo.views import confirmation_status_messages_dict,adding_message_to_inbox
 
 
 # Define the logger at the module level
@@ -165,7 +162,7 @@ def convert_images_to_files(post_data):
     except Exception as e:
         logger.error(f"convert_images_to_files: {e}")
         return HttpResponseServerError('An error occurred while converting images to files')
-
+    
 @api_view(['POST'])
 @csrf_exempt
 def add_post(request):
@@ -186,6 +183,13 @@ def add_post(request):
         if post.is_valid():
             logger.info('after post.is_valid')
             post.save()
+
+            # adding the right message to the user inbox
+            user_id = post_data_dict.get('post_user_id')
+            message = confirmation_status_messages_dict(post_data_dict.get('user').user_full_name).get('0')
+            adding_message_to_inbox(user_id,message,'user_message_1')
+
+            # send email to the company email that a new post was added
             msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
             subject = "New post"
             send_email(FROM_EMAIL, FROM_EMAIL, msg, subject)

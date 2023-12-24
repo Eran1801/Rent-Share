@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from PersonalInfo.models import Messages
+from PersonalInfo.models import Inbox
 
-class MessagesSerializer(serializers.ModelSerializer):
+class InboxSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Messages
+        model = Inbox
         fields = '__all__'

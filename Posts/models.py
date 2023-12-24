@@ -5,14 +5,23 @@ from Users.models import Users
 import os
 import uuid
 from django.db import models
+from datetime import datetime
+from dirtyfields import DirtyFieldsMixin
 
 
 def generate_unique_filename(instance, filename: str):
     _, ext = os.path.splitext(filename)
-    unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
-    return os.path.join('Posts', str(instance.post_user_id), str(instance.post_id), filename[:filename.index('.')] , unique_filename)
+    # unique_filename = f"{uuid.uuid4()}_{int(time.time())}_{ext}"
 
-class Post(models.Model):
+    # Format the current time to include only date, hour, and minute
+    formatted_time = datetime.now().strftime("%Y%m%d_%H%M")
+
+    # Create the unique filename    
+    ext = "ext" 
+    unique_filename = f"{uuid.uuid4()}_{formatted_time}_{ext}"
+    return os.path.join('Posts', str(f'User id = {instance.post_user_id}'), str(f'Post id = {instance.post_id}'), filename[:filename.index('.')] , unique_filename)
+
+class Post(DirtyFieldsMixin,models.Model):
     
     post_id = models.AutoField(primary_key=True)  # create primary key
 
