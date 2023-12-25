@@ -8,3 +8,4 @@ class Inbox(models.Model):
     user_message_4 = models.CharField(max_length=200, default="")
     user_message_5 = models.CharField(max_length=200, default="")
     user_message_6 = models.CharField(max_length=200, default="")
+
