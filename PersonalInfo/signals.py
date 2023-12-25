@@ -2,7 +2,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from Posts.models import Post
 from .models import Inbox
-from .views import confirmation_status_messages_dict, adding_message_to_inbox
 import logging
 
 
@@ -11,6 +10,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 @receiver(post_save, sender=Post) # sender it from where the change will be made
 def confirmation_status_update(sender, instance, created, **kwargs):
+
+    from PersonalInfo.views import confirmation_status_messages_dict, adding_message_to_inbox
+
     if created is False:
         # returns a dictionary of fields that have changed since the model was last saved
         changed_fields = instance.get_dirty_fields()
