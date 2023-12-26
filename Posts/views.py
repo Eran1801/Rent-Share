@@ -12,7 +12,7 @@ from django.core.files.base import ContentFile
 from Users.views import *
 import json
 from PersonalInfo.models import Inbox
-from PersonalInfo.views import *
+from PersonalInfo.views import confirmation_status_messages
 
 
 # Define the logger at the module level
@@ -184,11 +184,14 @@ def add_post(request):
         if post.is_valid():
             logger.info('after post.is_valid')
             saved_post = post.save()
+            logger.info(f'saved_post: {saved_post} and his type is {type(saved_post)}')
 
             # create a new value in Inbox table for this user with the right message and post_id
             user_name = post_data.get('user').get('user_full_name')
+            logger.info(f'user_name: {user_name}')
             message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
-            Inbox.objects.create(user_id=saved_post.get('post_user_id'),post_id=saved_post.post_id,user_message=message)
+            logger.info(f'message: {message}')
+            Inbox.objects.create(user_id=saved_post.post_user_id,post_id=saved_post.post_id,user_message=message)
 
             # send email to the company email that a new post was added
             msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
