@@ -7,8 +7,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+# sender it from where the change will be made
 
-@receiver(post_save, sender=Post) # sender it from where the change will be made
+@receiver(post_save, sender=Post) 
 def confirmation_status_update(sender, instance, created, **kwargs):
 
     from PersonalInfo.views import confirmation_status_messages_dict, adding_message_to_inbox

@@ -11,7 +11,8 @@ import base64
 from django.core.files.base import ContentFile
 from Users.views import *
 import json
-from PersonalInfo.views import confirmation_status_messages_dict,adding_message_to_inbox
+from PersonalInfo.models import Inbox
+from PersonalInfo.views import confirmation_status_messages
 
 
 # Define the logger at the module level
@@ -182,13 +183,12 @@ def add_post(request):
 
         if post.is_valid():
             logger.info('after post.is_valid')
-            post.save()
+            saved_post = post.save()
 
-            # adding the right message to the user inbox
-            user_id = post_data_dict.get('post_user_id')
-            user_full_name = post_data.get('user').get('user_full_name')
-            message = confirmation_status_messages_dict(user_full_name).get('0')
-            adding_message_to_inbox(user_id,message,'user_message_1')
+            # create a new value in Inbox table for this user with the right message and post_id
+            user_name = post_data.get('user').get('user_full_name')
+            message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
+            Inbox.objects.create(user_id=saved_post.get('post_user_id'),post_id=saved_post.get('post_id'),user_message=message)
 
             # send email to the company email that a new post was added
             msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
@@ -202,6 +202,7 @@ def add_post(request):
         logger.error(f"add_post : {e}")
         return HttpResponseServerError('An error occurred while adding a new post')
 
+
 @api_view(['GET'])
 @csrf_exempt
 def get_all_posts(request):
@@ -214,6 +215,7 @@ def get_all_posts(request):
     except Exception as e:
          logger.error(f"get_all_posts : {e}")
          return HttpResponseServerError("An error occurred during get_all_posts")
+
 
 def filter_cond(city,street,building,apr_number):
     '''This function will gather all the values for the query to the db for extract the right post'''
@@ -237,6 +239,7 @@ def filter_cond(city,street,building,apr_number):
     except Exception as e:
         logger.error(f"filter_cond : {e}")
         return HttpResponseServerError("An error occurred during filter_cond")
+
 
 @api_view(['GET'])
 @csrf_exempt
@@ -283,6 +286,7 @@ def get_post_by_parm(request):
          logger.error(f"get_posts : {e}")
          return HttpResponseServerError("An error occurred get_posts")
 
+
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_post_id(request):
@@ -299,6 +303,7 @@ def get_post_by_post_id(request):
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred get_post_by_id: {e}")
 
+
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_user_id(request):
@@ -313,7 +318,8 @@ def get_post_by_user_id(request):
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
-    
+
+
 @api_view(['PUT'])
 @csrf_exempt
 def update_description_post(request):
@@ -340,6 +346,7 @@ def update_description_post(request):
     except Exception as e:
             return HttpResponseBadRequest("An error occurred update_description_post")
 
+
 @api_view(['DELETE'])
 @csrf_exempt
 def delete_post(request):
@@ -357,3 +364,15 @@ def delete_post(request):
     except Exception as e:
             return HttpResponseBadRequest("An error occurred during delete_post")
 
+
+@api_view(['GET'])
+@csrf_exempt
+def get_posts_excluding_confirmed(request):
+    '''This function will be used to get all the posts in the db 'Posts' table'''
+    try:
+        posts = Post.objects.filter(confirmation_status='0')
+        post_serialize = PostSerializerAll(posts, many=True)
+
+        return JsonResponse(post_serialize.data, safe=False)
+    except Exception as e:
+        return HttpResponseServerError("An error occurred during get_posts_excluding_confirmed")

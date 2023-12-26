@@ -17,7 +17,7 @@ from .models import Inbox
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-def confirmation_status_messages_dict(user_name):
+def confirmation_status_messages(user_name,key:str):
 
     confirmation_status_messages = {
     "0": f"שלום {user_name} \nחוות הדעת שלך התקבלה אצלנו וממתינה לאישור.\nהודעה נוספת תישלח אלייך במידה וחוות הדעת תאושר.\nתוכל גם להתעדכן בסטטוס שלה באיזור \"הדירות שלי.\"",
@@ -29,49 +29,9 @@ def confirmation_status_messages_dict(user_name):
     "6": f"שלום {user_name} \nזיהינו שפה לא נאותה במתן חוות הדעת שלך.\nאנא היכנס ל\"דירות שלי\" ועדכן את חוות הדעת על ידי שינוי המלל בתיבת הטקסט ולחיצה על כפתור \"עדכן חוות דעת\""
     }
 
-    return confirmation_status_messages
+    return confirmation_status_messages.get(key)
 
-
-def adding_message_to_inbox(user_id,message,message_field):
-    '''This function will be used to add a message to the user inbox'''
-    try:  
-        # get the Inbox instance for the given user_id
-        inbox, created = Inbox.objects.get_or_create(user_id=user_id) # created = True if the object was created, False if it was retrieved from the database
-        
-        # Dynamically set the message to the specified field
-        if hasattr(inbox, message_field):
-            setattr(inbox, message_field, message)
-            inbox.save()
-        else:
-            return HttpResponseServerError(f'Invalid field: {message_field}')
-
-    except Exception as e:
-        logger.error(f"adding_message_to_inbox: {e}")
-        return HttpResponseServerError('An error occurred while adding message to inbox')
     
-
-@receiver(post_save, sender=Post) # sender it from where the change will be made
-def confirmation_status_update(sender, instance, created, **kwargs):
-    if created is False:
-        # returns a dictionary of fields that have changed since the model was last saved
-        changed_fields = instance.get_dirty_fields()
-        logger.info(f'Changed fields: {changed_fields}')
-
-        if 'confirmation_status' in changed_fields:
-            # get the user that made the change in the database
-            user = Inbox.objects.get(user_id = instance.post_user_id)
-            logger.info(f'User:{user}')
-
-            # get the confirmation status of the post
-            confirmation_status = changed_fields.get('confirmation_status')
-            logger.info(f'Confirmation status: {confirmation_status}')
-
-            message = confirmation_status_messages_dict(user.user_id).get(confirmation_status)
-            logger.info(f'Message: {message}')
-
-            message_field = f'user_message_{confirmation_status+1}'
-            adding_message_to_inbox(user.user_id,message,message_field)
-
 def check_email_valid(email:str)->bool:
     return True if email.count('@') == 1 or email.count('.') >= 1 else False
        
