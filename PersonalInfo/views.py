@@ -25,7 +25,8 @@ def confirmation_status_messages(user_name,key:str):
 
     return confirmation_status_messages.get(key)
 
-    
+
+# In registration, the email is checked by Django but when he change it we need to check it again
 def check_email_valid(email:str)->bool:
     return True if email.count('@') == 1 or email.count('.') >= 1 else False
        

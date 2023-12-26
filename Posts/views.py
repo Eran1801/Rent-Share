@@ -1,7 +1,6 @@
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
-from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
@@ -11,7 +10,7 @@ import base64
 from django.core.files.base import ContentFile
 from Users.views import *
 import json
-from PersonalInfo.models import Inbox
+from PersonalInfo.models import UserInbox
 from PersonalInfo.views import confirmation_status_messages
 
 
@@ -191,7 +190,7 @@ def add_post(request):
             logger.info(f'user_name: {user_name}')
             message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
             logger.info(f'message: {message}')
-            Inbox.objects.create(user_id=saved_post.post_user_id,post_id=saved_post.post_id,user_message=message)
+            UserInbox.objects.create(user_id=saved_post.post_user_id,post_id=saved_post.post_id,user_message=message)
 
             # send email to the company email that a new post was added
             msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
