@@ -4,7 +4,7 @@ from django.views.decorators.csrf import \
 from rest_framework.decorators import api_view
 import logging
 from Inbox.models import UserInbox
-from PersonalInfo.views import confirmation_status_messages
+from Inbox.views import confirmation_status_messages
 from Posts.serializers import PostSerializerAll
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from .models import Post
