@@ -3,6 +3,8 @@ from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
 import logging
+from Inbox.models import UserInbox
+from PersonalInfo.views import confirmation_status_messages
 from Posts.serializers import PostSerializerAll
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from .models import Post
@@ -10,9 +12,6 @@ import base64
 from django.core.files.base import ContentFile
 from Users.views import *
 import json
-from PersonalInfo.models import UserInbox
-from PersonalInfo.views import confirmation_status_messages
-
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'Posts.apps.PostsConfig',
     'PersonalInfo.apps.PersonalInfoConfig',
+    'Inbox.apps.InboxConfig',
     'storages',
 ]
 
