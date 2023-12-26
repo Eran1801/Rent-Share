@@ -6,13 +6,13 @@ from rest_framework.decorators import api_view
 import logging
 from Posts.serializers import PostSerializerAll
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
-from Posts.models import Post
+from .models import Post
 import base64
 from django.core.files.base import ContentFile
 from Users.views import *
 import json
 from PersonalInfo.models import Inbox
-from PersonalInfo.views import confirmation_status_messages
+from PersonalInfo.views import *
 
 
 # Define the logger at the module level

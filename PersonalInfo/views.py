@@ -1,18 +1,12 @@
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
-from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
 import logging
 import Users
 from Users.serializers import UserSerializerPicture
 from Users.views import *
 from Posts.views import *
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from Posts.models import Post
-from .models import Inbox
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
