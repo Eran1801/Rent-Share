@@ -6,6 +6,7 @@ from Users.models import Users
 from .models import UserInbox
 from Posts.models import Post
 import logging
+from .serializers import UserInboxSerializerAll
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -34,13 +35,15 @@ def update_confirm_status(request):
         user_id = data.get('user_id')
         post_id = data.get('post_id')
 
-        # update in post db confirm status value
+        # update in 'Post' db the confirm status value
         post_to_update = Post.objects.filter(post_id=post_id)
         post_to_update.update(confirmation_status=confirm_status)
 
         user_name = Users.objects.get(user_id=user_id).user_full_name
+        # extract the right message according to the confirm_status value
         message = confirmation_status_messages(user_name,confirm_status)
 
+        # Add a message to the 'UserInbox' user db 
         UserInbox.create(user_id=user_id,post_id=post_id,user_message=message)
         return JsonResponse('update_confirm_status end successfuly',safe=False)
 
@@ -49,7 +52,20 @@ def update_confirm_status(request):
         return HttpResponseServerError("An error occurred during update_confirm_status")
 
 
-
+@api_view(['GET'])
+@csrf_exempt
+def get_all_user_messages(request):
+    '''This function will activate when the user will enter the section of 'My Messages' '''
+    try:
+        user_id = request.GET.get('user_id')
+        
+        messages = UserInbox.objects.filter(user_id=user_id)
+        messages_serlizer = UserInboxSerializerAll(messages,many=True)
+        return JsonResponse(messages_serlizer.data, safe=False)
+    
+    except Exception as e:
+        logger.error(e)
+        return HttpResponseServerError('An error occurred during get_all_user_messages')
 
 
 

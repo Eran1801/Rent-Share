@@ -162,7 +162,31 @@ def convert_images_to_files(post_data):
     except Exception as e:
         logger.error(f"convert_images_to_files: {e}")
         return HttpResponseServerError('An error occurred while converting images to files')
+
+def filter_cond(city,street,building,apr_number):
+    '''This function will gather all the values for the query to the db for extract the right post'''
+    try:
+        # we add the proof_image_confirmed to the filter conditions because we want to show only the posts that the admin approved
+        filter_conditions = {'post_city': city, 'confirmation_status': '1'}
+
+        if street != 'null' and street != '':
+            filter_conditions['post_street'] = street
+        
+        if building != 'null' and building != '':
+            filter_conditions['post_building_number'] = building
+        
+        if apr_number != 'null' and apr_number != '':
+            filter_conditions['post_apartment_number'] = apr_number
+            if filter_cond.get('post_building_number') != None:
+                filter_conditions['post_apartment_number'] = apr_number
+
+        return filter_conditions
     
+    except Exception as e:
+        logger.error(f"filter_cond : {e}")
+        return HttpResponseServerError("An error occurred during filter_cond")
+
+
 @api_view(['POST'])
 @csrf_exempt
 def add_post(request):
@@ -216,30 +240,6 @@ def get_all_posts(request):
     except Exception as e:
          logger.error(f"get_all_posts : {e}")
          return HttpResponseServerError("An error occurred during get_all_posts")
-
-
-def filter_cond(city,street,building,apr_number):
-    '''This function will gather all the values for the query to the db for extract the right post'''
-    try:
-        # we add the proof_image_confirmed to the filter conditions because we want to show only the posts that the admin approved
-        filter_conditions = {'post_city': city, 'confirmation_status': '1'}
-
-        if street != 'null' and street != '':
-            filter_conditions['post_street'] = street
-        
-        if building != 'null' and building != '':
-            filter_conditions['post_building_number'] = building
-        
-        if apr_number != 'null' and apr_number != '':
-            filter_conditions['post_apartment_number'] = apr_number
-            if filter_cond.get('post_building_number') != None:
-                filter_conditions['post_apartment_number'] = apr_number
-
-        return filter_conditions
-    
-    except Exception as e:
-        logger.error(f"filter_cond : {e}")
-        return HttpResponseServerError("An error occurred during filter_cond")
 
 
 @api_view(['GET'])
@@ -369,9 +369,12 @@ def delete_post(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_posts_excluding_confirmed(request):
-    '''This function will be used to get all the posts in the db 'Posts' table'''
+    '''
+    This function will be used to get all the posts in the db 'Posts'
+    table excluding the post with confirmation_status = '1'
+    '''
     try:
-        posts = Post.objects.filter(confirmation_status='0')
+        posts = Post.objects.exclude(confirmation_status='1')
         post_serialize = PostSerializerAll(posts, many=True)
 
         return JsonResponse(post_serialize.data, safe=False)
