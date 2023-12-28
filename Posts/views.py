@@ -368,13 +368,13 @@ def delete_post(request):
 
 @api_view(['GET'])
 @csrf_exempt
-def get_posts_excluding_confirmed(request):
+def get_all_posts_zero_status(request):
     '''
     This function will be used to get all the posts in the db 'Posts'
-    table excluding the post with confirmation_status = '1'
+    but only the posts with confirmation_status = '0'
     '''
     try:
-        posts = Post.objects.exclude(confirmation_status='1')
+        posts = Post.objects.filter(confirmation_status='0')
         post_serialize = PostSerializerAll(posts, many=True)
 
         return JsonResponse(post_serialize.data, safe=False)
