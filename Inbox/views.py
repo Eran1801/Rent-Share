@@ -75,7 +75,7 @@ def update_confirm_status(request):
         logger.info(f'message = {message}')
 
         # Add a message to the 'UserInbox' user db 
-        UserInbox.create(user_id=user_id,post_id=post_id,user_message=message)
+        UserInbox.objects.create(user_id=user_id,post_id=post_id,user_message=message)
         return JsonResponse('update_confirm_status end successfuly',safe=False)
 
     except Exception as e:
