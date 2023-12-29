@@ -208,18 +208,19 @@ def add_post(request):
             saved_post = post.save()
             logger.info(f'saved_post: {saved_post} and his type is {type(saved_post)}')
 
-            # create a new value in Inbox table for this user with the right message and post_id
-            user_name = post_data.get('user').get('user_full_name')
-            logger.info(f'user_name: {user_name}')
-            message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
-            logger.info(f'message: {message}')
-            UserInbox.objects.create(user_id=saved_post.post_user_id,post_id=saved_post.post_id,user_message=message)
+            if isinstance(saved_post,Post):
+                # create a new value in Inbox table for this user with the right message and post_id
+                user_name = post_data.get('user').get('user_full_name')
+                logger.info(f'user_name: {user_name}')
+                message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
+                logger.info(f'message: {message}')
+                UserInbox.objects.create(user_id=saved_post.post_user_id,post_id=saved_post.post_id,user_message=message)
 
-            # send email to the company email that a new post was added
-            msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
-            subject = "New post"
-            send_email(FROM_EMAIL, FROM_EMAIL, msg, subject)
-            return JsonResponse("Post successfully saved in db", safe=False)
+                # send email to the company email that a new post was added
+                msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
+                subject = "New post"
+                send_email(FROM_EMAIL, FROM_EMAIL, msg, subject)
+                return JsonResponse("Post successfully saved in db", safe=False)
         else:
             return HttpResponseServerError("Post validation failed")
 

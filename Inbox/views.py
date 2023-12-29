@@ -11,18 +11,59 @@ from .serializers import UserInboxSerializerAll
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-def confirmation_status_messages(name,key:str):
+def confirmation_status_messages(user_name,city,street,build_number,apr_number,confirm_status):
+    '''This function extract the right message according to the confirm_status was givin'''
 
-    user_name = name
+    message_0 = (
+        f"שלום {user_name} \n"
+        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
+        "חוות הדעת שלך התקבלה אצלנו וממתינה לאישור.\n"
+        "הודעה נוספת תישלח אלייך במידה וחוות הדעת תאושר.\n"
+        "תוכל גם להתעדכן בסטטוס שלה באיזור \"הדירות שלי.\""
+    )
 
-    # separate variables for each message
-    message_0 = f"שלום {user_name} \nחוות הדעת שלך התקבלה אצלנו וממתינה לאישור.\nהודעה נוספת תישלח אלייך במידה וחוות הדעת תאושר.\nתוכל גם להתעדכן בסטטוס שלה באיזור \"הדירות שלי.\""
-    message_1 = f"שלום {user_name} \nחוות הדעת שלך אושרה.\nתודה רבה על תרומתך לקהילה.\nעכשיו תוכל למצוא אותה באזור חיפוש הדירות."
-    message_2 = f"שלום {user_name} \nזיהינו אי התאמה בין פרטי הדירה (עיר / רחוב / מספר בניין / דירה) לבין חוזה השכירות.\nאנא הוסף שנית את חוות הדעת עם הפרטים הנכונים."
-    message_3 = f"שלום {user_name} \nזיהינו אי התאמה בין תאריכי הכניסה והיציאה שהזנת לבין מה שרשום בחוזה השכירות.\nאנא הגש את חוות הדעת מחדש עם הפרטים הנכונים."
-    message_4 = f"שלום {user_name} \nזיהינו אי התאמה בין העלאת הטופס אשר עוזר לנו לאמת שאכן השכרת את הדירה (חוזה שכירות / חשבון חשמל / חשבון ארנונה).\nאנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
-    message_5 = f"שלום {user_name} \nזיהינו אי התאמה בין הפרטים בתעודה מזהה שהועלתה בחוות הדעת לבין חוזה השכירו.\nאנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
-    message_6 = f"שלום {user_name} \nזיהינו שפה לא נאותה במתן חוות הדעת שלך.\nאנא היכנס ל\"דירות שלי\" ועדכן את חוות הדעת על ידי שינוי המלל בתיבת הטקסט ולחיצה על כפתור \"עדכן חוות דעת\""
+    message_1 = (
+        f"שלום {user_name} \n"
+        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
+        "חוות הדעת שלך אושרה.\n"
+        "תודה רבה על תרומתך לקהילה.\n"
+        "עכשיו תוכל למצוא אותה באזור חיפוש הדירות."
+    )
+
+    message_2 = (
+        f"שלום {user_name} \n"
+        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
+        "זיהינו אי התאמה בין פרטי הדירה (עיר / רחוב / מספר בניין / דירה) לבין חוזה השכירות.\n"
+        "אנא הוסף שנית את חוות הדעת עם הפרטים הנכונים."
+    )
+
+    message_3 = (
+        f"שלום {user_name} \n"
+        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
+        "זיהינו אי התאמה בין תאריכי הכניסה והיציאה שהזנת לבין מה שרשום בחוזה השכירות.\n"
+        "אנא הגש את חוות הדעת מחדש עם הפרטים הנכונים."
+    )
+
+    message_4 = (
+        f"שלום {user_name} \n"
+        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
+        "זיהינו אי התאמה בין העלאת הטופס אשר עוזר לנו לאמת שאכן השכרת את הדירה (חוזה שכירות / חשבון חשמל / חשבון ארנונה).\n"
+        "אנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
+    )
+
+    message_5 = (
+        f"שלום {user_name} \n"
+        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
+        "זיהינו אי התאמה בין הפרטים בתעודה מזהה שהועלתה בחוות הדעת לבין חוזה השכירו.\n"
+        "אנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
+    )
+
+    message_6 = (
+        f"שלום {user_name} \n"
+        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
+        "זיהינו שפה לא נאותה במתן חוות הדעת שלך.\n"
+        "אנא היכנס ל\"דירות שלי\" ועדכן את חוות הדעת על ידי שינוי המלל בתיבת הטקסט ולחיצה על כפתור \"עדכן חוות דעת\"."
+    )
 
     confirmation_status_messages = {
         "0": message_0,
@@ -34,7 +75,7 @@ def confirmation_status_messages(name,key:str):
         "6": message_6
     }
 
-    return confirmation_status_messages.get(key)
+    return confirmation_status_messages.get(confirm_status)
 
 @api_view(["POST"])
 @csrf_exempt
@@ -64,13 +105,13 @@ def update_confirm_status(request):
 
         post_to_update.save() # save the changes after extract and update the right values.
 
-        # extract the needed values for the message, like user name, address. 
+        # extract the needed value of user_name for the message
         user_name = Users.objects.get(user_id=user_id).user_full_name
 
         logger.info(f'user name = {user_name}')
 
         # extract the right message according to the confirm_status value
-        message = confirmation_status_messages(user_name,confirm_status)
+        message = confirmation_status_messages(user_name,post_city,post_street,post_bulding_number,post_apr_number,confirm_status)
 
         logger.info(f'message = {message}')
 
@@ -89,6 +130,8 @@ def get_all_user_messages(request):
     '''This function will activate when the user will enter the section of 'My Messages' '''
     try:
         user_id = request.GET.get('user_id')
+
+        logger.info(f'user_id = {user_id}')
         
         messages = UserInbox.objects.filter(user_id=user_id)
         messages_serlizer = UserInboxSerializerAll(messages,many=True)
