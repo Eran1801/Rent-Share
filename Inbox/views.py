@@ -46,9 +46,15 @@ def update_confirm_status(request):
         user_id = data.get('user_id')
         post_id = data.get('post_id')
 
+        logger.info(f'cofirm_status = {confirm_status}')
+        logger.info(f'user_id = {user_id}')
+        logger.info(f'post_id = {post_id}')
+
         # update in 'Post' db the confirm status var
         post_to_update = Post.objects.get(post_id=post_id)
         post_to_update.confirmation_status = confirm_status
+
+        logger.info(f'post_to_update.confirmation_status = {post_to_update.confirmation_status}')
 
         # extract the needed values for the message
         post_city = post_to_update.post_city
@@ -61,8 +67,12 @@ def update_confirm_status(request):
         # extract the needed values for the message, like user name, address. 
         user_name = Users.objects.get(user_id=user_id).user_full_name
 
+        logger.info(f'user name = {user_name}')
+
         # extract the right message according to the confirm_status value
         message = confirmation_status_messages(user_name,confirm_status)
+
+        logger.info(f'message = {message}')
 
         # Add a message to the 'UserInbox' user db 
         UserInbox.create(user_id=user_id,post_id=post_id,user_message=message)
