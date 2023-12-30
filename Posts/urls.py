@@ -12,4 +12,5 @@ urlpatterns = [
     re_path(r'^delete_post/$', views.delete_post, name='delete_post'),
     re_path(r"^get_post_by_parm/$", views.get_post_by_parm, name="get_post_by_parm"),
     re_path(r"^get_all_posts_zero_status/$", views.get_all_posts_zero_status, name="get_all_posts_zero_status"),
+    re_path(r"^update_post/$",views.update_post,name='update_post')
 ]

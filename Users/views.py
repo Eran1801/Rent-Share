@@ -24,6 +24,25 @@ EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
 FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
 PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
 
+def send_email(sender_email,receiver_email,message,subject):
+    try:
+        # Create the base text message.
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = formataddr(("Rent Share", f"{sender_email}"))
+        msg["To"] = receiver_email
+
+        msg.set_content(message)
+
+        with smtplib.SMTP(EMAIL_SERVER, PORT) as server:
+            server.starttls()
+            server.login(sender_email, PASSWORD_EMAIL)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+
+    except Exception as e:
+        logger.error('Error send email: %s', e)
+        return HttpResponseServerError("Error send email")
+
 def check_valid_password(pas:str) -> bool:
     '''check if the password is valid'''
     pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)' # contains at least one upper and one lower letter and number.
@@ -234,23 +253,3 @@ def reset_password(request):
     except Exception as e:
         logger.error('Error reset password: %s', e)
         return HttpResponseServerError("Error reset password")
-
-  
-def send_email(sender_email,receiver_email,message,subject):
-    try:
-        # Create the base text message.
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = formataddr(("Rent Share", f"{sender_email}"))
-        msg["To"] = receiver_email
-
-        msg.set_content(message)
-
-        with smtplib.SMTP(EMAIL_SERVER, PORT) as server:
-            server.starttls()
-            server.login(sender_email, PASSWORD_EMAIL)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-
-    except Exception as e:
-        logger.error('Error send email: %s', e)
-        return HttpResponseServerError("Error send email")
