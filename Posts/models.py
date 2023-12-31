@@ -44,7 +44,7 @@ class Post(DirtyFieldsMixin,models.Model):
     confirmation_status = models.CharField(max_length=1,null=False,blank=False,default='0') # after confirm from admin turn to True
 
     # Files to confirm that the user rent the house
-    proof_image = models.FileField(upload_to=generate_unique_filename,null=False,blank=False)
+    rent_agreement = models.FileField(upload_to=generate_unique_filename,null=False,blank=False)
     driving_license = models.FileField(upload_to=generate_unique_filename,null=False,blank=False)
 
     apartment_pic_1 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)

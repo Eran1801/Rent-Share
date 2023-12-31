@@ -143,10 +143,10 @@ def convert_images_to_files(post_data):
     post_data_dict = extract_post_data(post_data)
 
     try:
-        proof_image_base64 = post_data.get('proof_image')
+        proof_image_base64 = post_data.get('rent_agreement')
         if proof_image_base64 is None:
             raise ValueError("A rented agreement is required")
-        post_data_dict['proof_image'] = convert_base64(proof_image_base64, "proof_image")
+        post_data_dict['rent_agreement'] = convert_base64(proof_image_base64, "rent_agreement")
 
         driving_license_base64 = post_data.get('driving_license')
         if driving_license_base64 is None:
@@ -208,22 +208,26 @@ def add_post(request):
         logger.info(f'post: {post}')
 
         if post.is_valid():
-            logger.info('after post.is_valid')
+
             saved_post = post.save()
             logger.info(f'saved_post: {saved_post} and his type is {type(saved_post)}')
 
             if isinstance(saved_post,Post):
+
                 # create a new value in Inbox table for this user with the right message and post_id
                 user_name = post_data.get('user').get('user_full_name')
                 logger.info(f'user_name: {user_name}')
+
                 message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
                 logger.info(f'message: {message}')
+
                 UserInbox.objects.create(user_id=saved_post.post_user_id,post_id=saved_post.post_id,user_message=message)
 
                 # send email to the company email that a new post was added
                 msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
                 subject = "New post"
                 send_email(FROM_EMAIL, FROM_EMAIL, msg, subject)
+                
                 return JsonResponse("Post successfully saved in db", safe=False)
         else:
             return HttpResponseServerError("Post validation failed")
