@@ -383,6 +383,11 @@ def get_all_posts_zero_status(request):
         post_serialize = PostSerializerAll(posts, many=True)
 
         return JsonResponse(post_serialize.data, safe=False)
+    
+    except ObjectDoesNotExist as e:
+        logger.error(e)
+        return HttpResponseServerError('Post not found')
+
     except Exception as e:
         return HttpResponseServerError("An error occurred during get_posts_excluding_confirmed")
     
@@ -392,28 +397,23 @@ def get_all_posts_zero_status(request):
 def update_post(request):
     '''Update post is needed when there is a problem with the input of the user like id, address..'''
     try:
-        # getting the data of the post, all of the data.
+        # getting all the data of the post
         post_data = request.data
         logger.info(f'post_data = {post_data}')
 
+        # extract the post needs to be update
         post_id = post_data.get('post_id')
         post_to_update = Post.objects.get(post_id=post_id)
 
+        # this is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
         confirm_status = post_data.get('confirm_status')
 
-        if confirm_status == '1':
-
-            post_to_update.confirmation_status = 1
-            post_to_update.save()
-
-        elif confirm_status == '2':
+        if confirm_status == '2':
             
             post_to_update.post_city = post_data.get('post_city')
             post_to_update.post_street = post_data.get('post_street')
             post_to_update.post_building_number = post_data.get('post_building_number')
             post_to_update.post_apartment_number = post_data.get('post_apartment_number')
-
-            post_to_update.save()
 
         elif confirm_status == '3':
 
@@ -425,8 +425,6 @@ def update_post(request):
 
             post_to_update.post_rent_start = new_rent_start_date
             post_to_update.post_rent_end = new_rent_end_date
-
-            post_to_update.save()
         
         elif confirm_status == '4':
 
@@ -434,7 +432,6 @@ def update_post(request):
             new_proof_image = convert_base64(rent_agreement_base64, "rent agreement")
 
             post_to_update.proof_image = new_proof_image
-            post_to_update.save()
         
         elif confirm_status == '5':
 
@@ -443,13 +440,14 @@ def update_post(request):
 
             post_to_update.driving_license = new_driving_license
 
-            post_to_update.save()            
-            
+
+        # after any change, we want to change this value to '0' that he won't show in search result until it's approved by us again.
+        post_to_update.confirmation_status = '0'
+        post_to_update.save()
+
     except ObjectDoesNotExist:
         logger.error('Post not found')
+
     except Exception as e:
         logger.error(e)
         logger.error('Something wrong with the update_post function in Posts.views')
-
-    
-    # and then based on the confirm_status to understand what to do inside a elif 
