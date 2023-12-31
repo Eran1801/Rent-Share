@@ -143,10 +143,10 @@ def convert_images_to_files(post_data):
     post_data_dict = extract_post_data(post_data)
 
     try:
-        proof_image_base64 = post_data.get('rent_agreement')
-        if proof_image_base64 is None:
+        rented_agreement_base64 = post_data.get('rent_agreement')
+        if rented_agreement_base64 is None:
             raise ValueError("A rented agreement is required")
-        post_data_dict['rent_agreement'] = convert_base64(proof_image_base64, "rent_agreement")
+        post_data_dict['rent_agreement'] = convert_base64(rented_agreement_base64, "rent_agreement")
 
         driving_license_base64 = post_data.get('driving_license')
         if driving_license_base64 is None:
