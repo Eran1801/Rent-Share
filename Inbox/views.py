@@ -76,6 +76,7 @@ def update_confirm_status(request):
 
     try:
         data = request.data
+        
         confirm_status = data.get('confirm_status')
         user_id = data.get('user_id')
         post_id = data.get('post_id')
@@ -123,10 +124,10 @@ def get_all_user_messages(request):
     '''This function will activate when the user will enter the section of 'My Messages' '''
     try:
         user_id = request.GET.get('user_id')
-
         logger.info(f'user_id = {user_id}')
         
         messages = UserInbox.objects.filter(user_id=user_id)
+
         messages_serlizer = UserInboxSerializerAll(messages,many=True)
         return JsonResponse(messages_serlizer.data, safe=False)
     
