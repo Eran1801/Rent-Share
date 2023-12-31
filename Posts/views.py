@@ -171,7 +171,7 @@ def convert_images_to_files(post_data):
 def filter_cond(city,street,building,apr_number):
     '''This function will gather all the values for the query to the db for extract the right post'''
     try:
-        # we add the proof_image_confirmed to the filter conditions because we want to show only the posts that the admin approved
+        # we add the confirmation_status to the filter conditions because we want to show only the posts that the admin approved
         filter_conditions = {'post_city': city, 'confirmation_status': '1'}
 
         if street != 'null' and street != '':
@@ -182,7 +182,7 @@ def filter_cond(city,street,building,apr_number):
         
         if apr_number != 'null' and apr_number != '':
             filter_conditions['post_apartment_number'] = apr_number
-            if filter_cond.get('post_building_number') != None:
+            if filter_conditions.get('post_building_number') != None:
                 filter_conditions['post_apartment_number'] = apr_number
 
         return filter_conditions
@@ -433,10 +433,10 @@ def update_post(request):
         
         elif confirm_status == '4':
 
-            rent_agreement_base64 = post_data.get('proof_image')
-            new_proof_image = convert_base64(rent_agreement_base64, "rent agreement")
+            rent_agreement_base64 = post_data.get('rent_agreement')
+            new_rent_agreement = convert_base64(rent_agreement_base64, "rent agreement")
 
-            post_to_update.proof_image = new_proof_image
+            post_to_update.rent_agreement = new_rent_agreement
         
         elif confirm_status == '5':
 
