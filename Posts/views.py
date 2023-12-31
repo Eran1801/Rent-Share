@@ -1,4 +1,4 @@
-from email.utils import parse_date
+from datetime import datetime
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
@@ -386,6 +386,7 @@ def get_all_posts_zero_status(request):
     except Exception as e:
         return HttpResponseServerError("An error occurred during get_posts_excluding_confirmed")
     
+    
 @api_view(['PUT'])
 @csrf_exempt
 def update_post(request):
@@ -399,7 +400,7 @@ def update_post(request):
         post_to_update = Post.objects.get(post_id=post_id)
 
         confirm_status = post_data.get('confirm_status')
-        
+
         if confirm_status == '1':
 
             post_to_update.confirmation_status = 1
@@ -419,8 +420,8 @@ def update_post(request):
             new_rent_start_date = post_data.get('post_rent_start')
             new_rent_end_date = post_data.get('post_rent_end')
 
-            new_rent_start_date = parse_date(new_rent_start_date)
-            new_rent_end_date = parse_date(new_rent_end_date)
+            new_rent_start_date = datetime.strptime(new_rent_start_date, '%Y-%m-%d').date()
+            new_rent_end_date = datetime.strptime(new_rent_end_date, '%Y-%m-%d').date()
 
             post_to_update.post_rent_start = new_rent_start_date
             post_to_update.post_rent_end = new_rent_end_date
