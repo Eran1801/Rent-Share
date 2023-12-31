@@ -144,6 +144,7 @@ def convert_images_to_files(post_data):
 
     try:
         rented_agreement_base64 = post_data.get('rent_agreement')
+        logger.info(f'rent_agg = {rented_agreement_base64}')
         if rented_agreement_base64 is None:
             raise ValueError("A rented agreement is required")
         post_data_dict['rent_agreement'] = convert_base64(rented_agreement_base64, "rent_agreement")
@@ -198,11 +199,11 @@ def add_post(request):
 
     try:
         post_data = request.data    
-        logger.info(f'post_data: {post_data}')
+        logger.info(f'post_data after request.data: {post_data}')
 
         # inside convert_images_to_files we extract the post data and convert the images to files
         post_data_dict = convert_images_to_files(post_data)
-        logger.info(f'post_data_dict: {post_data_dict}')
+        logger.info(f'post_data_dict after convert_images_to_files: {post_data_dict}')
 
         post = PostSerializerAll(data=post_data_dict, partial=True)
         logger.info(f'post: {post}')
