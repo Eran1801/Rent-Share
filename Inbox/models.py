@@ -1,7 +1,7 @@
 from django.db import models
 
 class UserInbox(models.Model):
-    id = models.AutoField(primary_key=True)
+    message_id = models.AutoField(primary_key=True)
     user_id = models.CharField(max_length=50,null=False,blank=False)
     post_id = models.CharField(max_length=50, null=False, blank=False)
     user_message = models.CharField(max_length=200, default="")
