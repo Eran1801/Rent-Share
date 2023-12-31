@@ -11,12 +11,11 @@ from .serializers import UserInboxSerializerAll
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-def confirmation_status_messages(user_name,city,street,build_number,apr_number,confirm_status):
+def confirmation_status_messages(user_name,confirm_status):
     '''This function extract the right message according to the confirm_status was givin'''
 
     message_0 = (
         f"שלום {user_name} \n"
-        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
         "חוות הדעת שלך התקבלה אצלנו וממתינה לאישור.\n"
         "הודעה נוספת תישלח אלייך במידה וחוות הדעת תאושר.\n"
         "תוכל גם להתעדכן בסטטוס שלה באיזור \"הדירות שלי.\""
@@ -24,7 +23,6 @@ def confirmation_status_messages(user_name,city,street,build_number,apr_number,c
 
     message_1 = (
         f"שלום {user_name} \n"
-        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
         "חוות הדעת שלך אושרה.\n"
         "תודה רבה על תרומתך לקהילה.\n"
         "עכשיו תוכל למצוא אותה באזור חיפוש הדירות."
@@ -32,35 +30,30 @@ def confirmation_status_messages(user_name,city,street,build_number,apr_number,c
 
     message_2 = (
         f"שלום {user_name} \n"
-        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
         "זיהינו אי התאמה בין פרטי הדירה (עיר / רחוב / מספר בניין / דירה) לבין חוזה השכירות.\n"
         "אנא הוסף שנית את חוות הדעת עם הפרטים הנכונים."
     )
 
     message_3 = (
         f"שלום {user_name} \n"
-        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
         "זיהינו אי התאמה בין תאריכי הכניסה והיציאה שהזנת לבין מה שרשום בחוזה השכירות.\n"
         "אנא הגש את חוות הדעת מחדש עם הפרטים הנכונים."
     )
 
     message_4 = (
         f"שלום {user_name} \n"
-        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
         "זיהינו אי התאמה בין העלאת הטופס אשר עוזר לנו לאמת שאכן השכרת את הדירה (חוזה שכירות / חשבון חשמל / חשבון ארנונה).\n"
         "אנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
     )
 
     message_5 = (
         f"שלום {user_name} \n"
-        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
         "זיהינו אי התאמה בין הפרטים בתעודה מזהה שהועלתה בחוות הדעת לבין חוזה השכירו.\n"
         "אנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
     )
 
     message_6 = (
         f"שלום {user_name} \n"
-        f"הודעה זו בקשר לדירה ברחוב {street} {build_number} בדירה {apr_number}.\n"
         "זיהינו שפה לא נאותה במתן חוות הדעת שלך.\n"
         "אנא היכנס ל\"דירות שלי\" ועדכן את חוות הדעת על ידי שינוי המלל בתיבת הטקסט ולחיצה על כפתור \"עדכן חוות דעת\"."
     )
