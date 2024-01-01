@@ -233,6 +233,7 @@ def add_post(request):
                 
                 return JsonResponse("Post successfully saved in db", safe=False)
         else:
+            logger.info(post.errors)
             return HttpResponseServerError("Post validation failed")
 
     except Exception as e:
