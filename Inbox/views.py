@@ -144,7 +144,7 @@ def get_all_user_messages(request):
         logger.info(f'user_id = {user_id}')
         
         user = Users.objects.get(user_id=user_id)
-        messages = user.messages.all()
+        messages = user.messages.all() # i can use the messages bceause i estblish it in the related_name in the forg key.
 
         logger.info(f'messages - {messages} and len = {len(messages)}')
 
@@ -153,7 +153,6 @@ def get_all_user_messages(request):
     
     except ObjectDoesNotExist:
         return HttpResponseServerError('Message not found')
-
 
     except Exception as e:
         logger.error(e)

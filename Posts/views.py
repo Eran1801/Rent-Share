@@ -14,7 +14,6 @@ from django.core.files.base import ContentFile
 from Users.views import *
 import json
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms.models import model_to_dict
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)

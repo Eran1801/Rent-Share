@@ -186,7 +186,7 @@ AWS_S3_SIGNATURE_VERSION = 's3v4'
 # Setting it to None allows you to control the access through bucket policies or IAM roles.
 AWS_DEFAULT_ACL = None
 
-AWS_S3_REGION_NAME = os.environ.get('AWS_REGION_NAME')
+AWS_S3_REGION_NAME = 'eu-west-3' # os.environ.get('AWS_REGION_NAME')
 
 # the custom domain to use for serving static and media files.
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
