@@ -414,7 +414,7 @@ def update_post(request):
         post_to_update = Post.objects.get(post_id=post_id)
 
         # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
-        confirm_status = post_data.get('confirm_status')
+        confirm_status = post_data.get('confirmation_status	')
 
         if confirm_status == '2':
             
@@ -448,7 +448,6 @@ def update_post(request):
 
             post_to_update.driving_license = new_driving_license
 
-        # after any change, we want to change this value to '0' that he won't show in search result until it's approved by us again.
         post_to_update.confirmation_status = '0'
         post_to_update.save()
 

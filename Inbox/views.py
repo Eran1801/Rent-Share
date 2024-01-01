@@ -12,12 +12,11 @@ from django.core.exceptions import ObjectDoesNotExist
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-def update_post(post_id, new_confirm_status, new_post_to_update) -> Post:
+def update_confirm_status_in_post(post_id, new_confirm_status) -> Post:
     '''Update the confirmation status and post_to_update field of a post.'''
     try:
         post = Post.objects.get(post_id=post_id)
         post.confirmation_status = new_confirm_status
-        post.post_to_update = new_post_to_update
         post.save()
 
         logger.info(f"Post {post_id} updated successfully.")
@@ -27,7 +26,6 @@ def update_post(post_id, new_confirm_status, new_post_to_update) -> Post:
         logger.error(f"Post with ID {post_id} does not exist.")
         return HttpResponseServerError('An error occurred while adding a new post')
 
-    
     except Exception as e:
         logger.error(f"An error occurred while updating post {post_id}: {e}") 
         return HttpResponseServerError('An error occurred while adding a new post')
@@ -35,6 +33,7 @@ def update_post(post_id, new_confirm_status, new_post_to_update) -> Post:
 
     # if post not found
     return None
+
 
 def confirmation_status_messages(user_name,confirm_status):
     '''This function extract the right message according to the confirm_status was givin'''
@@ -112,7 +111,7 @@ def update_confirm_status(request):
         logger.info(f'post_id = {post_id}')
 
         # update in 'Post' db the confirm status var
-        post_to_update = update_post(post_id,confirm_status,data)
+        post_to_update = update_confirm_status_in_post(post_id,confirm_status)
 
         logger.info(f'post_to_update.confirmation_status = {post_to_update.confirmation_status}')
 
