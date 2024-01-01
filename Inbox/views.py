@@ -144,11 +144,15 @@ def get_all_user_messages(request):
         logger.info(f'user_id = {user_id}')
         
         messages = UserInbox.objects.filter(user_id=user_id)
-        logger.info(f'messages - {messages}')
+        logger.info(f'messages - {messages} and len = {len(messages)}')
 
         messages_serlizer = UserInboxSerializerAll(messages,many=True)
         return JsonResponse(messages_serlizer.data, safe=False)
     
+    except ObjectDoesNotExist:
+        return HttpResponseServerError('Message not found')
+
+
     except Exception as e:
         logger.error(e)
         return HttpResponseServerError('An error occurred during get_all_user_messages')
