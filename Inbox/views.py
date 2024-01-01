@@ -144,6 +144,7 @@ def get_all_user_messages(request):
         logger.info(f'user_id = {user_id}')
         
         messages = UserInbox.objects.filter(user_id=user_id)
+        logger.info(f'messages - {messages}')
 
         messages_serlizer = UserInboxSerializerAll(messages,many=True)
         return JsonResponse(messages_serlizer.data, safe=False)
