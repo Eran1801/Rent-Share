@@ -413,7 +413,7 @@ def update_post(request):
         post_id = post_data.get('post_id')
         post_to_update = Post.objects.get(post_id=post_id)
 
-        # this is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
+        # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
         confirm_status = post_data.get('confirm_status')
 
         if confirm_status == '2':
@@ -448,10 +448,11 @@ def update_post(request):
 
             post_to_update.driving_license = new_driving_license
 
-
         # after any change, we want to change this value to '0' that he won't show in search result until it's approved by us again.
         post_to_update.confirmation_status = '0'
         post_to_update.save()
+
+        return JsonResponse('Success to update the post',safe=False)
 
     except ObjectDoesNotExist:
         logger.error('Post not found')
@@ -459,3 +460,35 @@ def update_post(request):
     except Exception as e:
         logger.error(e)
         logger.error('Something wrong with the update_post function in Posts.views')
+
+
+@api_view(['PUT'])
+@csrf_exempt
+def update_aprtemanet_pics(request):
+
+    try:
+        post_data = request.data
+        post_id = post_data.get('post_id')
+
+        post_to_update = Post.objects.get(post_id=post_id)
+
+        logger.info(f'update_aprtemanet_pics - post_to_update = {post_to_update}')
+
+        max_pics = 4
+        for i in range(max_pics):
+            pic_base64 = post_data.get(f'apartment_pic_{i+1}')
+            if pic_base64 is not None:
+                '''setattr is used for dynamically setting an attribute of an object,
+                identified by a string name, to a specified value.'''
+                setattr(post_to_update, f'apartment_pic_{i+1}', convert_base64(pic_base64, f"apartment_pic_{i+1}"))     
+        
+        post_to_update.save()
+        return JsonResponse('update_aprtemanet_pics end successfully')
+
+    except ObjectDoesNotExist as e:
+        logger.error(f'post dont exists {e}')
+        return HttpResponseBadRequest('Post dont exists')
+    
+    except Exception as e:
+        logger.error(e)
+        return HttpResponseBadRequest('something is wrong in the update_aprtemanet_pics')
