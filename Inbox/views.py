@@ -7,9 +7,34 @@ from .models import UserInbox
 from Posts.models import Post
 import logging
 from .serializers import UserInboxSerializerAll
+from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+def update_post(post_id, new_confirm_status, new_post_to_update) -> Post:
+    '''Update the confirmation status and post_to_update field of a post.'''
+    try:
+        post = Post.objects.get(post_id=post_id)
+        post.confirmation_status = new_confirm_status
+        post.post_to_update = new_post_to_update
+        post.save()
+
+        logger.info(f"Post {post_id} updated successfully.")
+        return post
+    
+    except ObjectDoesNotExist:
+        logger.error(f"Post with ID {post_id} does not exist.")
+        return HttpResponseServerError('An error occurred while adding a new post')
+
+    
+    except Exception as e:
+        logger.error(f"An error occurred while updating post {post_id}: {e}") 
+        return HttpResponseServerError('An error occurred while adding a new post')
+
+
+    # if post not found
+    return None
 
 def confirmation_status_messages(user_name,confirm_status):
     '''This function extract the right message according to the confirm_status was givin'''
@@ -70,6 +95,7 @@ def confirmation_status_messages(user_name,confirm_status):
 
     return confirmation_status_messages.get(confirm_status)
 
+
 @api_view(["POST"])
 @csrf_exempt
 def update_confirm_status(request):
@@ -86,18 +112,9 @@ def update_confirm_status(request):
         logger.info(f'post_id = {post_id}')
 
         # update in 'Post' db the confirm status var
-        post_to_update = Post.objects.get(post_id=post_id)
-        post_to_update.confirmation_status = confirm_status
+        post_to_update = update_post(post_id,confirm_status,data)
 
         logger.info(f'post_to_update.confirmation_status = {post_to_update.confirmation_status}')
-
-        # extract the needed values for the message
-        post_city = post_to_update.post_city
-        post_street = post_to_update.post_street
-        post_bulding_number = post_to_update.post_building_number
-        post_apr_number = post_to_update.post_apartment_number
-
-        post_to_update.save() # save the changes after extract and update the right values.
 
         # extract the needed value of user_name for the message
         user_name = Users.objects.get(user_id=user_id).user_full_name
@@ -105,7 +122,7 @@ def update_confirm_status(request):
         logger.info(f'user name = {user_name}')
 
         # extract the right message according to the confirm_status value
-        message = confirmation_status_messages(user_name,post_city,post_street,post_bulding_number,post_apr_number,confirm_status)
+        message = confirmation_status_messages(user_name, confirm_status)
 
         logger.info(f'message = {message}')
 

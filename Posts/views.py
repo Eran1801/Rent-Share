@@ -89,8 +89,10 @@ def convert_base64(base64_str, filename):
         ContentFile: The converted image data as a Django ContentFile.
     '''
     try:
+
         # split the base64 string into format and image data parts
         format, image_str = base64_str.split(';base64,')
+        logger.info(f'format = {format} , image_str = {image_str}')
         
         # extract the image file extension from the format part
         ext = format.split('/')[-1]
@@ -112,7 +114,7 @@ def convert_base64(base64_str, filename):
         logger.error(f"convert_base64_to_image: {e}")
         return HttpResponseServerError('An error occurred while converting base64 to image')
 
-def extract_post_data(post_data):
+def extract_post_data(post_data:str) -> dict:
 
     try:
         post_data_dict = {}
@@ -138,7 +140,7 @@ def extract_post_data(post_data):
         logger.error(f"extract_post_data: {e}")
         return HttpResponseServerError('An error occurred while extracting post data')
 
-def convert_images_to_files(post_data):
+def convert_images_to_files(post_data:dict) -> dict:
     number_of_pics = 4
     post_data_dict = extract_post_data(post_data)
 
