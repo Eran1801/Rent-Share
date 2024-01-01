@@ -145,7 +145,7 @@ def convert_images_to_files(post_data:dict) -> dict:
     post_data_dict = extract_post_data(post_data)
 
     try:
-        rented_agreement_base64 = post_data.get('rent_agreement')
+        rented_agreement_base64 = post_data.get('proof_image')
         logger.info(f'rent_agg = {rented_agreement_base64}')
         if rented_agreement_base64 is None:
             raise ValueError("A rented agreement is required")
