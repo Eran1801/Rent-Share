@@ -416,9 +416,10 @@ def update_post(request):
         # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
         confirm_status = post_data.get('confirmation_status	')
         logger.info(f'confirm_status inside update_post in Posts = {confirm_status}')
+        logger.info(f'confirm_status type = {type(confirm_status)}')
 
         if confirm_status == '2':
-            
+        
             logger.info('post_city_before - {post_to_update.post_city}')
             post_to_update.post_city = post_data.get('post_city')
 
@@ -458,6 +459,11 @@ def update_post(request):
 
         post_to_update.confirmation_status = '0'
         post_to_update.save()
+        logger.info(f'post_city_after - {post_to_update.post_city}')
+        logger.info(f'post_street_after - {post_to_update.post_street}')
+        logger.info(f'post_building_number_after - {post_to_update.post_building_number}')
+        logger.info(f'post_apartment_number_after - {post_to_update.post_apartment_number}')
+        
 
         return JsonResponse('Success to update the post',safe=False)
 
