@@ -52,6 +52,8 @@ class Post(DirtyFieldsMixin,models.Model):
     apartment_pic_3 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
     apartment_pic_4 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
 
+    post_comments = models.CharField(max_length=2000, null=True, blank=True,default='No comment')
+
     # override the save method to customize post_id behavior.
     def save(self, *args, **kwargs):
         # check if post_id is not set (it's a new post).

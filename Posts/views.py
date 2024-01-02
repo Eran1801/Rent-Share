@@ -131,6 +131,7 @@ def extract_post_data(post_data:str) -> dict:
         post_data_dict['post_description'] = post_data.get('post_description')
         post_data_dict['confirmation_status'] = '0'
         post_data_dict['post_rating'] = post_data.get('post_rating')
+        post_data_dict['post_comment'] = post_data.get('post_comment')
 
         logger.info(f'post_data_dict: {post_data_dict}')
         return post_data_dict
