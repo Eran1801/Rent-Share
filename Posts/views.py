@@ -415,7 +415,7 @@ def update_post(request):
         logger.info(f'post_to_update = {post_to_update}')
         # confirmation_status
         # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
-        confirm_status = post_data.get('confirmation_status	')
+        confirm_status = post_data.get('confirmation_status')
         logger.info(f'confirm_status inside update_post in Posts = {confirm_status}')
         logger.info(f'confirm_status type = {type(confirm_status)}')
 
