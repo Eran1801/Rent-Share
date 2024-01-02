@@ -497,7 +497,7 @@ def update_aprtemanet_pics(request):
                 setattr(post_to_update, f'apartment_pic_{i+1}', convert_base64(pic_base64, f"apartment_pic_{i+1}"))     
         
         post_to_update.save()
-        return JsonResponse('update_aprtemanet_pics end successfully')
+        return JsonResponse('update_aprtemanet_pics end successfully',safe=False)
 
     except ObjectDoesNotExist as e:
         logger.error(f'post dont exists {e}')
@@ -505,4 +505,4 @@ def update_aprtemanet_pics(request):
     
     except Exception as e:
         logger.error(e)
-        return HttpResponseBadRequest('something is wrong in the update_aprtemanet_pics')
+        return HttpResponseBadRequest('something is wrong in the update_aprtemanet_pics',safe=False)
