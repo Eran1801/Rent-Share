@@ -102,16 +102,16 @@ def update_confirm_status(request):
     try:
         data = request.data
         
-        confirm_status = data.get('confirm_status')
+        confirmation_status = data.get('confirmation_status')
         user_id = data.get('user_id')
         post_id = data.get('post_id')
 
-        logger.info(f'cofirm_status = {confirm_status}')
+        logger.info(f'confirmation_status = {confirmation_status}')
         logger.info(f'user_id = {user_id}')
         logger.info(f'post_id = {post_id}')
 
         # update in 'Post' db the confirm status var
-        post_to_update = update_confirm_status_in_post(post_id,confirm_status)
+        post_to_update = update_confirm_status_in_post(post_id,confirmation_status)
 
         logger.info(f'post_to_update.confirmation_status = {post_to_update.confirmation_status}')
 
@@ -121,7 +121,7 @@ def update_confirm_status(request):
         logger.info(f'user name = {user_name}')
 
         # extract the right message according to the confirm_status value
-        message = confirmation_status_messages(user_name, confirm_status)
+        message = confirmation_status_messages(user_name, confirmation_status)
 
         logger.info(f'message = {message}')
 
