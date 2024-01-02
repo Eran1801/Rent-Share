@@ -447,14 +447,14 @@ def update_post(request):
         elif confirm_status == '4':
 
             rent_agreement_base64 = post_data.get('rent_agreement')
-            new_rent_agreement = convert_base64(rent_agreement_base64, "rent agreement")
+            new_rent_agreement = convert_base64(rent_agreement_base64, "new rent agreement")
 
             post_to_update.rent_agreement = new_rent_agreement
         
         elif confirm_status == '5':
 
             driving_license_base64 = post_data.get('driving_license')
-            new_driving_license = convert_base64(driving_license_base64, "driving license")
+            new_driving_license = convert_base64(driving_license_base64, "new driving license")
 
             post_to_update.driving_license = new_driving_license
 
