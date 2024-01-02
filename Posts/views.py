@@ -412,6 +412,7 @@ def update_post(request):
         # extract the post needs to be update
         post_id = post_data.get('post_id')
         post_to_update = Post.objects.get(post_id=post_id)
+        logger.info(f'post_to_update = {post_to_update}')
 
         # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
         confirm_status = post_data.get('confirmation_status	')
@@ -463,7 +464,7 @@ def update_post(request):
         logger.info(f'post_street_after - {post_to_update.post_street}')
         logger.info(f'post_building_number_after - {post_to_update.post_building_number}')
         logger.info(f'post_apartment_number_after - {post_to_update.post_apartment_number}')
-        
+
 
         return JsonResponse('Success to update the post',safe=False)
 
