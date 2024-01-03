@@ -498,10 +498,6 @@ def update_aprtemanet_pics(request):
                 content_file = convert_base64(pic_base64, f"apartment_pic_{i+1}")
                 if content_file is not None:  # check if the return value is valid
                     setattr(post_to_update, f'apartment_pic_{i+1}', content_file)
-            else:
-                # Handle the case where convert_base64 returns None
-                logger.error(f'Invalid file format for apartment_pic_{i+1}')
-                return HttpResponseBadRequest('Something went wrong in update_aprtemanet_pics')
         
         post_to_update.save()
         return JsonResponse('update_aprtemanet_pics end successfully',safe=False)
