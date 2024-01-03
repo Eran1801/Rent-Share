@@ -109,9 +109,10 @@ def convert_base64(base64_str, filename):
         # return the ContentFile object
         return content_file
     
+    
     except Exception as e:
         logger.error(f"convert_base64_to_image: {e}")
-        return HttpResponseServerError('An error occurred while converting base64 to image')
+        return None
 
 def extract_post_data(post_data:str) -> dict:
 
@@ -484,6 +485,7 @@ def update_aprtemanet_pics(request):
     try:
         post_data = request.data
         post_id = post_data.get('post_id')
+        logger.info(f'post_id_inside_update_aprtemanet_pics = {post_id}')
 
         post_to_update = Post.objects.get(post_id=post_id)
 
@@ -493,9 +495,13 @@ def update_aprtemanet_pics(request):
         for i in range(max_pics):
             pic_base64 = post_data.get(f'apartment_pic_{i+1}')
             if pic_base64 is not None:
-                '''setattr is used for dynamically setting an attribute of an object,
-                identified by a string name, to a specified value.'''
-                setattr(post_to_update, f'apartment_pic_{i+1}', convert_base64(pic_base64, f"apartment_pic_{i+1}"))     
+                content_file = convert_base64(pic_base64, f"apartment_pic_{i+1}")
+                if content_file is not None:  # check if the return value is valid
+                    setattr(post_to_update, f'apartment_pic_{i+1}', content_file)
+            else:
+                # Handle the case where convert_base64 returns None
+                logger.error(f'Invalid file format for apartment_pic_{i+1}')
+                return HttpResponseBadRequest('Something went wrong in update_aprtemanet_pics')
         
         post_to_update.save()
         return JsonResponse('update_aprtemanet_pics end successfully',safe=False)
@@ -506,4 +512,4 @@ def update_aprtemanet_pics(request):
     
     except Exception as e:
         logger.error(e)
-        return HttpResponseBadRequest('something is wrong in the update_aprtemanet_pics',safe=False)
+        return HttpResponseBadRequest('something is wrong in the update_aprtemanet_pics')
