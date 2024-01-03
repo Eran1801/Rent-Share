@@ -21,3 +21,6 @@ class Users(models.Model):
     user_email = models.EmailField(max_length=100,blank=False, null=False,unique=True)
     user_phone = models.CharField(max_length=10,blank=False, null=False,unique=True)
     user_profile_pic = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
+
+    def __str__(self):
+        return f"User Id ({self.user_id})"

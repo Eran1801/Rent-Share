@@ -17,7 +17,7 @@ def generate_unique_filename(instance, filename: str):
     formatted_time = datetime.now().strftime("%d-%m-%Y_%H-%M")
 
     unique_filename = f"{uuid.uuid4()}_{formatted_time}_{ext}"
-    return os.path.join('Posts', str(instance.post_user_id), str(f'Post id = {instance.post_id}'), filename[:filename.index('.')] , unique_filename)
+    return os.path.join('Posts', str(instance.post_user_id), str(instance.post_id), filename[:filename.index('.')] , unique_filename)
 
 class Post(DirtyFieldsMixin,models.Model):
     
@@ -51,6 +51,10 @@ class Post(DirtyFieldsMixin,models.Model):
     apartment_pic_4 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
 
     post_comments = models.CharField(max_length=2000, null=True, blank=True,default='No comment')
+
+    def __str__(self):
+        return f'Post id ({self.post_id})'
+
 
     # override the save method to customize post_id behavior.
     def save(self, *args, **kwargs):
