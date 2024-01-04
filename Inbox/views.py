@@ -1,4 +1,4 @@
-from django.http import HttpResponseServerError, JsonResponse
+from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
@@ -158,6 +158,50 @@ def get_all_user_messages(request):
         return HttpResponseServerError('An error occurred during get_all_user_messages')
 
 
+@api_view(['PUT'])
+@csrf_exempt
+def update_read_status(request):
+    try:
+        data = request.data
+
+        message_id = data.get('message_id')
+        message_to_update = UserInbox.objects.get(message_id=message_id)
+        message_to_update.read_status = '1'
+
+        message_to_update.save()
+
+        return JsonResponse('update_read_status() end succsufuly')
+
+    except UserInbox.DoesNotExist as e:
+        logger.error(e)
+        return HttpResponseBadRequest('UserInbox not found inisde update_read_status')
+    
+    except Exception as e:
+        logger.error(e)
+        return HttpResponseBadRequest('Something wont wrong inside update_read_status')
+
+
+@api_view(['DELETE'])
+@csrf_exempt
+def delete_message(request):
+    try:
+
+        message_id = request.GET.get('message_id')
+        message_to_update = UserInbox.objects.get(message_id=message_id)
+        
+        message_to_update.delete()
+
+        return JsonResponse('delete_message() end succsufuly')
+
+    except UserInbox.DoesNotExist as e:
+        logger.error(e)
+        return HttpResponseBadRequest('UserInbox not found inisde delete_message')
+    
+    except Exception as e:
+        logger.error(e)
+        return HttpResponseBadRequest('Something wont wrong inside delete_message')
+
+    
 
 
 
