@@ -170,7 +170,7 @@ def update_read_status(request):
 
         message_to_update.save()
 
-        return JsonResponse('update_read_status() end succsufuly')
+        return JsonResponse('update_read_status() end succsufuly',safe=False)
 
     except UserInbox.DoesNotExist as e:
         logger.error(e)
@@ -191,7 +191,7 @@ def delete_message(request):
         
         message_to_update.delete()
 
-        return JsonResponse('delete_message() end succsufuly')
+        return JsonResponse('delete_message() end succsufuly',safe=False)
 
     except UserInbox.DoesNotExist as e:
         logger.error(e)
