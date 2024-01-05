@@ -187,8 +187,9 @@ def delete_message(request):
     try:
 
         message_id = request.GET.get('message_id')
+        logger.info(f'message_id - {message_id}')
+
         message_to_update = UserInbox.objects.get(message_id=message_id)
-        
         message_to_update.delete()
 
         return JsonResponse('delete_message() end succsufuly',safe=False)
