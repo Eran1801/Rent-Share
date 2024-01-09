@@ -189,13 +189,12 @@ def delete_message(request):
         message_id = request.GET.get('message_id')
         logger.info(f'message_id - {message_id}')
 
-        message_to_update = UserInbox.objects.get(message_id=message_id)
-        message_to_update.delete()
+        message_to_delete = UserInbox.objects.get(message_id=message_id)
+        message_to_delete.delete()
 
         return JsonResponse('delete_message() end succsufuly',safe=False)
 
-    except UserInbox.DoesNotExist as e:
-        logger.error(e)
+    except UserInbox.DoesNotExist:
         return HttpResponseBadRequest('UserInbox not found inisde delete_message')
     
     except Exception as e:
@@ -203,6 +202,28 @@ def delete_message(request):
         return HttpResponseBadRequest('Something wont wrong inside delete_message')
 
     
+@api_view(['GET'])
+@csrf_exempt
+def has_unread_messages(request):
+    try:
+        user_id = request.GET.get('user_id')
+        user = Users.objects.get(user_id=user_id)
 
+        messages = user.messages.all()
+
+        logger.info(f'messages : {messages} and his type is {type(messages)}')
+
+        has_unread = any(mes.read_status == 1 for mes in messages)
+        
+        response = {'unread_messages' :has_unread}
+        
+        return JsonResponse(response,safe=False)
+        
+    except UserInbox.DoesNotExist:
+        return HttpResponseBadRequest('Message dont exist.')
+
+    except Exception as e:
+        logger.error(e)
+        return HttpResponseBadRequest('Something is wrong with had_unread_messages')
 
 
