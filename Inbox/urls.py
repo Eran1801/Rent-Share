@@ -10,5 +10,4 @@ urlpatterns = [
     re_path(r'^delete_message/$',views.delete_message,name='delete_message'),
     re_path(r'^has_unread_messages/$', views.has_unread_messages,name='has_unread_messages'),
     re_path(r'^all_messages_by_post_id/$',views.all_messages_by_post_id, name='all_messages_by_post_id')
-
 ]

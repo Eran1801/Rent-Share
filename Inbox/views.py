@@ -243,7 +243,6 @@ def all_messages_by_post_id(request):
 
         posts_data = []
         for post_id in unique_post_ids:
-
             post = Post.objects.get(post_id=post_id)
 
             # convert post to a dict for JSON responce
@@ -252,10 +251,11 @@ def all_messages_by_post_id(request):
             # get's all the messages of the asscoieted to this post_id
             all_post_messages = UserInbox.objects.filter(post_id=post_id).order_by('message_id')
 
+            # sotred the message inside a list for the JSON return
             message_list_sorted = [mes.user_message for mes in all_post_messages]
             post_dict['messages_sorted'] = message_list_sorted
 
-            # the actual messages in a dict form
+            # the actual messages in a dict form for the JSON return
             post_dict['massages'] = UserInboxSerializerAll(all_post_messages,many=True).data
         
             posts_data.append(post_dict)
