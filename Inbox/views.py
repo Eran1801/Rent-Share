@@ -2,6 +2,7 @@ from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonRes
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
+from Posts.serializers import PostSerializerAll
 from Users.models import Users
 from .models import UserInbox
 from Posts.models import Post
@@ -227,3 +228,47 @@ def has_unread_messages(request):
         return HttpResponseBadRequest('Something is wrong with had_unread_messages')
 
 
+@api_view(['GET'])
+@csrf_exempt
+def all_messages_by_post_id(request):
+    try:
+        user_id = request.GET.get('user_id')
+
+        # get all the messages of the user
+        user = Users.objects.get(user_id=user_id)
+        all_messages = user.messages.all()
+
+        # flatten the resulting
+        unique_post_ids = all_messages.values_list('post_id', flat=True).distinct()
+
+        posts_data = []
+        for post_id in unique_post_ids:
+
+            post = Post.objects.get(post_id=post_id)
+
+            # convert post to a dict for JSON responce
+            post_dict = {"post": PostSerializerAll(post).data}
+
+            # get's all the messages of the asscoieted to this post_id
+            all_post_messages = UserInbox.objects.filter(post_id=post_id).order_by('message_id')
+
+            message_list_sorted = [mes.user_message for mes in all_post_messages]
+            post_dict['messages_sorted'] = message_list_sorted
+
+            # the actual messages in a dict form
+            post_dict['massages'] = UserInboxSerializerAll(all_post_messages,many=True).data
+        
+            posts_data.append(post_dict)
+
+        return JsonResponse({'posts': posts_data}, safe=False)
+    
+    except Post.DoesNotExist:
+        return HttpResponseBadRequest('Post not found !')
+
+    except UserInbox.DoesNotExist:
+        return HttpResponseBadRequest('Message not found !')
+
+    except Exception as e:
+        logger.error(e)
+        return HttpResponseBadRequest('something wont wrong in all_messages_by_post_id')
+  
