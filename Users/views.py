@@ -1,11 +1,9 @@
 from email.utils import formataddr
 import random
 import smtplib
-from django.db import connection
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
-from rest_framework.parsers import JSONParser
 from django.http import *
 from rest_framework.decorators import api_view
 from Users.models import Users
@@ -24,7 +22,11 @@ EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
 FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
 PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
 
+def generate_random_digits() -> str:
+    return ''.join(random.choice('0123456789') for _ in range(4))
+
 def send_email(sender_email,receiver_email,message,subject):
+
     try:
         # Create the base text message.
         msg = EmailMessage()
@@ -44,12 +46,14 @@ def send_email(sender_email,receiver_email,message,subject):
         return HttpResponseServerError("Error send email")
 
 def check_valid_password(pas:str) -> bool:
-    '''check if the password is valid'''
+
     pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)' # contains at least one upper and one lower letter and number.
-    return True if re.match(pattern,pas) and len(pas) >= 8 else False # adding the big&equal from 8
+
+    return True if re.match(pattern,pas) and len(pas) >= 8 else False
 
 def hash_password(plain_password:str) -> str:
     '''encrypt the password user using sha256 algorithm'''
+
     sha256 = hashlib.sha256()
     sha256.update(plain_password.encode('utf-8'))
     hashed_password = sha256.hexdigest()
@@ -58,10 +62,12 @@ def hash_password(plain_password:str) -> str:
 
 def email_exists(email:str) -> bool:
     '''exists() method returns True if user_email already in the db'''
+
     return Users.objects.filter(user_email=email).exists()
 
 def phone_exists(phone:str)-> bool:
     '''returns True if at least one record matches the filter, and False if no records match.'''
+
     return Users.objects.filter(user_phone=phone).exists()
 
 def full_name_check(full_name:str) -> bool:
@@ -69,6 +75,7 @@ def full_name_check(full_name:str) -> bool:
     check if the full name is valid
     full name must be at least 4 characters and contain at least one space.
     '''
+
     space_place = full_name.find(' ') # to ensure that there is a space in the full name
     return True if len(full_name) >= 3 and space_place != -1 and len(full_name[space_place:]) > 0 else False
 
@@ -77,6 +84,7 @@ def phone_number_check(phone_number:str) -> bool:
     check if the phone number is valid.
     phone number must be at least 10 characters.    
     '''
+
     return True if len(phone_number) == 10 and phone_number.isdigit() else False
 
 @api_view(['POST'])
@@ -86,6 +94,7 @@ def register(request, user_id = 0):
     try:
         user_data = request.data 
         
+        # extract data
         user_full_name = user_data.get('user_full_name')
         user_email = user_data.get('user_email').lower() # lower case email
         user_phone_number = user_data.get('user_phone')
@@ -100,22 +109,22 @@ def register(request, user_id = 0):
         if user_password == user_password_2: # checking if 2 user passwords are equal
 
             # return associated error message if the input is invalid
-            if not check_full_name:
+            if check_full_name is False:
                 return HttpResponseServerError('Invalid full name')
 
-            if email_exists(user_email): 
+            if email_exists(user_email) is True: 
                 return HttpResponseServerError('Email already exists')
             
-            if phone_exists(user_phone_number):
+            if phone_exists(user_phone_number) is True:
                 return HttpResponseServerError('Phone number already exists')
             
-            if not check_phone_number:
+            if check_phone_number is False:
                 return HttpResponseServerError('Invalid phone number')
             
-            if not check_password:
+            if check_password is False:
                 return HttpResponseServerError('Invalid password')
 
-            del user_data['user_password_2'] # don't needs to be save in the db
+            del user_data['user_password_2'] # don't needs to be save in the db after checking
             user_data['user_password'] = hash_password(user_password) # encrypt before saving
 
             users_serializer = UsersSerializer(data=user_data)
@@ -130,30 +139,29 @@ def register(request, user_id = 0):
             
     except Exception as e:
         logger.error(e)
-        return HttpResponseServerError("Error parsing user registering data")
+        return HttpResponseServerError("Error in register function")
     
+
 @api_view(['POST'])
 @csrf_exempt
 def login(request):
-    '''
-    This function will be used to login a user.
-    1. check if the email exists in the db.
-    2. encrypt the password before comparing it to the password in the db.
-    3. check if the passwords match.
-    '''
+
     try:
         user_data = request.data
 
+        # extract the right data
         login_email_address = user_data.get('user_email').lower() # lower case email 
         login_password = user_data.get('user_password')
 
         # encrypt user password for check similarity in the db
         hash_password_login = hash_password(login_password) 
-    
-        user = Users.objects.get(user_email=login_email_address) # retrieve user from db based on email
+
+        # retrieve user from db based on email
+        user = Users.objects.get(user_email=login_email_address)
 
         if user.user_password == hash_password_login:
-
+            
+            # sending to the frontend
             response_data = {
             'user': {
                 'user_id': user.user_id,
@@ -172,39 +180,38 @@ def login(request):
         return HttpResponseServerError("Email don't exists. Login fail")
     
     except Exception as e:
-        logger.error('Error parsing user login data: %s', e)
-        return HttpResponseServerError("Error parsing user login data")
+        logger.error(e)
+        return HttpResponseServerError("Error in login function")
+
 
 @api_view(['DELETE'])
 @csrf_exempt    
 def delete_user(request):
-    '''
-    This function will be used to delete a user from the db.
-    '''
+
     try:
+        # get operation diff in extract data
         user_id = request.GET.get('user_id')
-        logger.info(f'Deleting user with id: {user_id}')
-
         user = Users.objects.get(user_id=user_id) # from db
-        logger.info(f'User with id: {user_id} found')
 
-        user.delete() # delete user from db and also his posts
+        # delete user, posts, messages from db
+        user.delete() 
+
         return JsonResponse('Delete successfully', safe=False)
+    
     except Exception as e:
-        logger.error('Error deleting user: %s', e)
-        return HttpResponseServerError("Error deleting user")
+        logger.error(e)
+        return HttpResponseServerError("Error deleting user function")
 
-def generate_random_digits() -> str:
-    return ''.join(random.choice('0123456789') for _ in range(4))
 
 @api_view(['GET'])
 @csrf_exempt
 def forget_password(request):
     try:
-
+        
+        # extract the user email
         user_email = request.GET.get('user_email').lower() # lower case email
 
-        # First check if the email is in the DB, if the user doesn't exist, return error
+        # first check if the email is in the db, if the user doesn't exist, return error
         if email_exists(user_email) is False:
             return HttpResponseServerError('Email dont exists')
 
@@ -222,12 +229,14 @@ def forget_password(request):
             },
                 'message': f"Email sent successfully with code : {confirm_code} with email {user_email}"
         }
+
         return JsonResponse(response_data, safe=False)
 
     except Exception as e:
         logger.error('Error forget password: %s', e)
-        return HttpResponseServerError("Error forget password")
+        return HttpResponseServerError("Error forget password function")
     
+
 @api_view(['PUT'])
 @csrf_exempt
 def reset_password(request):
@@ -235,21 +244,28 @@ def reset_password(request):
 
         data = request.data
 
+        # extract the right data
         user_email = data.get('user_email').lower() # lower case email
         user_password = data.get('user_password')
         user_password_2 = data.get('user_password_2')
-        
-        if not check_valid_password(user_password):
+
+        if check_valid_password(user_password) is False:
             return HttpResponseServerError("Password is invalid")
 
         if user_password == user_password_2: # checking if 2 user passwords are equal
-            user = Users.objects.get(user_email=user_email) # retrieve user from db based on email
-            user.user_password = hash_password(user_password) # encrypt before saving
+
+            # retrieve user from db based on email
+            user = Users.objects.get(user_email=user_email)
+
+            # encrypt before saving
+            user.user_password = hash_password(user_password) 
+
             user.save()
+
             return JsonResponse("Password reset successfully", safe=False)
         else:
             return HttpResponseServerError("Passwords don't match.")
         
     except Exception as e:
-        logger.error('Error reset password: %s', e)
-        return HttpResponseServerError("Error reset password")
+        logger.error(e)
+        return HttpResponseServerError("Error reset password function")
