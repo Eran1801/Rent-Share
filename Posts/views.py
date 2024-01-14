@@ -198,32 +198,25 @@ def filter_cond(city,street,building,apr_number):
 @api_view(['POST'])
 @csrf_exempt
 def add_post(request):
-    '''This function will be used to add a new post'''
 
     try:
         post_data = request.data    
-        logger.info(f'post_data after request.data: {post_data}')
 
         # inside convert_images_to_files we extract the post data and convert the images to files
         post_data_dict = convert_images_to_files(post_data)
-        logger.info(f'post_data_dict after convert_images_to_files: {post_data_dict}')
 
         post = PostSerializerAll(data=post_data_dict, partial=True)
-        logger.info(f'post: {post}')
 
         if post.is_valid():
 
             saved_post = post.save()
-            logger.info(f'saved_post: {saved_post} and his type is {type(saved_post)}')
 
             if isinstance(saved_post,Post):
 
                 # create a new value in Inbox table for this user with the right message and post_id
                 user_name = post_data.get('user').get('user_full_name')
-                logger.info(f'user_name: {user_name}')
 
                 message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
-                logger.info(f'message: {message}')
 
                 user_id = post_data.get('user').get('user_id')
                 UserInbox.objects.create(user_id=user_id,post_id=saved_post.post_id,user_message=message)
@@ -246,10 +239,12 @@ def add_post(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_all_posts(request):
-    '''This function will be used to get all the posts in the db 'Pots' table'''
+
     try:
+        # extract all the posts from the db
         all_posts = Post.objects.all()
-        all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many objects
+        all_posts_serialize = PostSerializerAll(all_posts,many=True) # many -> many posts
+
         return JsonResponse(all_posts_serialize.data, safe=False)
 
     except Exception as e:
@@ -260,9 +255,9 @@ def get_all_posts(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_parm(request):
-    '''This function will be used to get all the posts in the db 'Pots' table'''
+
     try:
-        
+        # extract the right values from the user
         post_city = request.GET.get('post_city') 
         post_street = request.GET.get('post_street')
         post_building_number = request.GET.get('post_building_number')
@@ -272,25 +267,24 @@ def get_post_by_parm(request):
         if post_city == '' and post_street == 'null' and post_apartment_number == 'null' and post_building_number == 'null': 
             return HttpResponseBadRequest("At least one field is required")
 
+        # without city you can't search anything
         if post_city == '':
             return HttpResponseBadRequest("City field is required")
-        
+
+        # create the filter conditions before extract the right posts from db
         filter_conditions = filter_cond(post_city,post_street,post_building_number,post_apartment_number)
-        logger.info(f'filter_conditions: {filter_conditions}')
+
+        # extract the posts that fill the filter_conditions
         post = Post.objects.filter(**filter_conditions)
-        logger.info(f'post: {post}')
 
         if post.exists():
             try:
                 post_serializer = PostSerializerAll(post, many=True)
 
-                # process the apartments to send it as json to the frontend 
+                # if more then one post for the same address we combined them to make it easy to the front
                 apartments = process_apartments(post_serializer.data)
-                logger.info(f'apartments: {apartments}')
                 grouped_apartments = group_apartments_by_location(apartments) 
-                logger.info(f'grouped_apartments: {grouped_apartments}')
                 json_result = convert_to_json(grouped_apartments)
-                logger.info(f'json_result: {json_result}')
 
                 return JsonResponse('{' + json_result + '}', safe=False)   
             except :
@@ -306,12 +300,13 @@ def get_post_by_parm(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_post_id(request):
-    '''This function will be used to get a post by its ID'''
+
     try:
         post_id = request.GET.get('post_id')
 
         post = Post.objects.get(post_id=post_id) # get the post using post_id
         post_serializer = PostSerializerAll(post)
+
         return JsonResponse(post_serializer.data, safe=False)
 
     except Post.DoesNotExist:
@@ -327,9 +322,11 @@ def get_post_by_user_id(request):
     try:
         user_id = request.GET.get('user_id')
 
-        posts = Post.objects.filter(post_user_id=user_id) # get the post using post_id
-        post_serializer = PostSerializerAll(posts, many=True) # more than one post
+        posts = Post.objects.filter(post_user_id=user_id)
+        post_serializer = PostSerializerAll(posts, many=True)
+
         return JsonResponse(post_serializer.data, safe=False)
+    
     except Post.DoesNotExist:    
             return HttpResponseBadRequest("Post with the given ID does not exist.")
     except Exception as e:
@@ -351,10 +348,17 @@ def update_description_post(request):
         if post.post_description == post_description:
             return JsonResponse("The description is the same", safe=False)
         else: 
+            # change the value in the db
             post.post_description = post_description
+
+             # because he changed it, admin needs to approve
             post.confirmation_status = '0'
-            post.save() # save the updated post to the db
-            send_email(FROM_EMAIL,FROM_EMAIL,f"User : {post.post_user_id}\nPost : {post_id}\ndescription has changed","Post description changed") # email to myself to notice the change
+
+            post.save()
+
+             # email to company mail to notice the change
+            send_email(FROM_EMAIL,FROM_EMAIL,f"User : {post.post_user_id}\nPost : {post_id}\ndescription has changed","Post description changed")
+
             return JsonResponse("Description info updated successfully", safe=False)
 
     except Post.DoesNotExist:
@@ -409,30 +413,20 @@ def update_post(request):
     try:
         # getting all the data of the post
         post_data = request.data
-        logger.info(f'post_data = {post_data}')
 
         # extract the post needs to be update
         post_id = post_data.get('post_id')
         post_to_update = Post.objects.get(post_id=post_id)
-        logger.info(f'post_to_update = {post_to_update}')
-        # confirmation_status
+
         # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
         confirm_status = post_data.get('confirmation_status')
-        logger.info(f'confirm_status inside update_post in Posts = {confirm_status}')
-        logger.info(f'confirm_status type = {type(confirm_status)}')
 
+        # switch case on the 'confirm_status' var
         if confirm_status == '2':
         
-            logger.info('post_city_before - {post_to_update.post_city}')
             post_to_update.post_city = post_data.get('post_city')
-
-            logger.info('post_street_before - {post_to_update.post_street}')
             post_to_update.post_street = post_data.get('post_street')
-
-            logger.info('post_building_number_before - {post_to_update.post_building_number}')
             post_to_update.post_building_number = post_data.get('post_building_number')
-
-            logger.info('post_apartment_number_before - {post_to_update.post_apartment_number}')
             post_to_update.post_apartment_number = post_data.get('post_apartment_number')
 
         elif confirm_status == '3':
@@ -460,13 +454,8 @@ def update_post(request):
 
             post_to_update.driving_license = new_driving_license
 
-        post_to_update.confirmation_status = '0'
+        post_to_update.confirmation_status = '0' # needs to approve again by the admin
         post_to_update.save()
-        logger.info(f'post_city_after - {post_to_update.post_city}')
-        logger.info(f'post_street_after - {post_to_update.post_street}')
-        logger.info(f'post_building_number_after - {post_to_update.post_building_number}')
-        logger.info(f'post_apartment_number_after - {post_to_update.post_apartment_number}')
-
 
         return JsonResponse('Success to update the post',safe=False)
 
@@ -484,12 +473,9 @@ def update_aprtemanet_pics(request):
 
     try:
         post_data = request.data
+
         post_id = post_data.get('post_id')
-        logger.info(f'post_id_inside_update_aprtemanet_pics = {post_id}')
-
         post_to_update = Post.objects.get(post_id=post_id)
-
-        logger.info(f'update_aprtemanet_pics - post_to_update = {post_to_update}')
 
         max_pics = 4
         for i in range(max_pics):
@@ -500,6 +486,7 @@ def update_aprtemanet_pics(request):
                     setattr(post_to_update, f'apartment_pic_{i+1}', content_file)
         
         post_to_update.save()
+        
         return JsonResponse('update_aprtemanet_pics end successfully',safe=False)
 
     except ObjectDoesNotExist as e:

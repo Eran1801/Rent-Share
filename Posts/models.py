@@ -1,4 +1,3 @@
-import time
 from typing import Any
 from django.db import models
 from Users.models import Users
@@ -6,7 +5,6 @@ import os
 import uuid
 from django.db import models
 from datetime import datetime
-from dirtyfields import DirtyFieldsMixin
 
 
 def generate_unique_filename(instance, filename: str):
@@ -19,7 +17,7 @@ def generate_unique_filename(instance, filename: str):
     unique_filename = f"{uuid.uuid4()}_{formatted_time}_{ext}"
     return os.path.join('Posts', str(instance.post_user_id), str(instance.post_id), filename[:filename.index('.')] , unique_filename)
 
-class Post(DirtyFieldsMixin,models.Model):
+class Post(models.Model):
     
     post_id = models.AutoField(primary_key=True)  # create primary key
 
