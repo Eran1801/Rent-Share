@@ -184,23 +184,22 @@ def update_read_status(request):
 
 @api_view(['DELETE'])
 @csrf_exempt
-def delete_message(request):
+def delete_messages_by_post_id(request):
     try:
 
-        message_id = request.GET.get('message_id')
-        logger.info(f'message_id - {message_id}')
+        post_id = request.GET.get('post_id')
 
-        message_to_delete = UserInbox.objects.get(message_id=message_id)
+        message_to_delete = UserInbox.objects.filter(post_id=post_id)
         message_to_delete.delete()
 
-        return JsonResponse('delete_message() end succsufuly',safe=False)
+        return JsonResponse('delete_messages_by_post_id function end succsufuly',safe=False)
 
     except UserInbox.DoesNotExist:
-        return HttpResponseBadRequest('UserInbox not found inisde delete_message')
+        return HttpResponseBadRequest('UserInbox not found inisde delete_messages_by_post_id')
     
     except Exception as e:
         logger.error(e)
-        return HttpResponseBadRequest('Something wont wrong inside delete_message')
+        return HttpResponseBadRequest('Something wont wrong inside delete_messages_by_post_id')
 
     
 @api_view(['GET'])
@@ -271,4 +270,5 @@ def all_messages_by_post_id(request):
     except Exception as e:
         logger.error(e)
         return HttpResponseBadRequest('something wont wrong in all_messages_by_post_id')
-  
+
+
