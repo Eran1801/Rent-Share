@@ -189,7 +189,7 @@ AWS_DEFAULT_ACL = None
 AWS_S3_REGION_NAME = os.environ.get('AW_S_REGION_NAME')
 
 # the custom domain to use for serving static and media files.
-AWS_S3_CUSTOM_DOMAIN = f'{AW_S_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 # the base URL for static files served from S3.
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
