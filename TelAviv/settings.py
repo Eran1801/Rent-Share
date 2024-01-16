@@ -172,11 +172,11 @@ LOGGING = {
 # S3 BUCKETS CONFIG
 
 # credentials used to authenticate and authorize your application to interact with the AWS services.
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_ACCESS_KEY_ID = os.environ.get('AW_S_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AW_S_SECRET_ACCESS_KEY')
 
 # the name of the S3 bucket where you want to store your static and media files.
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AW_S_BUCKET_NAME')
 
 # specifies the version of the signature to use for requests to S3.
 # 's3v4' indicates the AWS Signature Version 4.
@@ -186,10 +186,10 @@ AWS_S3_SIGNATURE_VERSION = 's3v4'
 # Setting it to None allows you to control the access through bucket policies or IAM roles.
 AWS_DEFAULT_ACL = None
 
-AWS_S3_REGION_NAME = os.environ.get('AWS_REGION_NAME')
+AWS_S3_REGION_NAME = os.environ.get('AW_S_REGION_NAME')
 
 # the custom domain to use for serving static and media files.
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_CUSTOM_DOMAIN = f'{AW_S_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 # the base URL for static files served from S3.
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
