@@ -141,17 +141,14 @@ def get_all_user_messages(request):
     '''This function will activate when the user will enter the section of 'My Messages' '''
     try:
         user_id = request.GET.get('user_id')
-        logger.info(f'user_id = {user_id}')
         
         user = Users.objects.get(user_id=user_id)
         messages = user.messages.all() # i can use the messages bceause i estblish it in the related_name in the forg key.
 
-        logger.info(f'messages - {messages} and len = {len(messages)}')
-
         messages_serlizer = UserInboxSerializerAll(messages,many=True)
         return JsonResponse(messages_serlizer.data, safe=False)
     
-    except ObjectDoesNotExist:
+    except Users.DoesNotExist:
         return HttpResponseServerError('Message not found')
 
     except Exception as e:
@@ -162,6 +159,7 @@ def get_all_user_messages(request):
 @api_view(['PUT'])
 @csrf_exempt
 def update_read_status(request):
+    # todo : maybe needs to remove
     try:
         data = request.data
 
@@ -188,8 +186,11 @@ def delete_messages_by_post_id(request):
     try:
 
         post_id = request.GET.get('post_id')
-
+        
+        # store all the messages with the same post_id
         message_to_delete = UserInbox.objects.filter(post_id=post_id)
+
+        # delete all the post from db with the same post_id
         message_to_delete.delete()
 
         return JsonResponse('delete_messages_by_post_id function end succsufuly',safe=False)
@@ -209,15 +210,12 @@ def has_unread_messages(request):
         user_id = request.GET.get('user_id')
         user = Users.objects.get(user_id=user_id)
 
-        messages = user.messages.all()
+        messages = user.messages.all() # get's all user messages
 
-        logger.info(f'messages : {messages} and his type is {type(messages)}')
-
+        # store all the messages that already redead  
         has_unread = any(mes.read_status == 1 for mes in messages)
         
-        response = {'unread_messages' :has_unread}
-        
-        return JsonResponse(response,safe=False)
+        return JsonResponse({'unread_messages': has_unread},safe=False)
         
     except UserInbox.DoesNotExist:
         return HttpResponseBadRequest('Message dont exist.')

@@ -6,8 +6,9 @@ from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from django.http import *
 from rest_framework.decorators import api_view
+from Posts.views import convert_base64
 from Users.models import Users
-from Users.serializers import UsersSerializer
+from Users.serializers import UserSerializerPicture, UsersSerializer
 import re
 import hashlib
 import logging
@@ -25,7 +26,7 @@ PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
 def generate_random_digits() -> str:
     return ''.join(random.choice('0123456789') for _ in range(4))
 
-def send_email(sender_email,receiver_email,message,subject):
+def send_email(sender_email,receiver_email,message,subject) -> None:
 
     try:
         # Create the base text message.
@@ -86,6 +87,11 @@ def phone_number_check(phone_number:str) -> bool:
     '''
 
     return True if len(phone_number) == 10 and phone_number.isdigit() else False
+
+# in registration, the email is checked by Django but when he change it we need to check it again
+def check_email_valid(email:str)-> bool:
+    return True if email.count('@') == 1 and email.count('.') >= 1 else False
+       
 
 @api_view(['POST'])
 @csrf_exempt
@@ -269,3 +275,157 @@ def reset_password(request):
     except Exception as e:
         logger.error(e)
         return HttpResponseServerError("Error reset password function")
+    
+# --- PERSONAL INFO SECTION --- 
+    
+@api_view(['PUT'])
+@csrf_exempt
+def change_personal_info(request):
+    '''This function will be used to change the user's personal info'''
+
+    try:
+        user_data = request.data
+
+        # extract nesscrery data
+        user_id = user_data.get('user_id')
+        full_name = user_data.get('user_full_name')
+        phone = user_data.get('user_phone')
+        email = user_data.get('user_email')
+        
+        user = Users.objects.get(user_id=user_id)  # get the user from the database by user_id
+
+        # check if fields have changed
+        if full_name != user.user_full_name:
+            if full_name_check(full_name) is False:
+                return HttpResponseServerError("Invalid full name")
+            else:
+                user.user_full_name = full_name # changing the full name in the db
+
+        # means it's diff from the record in the db
+        if email != user.user_email:
+            if email_exists(email) is True:
+                return HttpResponseServerError("Email already exists")
+            
+            elif check_email_valid(email) is True:
+                return HttpResponseServerError("Email is invalid")
+            
+            else:
+                user.user_email = email
+
+        if phone != user.user_phone:
+            if phone_exists(phone) is True:
+                return HttpResponseServerError("Phone number already exists")
+            
+            elif phone_number_check(phone) is False:
+                return HttpResponseServerError("Phone number is invalid")
+            
+            else:
+                user.user_phone = phone
+        
+        user.save()  # save changes to the database, but only the one's that the user changed
+        return JsonResponse("Personal info updated successfully", safe=False)
+
+    except Users.DoesNotExist:
+        return HttpResponseServerError("User not found")
+
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred during personal info update")
+
+
+@api_view(['PUT'])
+@csrf_exempt
+def change_password(request):
+    '''This function will be used to change the user's password'''
+
+    try:
+        user_data = request.data
+        user_id = user_data.get('user_id')
+
+        # encrypt the old password for checking against the db
+        old_password = hash_password(user_data.get('old_password'))
+
+        new_password = user_data.get('new_password')
+        new_password_confirm = user_data.get('new_password_confirm')
+
+        user = Users.objects.get(user_id=user_id) # get the User from the database by user_id
+        
+        # check if the old password is correct
+        if user.user_password != old_password:
+            return HttpResponseServerError("Old password is incorrect")
+        
+        if new_password != new_password_confirm:
+            return HttpResponseServerError("Passwords don't match.")
+        
+        if check_valid_password(new_password) is False:
+            return HttpResponseServerError("Password is invalid")
+        
+        # update the password but encrypt is first
+        user.user_password = hash_password(new_password)
+
+        # save changes to the database
+        user.save() 
+
+        return JsonResponse("Password updated successfully", safe=False)
+
+    except Users.DoesNotExist:
+        return HttpResponseServerError("User not found")
+    
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred during password update")
+
+
+@api_view(['PUT'])
+@csrf_exempt
+def change_profile_picture(request):
+    '''This function will be used to change the user's profile picture'''
+
+    try:
+        user_data = request.data
+        user_id = user_data.get('user_id')
+
+        profile_image_base64 = user_data.get('profile_image')
+        profile_image_file = convert_base64(profile_image_base64, "profile_image")
+
+        user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
+
+        data = {'user_profile_pic': profile_image_file}
+       
+        # serialize only the photo field that separates the image from the rest of the data
+        user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
+        
+        if user_serializer.is_valid():
+            user_serializer.save()  # attempt to save to the database
+            logger.info("Saved to the database")
+            return JsonResponse("Profile picture successfully saved in db", safe=False)
+        
+        else:
+            logger.debug(user_serializer.errors)
+            return HttpResponseServerError("An error occurred during profile picture upload")
+
+    except Users.DoesNotExist:
+        return HttpResponseServerError("User not found")
+    
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred during profile picture upload")
+  
+    
+@api_view(['GET'])
+@csrf_exempt
+def get_profile_pic(request):
+    try:
+        user_id = request.GET.get('user_id')
+        user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
+
+        user_serializer = UserSerializerPicture(instance = user, many=False, partial=True)
+        return JsonResponse(user_serializer.data, safe=False)
+    
+    except Users.DoesNotExist:
+        return HttpResponseServerError("User not found")
+    
+    except Exception as e:
+        logger.error(f'Error: {e}')
+        return HttpResponseServerError("An error occurred during profile picture upload")
+    
