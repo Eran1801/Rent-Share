@@ -14,7 +14,6 @@ from django.core.files.base import ContentFile
 from Users.views import *
 import json
 from django.core.exceptions import ObjectDoesNotExist
-from Users.views import send_email
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -195,7 +194,28 @@ def filter_cond(city,street,building,apr_number):
         logger.error(f"filter_cond : {e}")
         return HttpResponseServerError("An error occurred during filter_cond")
 
+def send_email(sender_email,receiver_email,message,subject) -> None:
 
+    try:
+        # Create the base text message.
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = formataddr(("Rent Share", f"{sender_email}"))
+        msg["To"] = receiver_email
+
+        msg.set_content(message)
+
+        with smtplib.SMTP(EMAIL_SERVER, PORT) as server:
+            server.starttls()
+            server.login(sender_email, PASSWORD_EMAIL)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+        
+        return None
+    
+    except Exception as e:
+        logger.error('Error send email: %s', e)
+        return HttpResponseServerError("Error send email")
+    
 @api_view(['POST'])
 @csrf_exempt
 def add_post(request):

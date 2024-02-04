@@ -42,8 +42,8 @@ def send_email(sender_email,receiver_email,message,subject) -> None:
             server.login(sender_email, PASSWORD_EMAIL)
             server.sendmail(sender_email, receiver_email, msg.as_string())
         
-        return JsonResponse('Message send successful', safe=False)
-
+        return None
+    
     except Exception as e:
         logger.error('Error send email: %s', e)
         return HttpResponseServerError("Error send email")
