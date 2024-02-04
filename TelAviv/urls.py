@@ -9,7 +9,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^', include('Users.urls')),
     re_path(r'^', include('Posts.urls')),
-    re_path(r'^',include('PersonalInfo.urls')),
     re_path(r'^',include('Inbox.urls'))
 ]
 
