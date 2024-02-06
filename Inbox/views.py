@@ -35,7 +35,6 @@ def update_confirm_status_in_post(post_id, new_confirm_status) -> Post:
     # if post not found
     return None
 
-
 def confirmation_status_messages(user_name,confirm_status):
     '''This function extract the right message according to the confirm_status was givin'''
 
@@ -84,16 +83,16 @@ def confirmation_status_messages(user_name,confirm_status):
     )
 
     confirmation_status_messages = {
-        "0": message_0,
-        "1": message_1,
-        "2": message_2,
-        "3": message_3,
-        "4": message_4,
-        "5": message_5,
-        "6": message_6
+        "0": [message_0,'תודה ששיתפת, מחכה לאישור'],
+        "1": [message_1,'חוות דעתך אושרה'],
+        "2": [message_2,'תיקון נדרש: בעיה בפרטי דירתך'],
+        "3": [message_3,'בדוק תאריכים: תיקון נדרש בחוות דעתך'],
+        "4": [message_4,'הגשה מחדש נדרשת: אי התאמה במסמכים'],
+        "5": [message_5,'תיקון פרטים: אי התאמה בתעודה מזהה'],
+        "6": [message_6,'עדכון נדרש: שפה לא נאותה בחוות הדעת']
     }
 
-    return confirmation_status_messages.get(confirm_status)
+    return confirmation_status_messages[confirm_status][0], confirmation_status_messages[confirm_status][1]
 
 
 @api_view(["POST"])
@@ -122,12 +121,12 @@ def update_confirm_status(request):
         logger.info(f'user name = {user_name}')
 
         # extract the right message according to the confirm_status value
-        message = confirmation_status_messages(user_name, confirmation_status)
+        message, headline = confirmation_status_messages(user_name, confirmation_status)
 
         logger.info(f'message = {message}')
 
         # Add a message to the 'UserInbox' user db 
-        UserInbox.objects.create(user_id=user_id,post_id=post_id,user_message=message)
+        UserInbox.objects.create(user_id=user_id,post_id=post_id,user_message=message,headline=headline)
         return JsonResponse('update_confirm_status end successfuly',safe=False)
 
     except Exception as e:
