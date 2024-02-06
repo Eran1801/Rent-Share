@@ -242,10 +242,10 @@ def add_post(request):
                 # create a new value in Inbox table for this user with the right message and post_id
                 user_name = post_data.get('user').get('user_full_name')
 
-                message = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
+                message,headline = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
 
                 user_id = post_data.get('user').get('user_id')
-                UserInbox.objects.create(user_id=user_id,post_id=saved_post.post_id,user_message=message)
+                UserInbox.objects.create(user_id=user_id,post_id=saved_post.post_id,user_message=message,headline=headline)
 
                 # send email to the company email that a new post was added
                 msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"

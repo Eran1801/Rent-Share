@@ -92,7 +92,7 @@ def confirmation_status_messages(user_name,confirm_status):
         "6": [message_6,'עדכון נדרש: שפה לא נאותה בחוות הדעת']
     }
 
-    return confirmation_status_messages[confirm_status][0], confirmation_status_messages[confirm_status][1]
+    return confirmation_status_messages.get(confirm_status)[0], confirmation_status_messages.get(confirm_status)[1]
 
 
 @api_view(["POST"])
