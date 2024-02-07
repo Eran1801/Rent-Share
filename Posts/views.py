@@ -286,10 +286,11 @@ def update_post(request):
 
     except Post.DoesNotExist:
         logger.error('Post not found from update_post() ')
+        return HttpResponseServerError("An error occurred during update_post()")
 
     except Exception as e:
         logger.error(e)
-        logger.error('Something wrong with the update_post function in Posts.views')
+        return HttpResponseServerError("An error occurred during update_post()")
 
 
 @api_view(['PUT'])
