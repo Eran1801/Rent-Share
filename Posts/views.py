@@ -238,9 +238,11 @@ def update_post(request):
     try:
         # getting all the data of the post
         post_data = request.data
+        logger.info(f'post_data = {post_data}')
 
         # extract the post needs to be update
         post_id = post_data.get('post_id')
+        
         post_to_update = Post.objects.get(post_id=post_id)
 
         # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
