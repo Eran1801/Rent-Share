@@ -226,7 +226,7 @@ def change_personal_info(request):
             if email_exists(email) is True:
                 return HttpResponseServerError("Email already exists")
             
-            elif check_email_valid(email) is True:
+            elif check_email_valid(email) is False:
                 return HttpResponseServerError("Email is invalid")
             
             else:

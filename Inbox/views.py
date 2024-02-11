@@ -77,21 +77,23 @@ def get_all_user_messages(request):
 @api_view(['PUT'])
 @csrf_exempt
 def update_read_status(request):
-    # todo : maybe needs to remove
     try:
         data = request.data
 
-        message_id = data.get('message_id')
-        message_to_update = UserInbox.objects.get(message_id=message_id)
-        message_to_update.read_status = '1'
+        messages_id: list = data.get('messages_id')
+        print(f'messages_id - {messages_id} and his type is {type(messages_id)}')
+        
+        for _id in messages_id:
+            messages = UserInbox.objects.get(message_id=_id)
+            messages.read_status = '1'
+            
+            messages.save()
 
-        message_to_update.save()
-
-        return JsonResponse('update_read_status() end succsufuly',safe=False)
+        return JsonResponse('update_read_status() end successful',safe=False)
 
     except UserInbox.DoesNotExist as e:
         logger.error(e)
-        return HttpResponseBadRequest('UserInbox not found inisde update_read_status')
+        return HttpResponseBadRequest('UserInbox not found inside update_read_status')
     
     except Exception as e:
         logger.error(e)
