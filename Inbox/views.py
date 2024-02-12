@@ -85,8 +85,10 @@ def update_read_status(request):
         
         for _id in messages_id:
             messages = UserInbox.objects.get(message_id=_id)
-            messages.read_status = '1'
+            if messages.read_status == '1':
+                continue
             
+            messages.read_status = 1
             messages.save()
 
         return JsonResponse('update_read_status() end successful',safe=False)
