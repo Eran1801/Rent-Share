@@ -49,7 +49,7 @@ def send_email(sender_email,receiver_email,message,subject) -> None:
 
 def send_email_via_sendgrid(sender_email, receiver_email, message, subject) -> None:
 
-    sendgrid_api_key = SANDGRID_API_KEY
+    sendgrid_api_key = "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"
     url = "https://api.sendgrid.com/v3/mail/send"
     payload = {
         "personalizations": [
@@ -67,7 +67,7 @@ def send_email_via_sendgrid(sender_email, receiver_email, message, subject) -> N
         ]
     }
     headers = {
-        "Authorization": f"Bearer {"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"}",
+        "Authorization": f"Bearer {sendgrid_api_key}",
         'Content-Type': 'application/json'
     }
 
