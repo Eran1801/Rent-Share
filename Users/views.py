@@ -146,7 +146,7 @@ def forget_password(request):
         subject = 'איפוס סיסמה'
 
         # send email to user email with a 6 digit code
-        send_email(FROM_EMAIL,user_email,msg,subject)
+        send_email_via_sendgrid(FROM_EMAIL,user_email,msg,subject)
         
         response_data = {
             'user': {
