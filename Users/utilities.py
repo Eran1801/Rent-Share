@@ -74,7 +74,6 @@ def send_email_via_sendgrid(sender_email, receiver_email, message, subject) -> N
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()  # Raises a HTTPError if the response status code is 4XX or 5XX
-        print("Email sent successfully!")
 
     except requests.exceptions.HTTPError as errh:
         logger.error(f"Http Error: {errh}")
