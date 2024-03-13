@@ -7,6 +7,7 @@ import hashlib
 import logging
 from email.message import EmailMessage
 import os
+import requests
 
 '''
 In this file there is all the helper function
@@ -44,8 +45,44 @@ def send_email(sender_email,receiver_email,message,subject) -> None:
     
     except Exception as e:
         logger.error('Error send email: %s', e)
-        return HttpResponseServerError("Error send email")
 
+def send_email_via_sendgrid(sender_email, receiver_email, message, subject) -> None:
+
+    sendgrid_api_key = "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"
+    url = "https://api.sendgrid.com/v3/mail/send"
+    payload = {
+        "personalizations": [
+            {
+                "to": [{"email": receiver_email}]
+            }
+        ],
+        "from": {"email": sender_email},
+        "subject": subject,
+        "content": [
+            {
+                "type": "text/plain",
+                "value": message
+            }
+        ]
+    }
+    headers = {
+        "Authorization": f"Bearer {sendgrid_api_key}",
+        'Content-Type': 'application/json'
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()  # Raises a HTTPError if the response status code is 4XX or 5XX
+        print("Email sent successfully!")
+
+    except requests.exceptions.HTTPError as errh:
+        logger.error(f"Http Error: {errh}")
+    except requests.exceptions.ConnectionError as errc:
+        logger.error(f"Error Connecting: {errc}")
+    except requests.exceptions.Timeout as errt:
+        logger.error(f"Timeout Error: {errt}")
+    except requests.exceptions.RequestException as err:
+        logger.error(f"Oops: Something Else: {err}")
 
 def check_valid_password(pas:str) -> bool:
 
