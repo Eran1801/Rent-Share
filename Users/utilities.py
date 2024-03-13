@@ -20,6 +20,7 @@ PORT = os.environ.get('EMAIL_PORT')
 EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
 FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
 PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
+SANDGRID_API_KEY = os.environ.get('SANDGRID_API_KEY')
 
 def generate_random_digits() -> str:
     return ''.join(random.choice('0123456789') for _ in range(4))
@@ -48,7 +49,7 @@ def send_email(sender_email,receiver_email,message,subject) -> None:
 
 def send_email_via_sendgrid(sender_email, receiver_email, message, subject) -> None:
 
-    sendgrid_api_key = "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"
+    sendgrid_api_key = SANDGRID_API_KEY
     url = "https://api.sendgrid.com/v3/mail/send"
     payload = {
         "personalizations": [
