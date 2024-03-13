@@ -67,7 +67,7 @@ def send_email_via_sendgrid(sender_email, receiver_email, message, subject) -> N
         ]
     }
     headers = {
-        "Authorization": f"Bearer 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",
+        "Authorization": f"Bearer ",
         'Content-Type': 'application/json'
     }
 
