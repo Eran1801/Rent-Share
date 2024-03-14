@@ -7,9 +7,7 @@ from Users.models import Users
 import re
 import hashlib
 import logging
-from email.message import EmailMessage
 import os
-from django.core.mail import send_mail
 '''
 In this file there is all the helper function
 for the User app and maybe others'''
@@ -24,7 +22,6 @@ EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 def generate_random_digits() -> str:
     return ''.join(random.choice('0123456789') for _ in range(4))
-
 
 def send_email(sender_email,receiver_email,message,subject) -> None:
 
@@ -45,10 +42,7 @@ def send_email(sender_email,receiver_email,message,subject) -> None:
     
     except Exception as e:
         logger.error('Error send email: %s', e)
-
-def send_email_via_mailtrap(sender_email, receiver_email, message, subject) -> None:
     
-    send_mail(subject="איפוס סיסמה",message=message,from_email=sender_email,recipient_list=[receiver_email])
 
 def check_valid_password(pas:str) -> bool:
 

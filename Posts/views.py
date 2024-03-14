@@ -47,9 +47,16 @@ def add_post(request):
                 UserInbox.objects.create(user_id=user_id,post_id=saved_post.post_id,user_message=message,headline=headline)
 
                 # send email to the company email that a new post was added
-                msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
+                msg_html = f"""
+                <html>
+                    <body>
+                        <p>New post was added to S3.</p>
+                        <p>User: {user_id}</p>
+                    </body>
+                </html>
+                """
                 subject = "New post"
-                send_email_via_mailtrap(FROM_EMAIL, FROM_EMAIL, msg, subject)
+                send_email(FROM_EMAIL, FROM_EMAIL, msg_html, subject) # send an email for ourself for tracking the posts insertion
                 
                 return JsonResponse("Post successfully saved in db", safe=False)
         else:
