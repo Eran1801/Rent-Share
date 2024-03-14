@@ -1,3 +1,5 @@
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.utils import formataddr
 import random
 import smtplib
@@ -27,20 +29,39 @@ def generate_random_digits() -> str:
 def send_email(sender_email,receiver_email,message,subject) -> None:
 
     try:
-        # Create the base text message.
-        msg = EmailMessage()
+        # Create a MIMEMultipart message
+        msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"] = formataddr(("Rent Share", f"{sender_email}"))
         msg["To"] = receiver_email
 
-        msg.set_content(message)
+        # Create the plain-text and HTML version of your message
+        text = message
+        html = f"""\
+        <html>
+          <body>
+            <p>שלום,</p>
+            <p>קוד האימות שלך הוא: <b>{message}</b><br>
+               הקוד תקף ל-5 דקות.
+            </p>
+          </body>
+        </html>
+        """
+
+        # Turn these into plain/html MIMEText objects
+        part1 = MIMEText(text, "plain")
+        part2 = MIMEText(html, "html")
+
+        # Attach parts into message container.
+        # According to RFC 2046, the last part of a multipart message, in this case
+        # the HTML message, is best and preferred.
+        msg.attach(part1)
+        msg.attach(part2)
 
         with smtplib.SMTP(EMAIL_SERVER, EMAIL_PORT) as server:
             server.starttls()
             server.login(sender_email, EMAIL_PASSWORD)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-        
-        return None
+            server.send_message(msg)
     
     except Exception as e:
         logger.error('Error send email: %s', e)
