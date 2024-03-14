@@ -8,7 +8,7 @@ from Users.models import Users
 from Users.serializers import UserSerializerPicture, UsersSerializer
 from Users.utilities import *
 import logging
-
+from Users.utilities import FROM_EMAIL
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -146,7 +146,7 @@ def forget_password(request):
         subject = 'איפוס סיסמה'
 
         # send email to user email with a 6 digit code
-        send_email_via_mailtrap("conferencehub@outlook.co.il",user_email,msg,subject)
+        send_email(FROM_EMAIL,user_email,msg,subject)
         
         response_data = {
             'user': {

@@ -15,11 +15,10 @@ for the User app and maybe others'''
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-# PORT = os.environ.get('EMAIL_PORT')
-# EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
 FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
-# PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
-# SANDGRID_API_KEY = os.environ.get('SANDGRID_API_KEY')
+EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 def generate_random_digits() -> str:
     return ''.join(random.choice('0123456789') for _ in range(4))
@@ -36,9 +35,9 @@ def send_email(sender_email,receiver_email,message,subject) -> None:
 
         msg.set_content(message)
 
-        with smtplib.SMTP(EMAIL_SERVER, PORT) as server:
+        with smtplib.SMTP(EMAIL_SERVER, EMAIL_PORT) as server:
             server.starttls()
-            server.login(sender_email, PASSWORD_EMAIL)
+            server.login(sender_email, EMAIL_PASSWORD)
             server.sendmail(sender_email, receiver_email, msg.as_string())
         
         return None
