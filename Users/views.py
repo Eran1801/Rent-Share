@@ -9,6 +9,8 @@ from Users.serializers import UserSerializerPicture, UsersSerializer
 from Users.utilities import *
 import logging
 from Users.utilities import FROM_EMAIL
+from django.utils.safestring import mark_safe
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -140,18 +142,21 @@ def forget_password(request):
         # first check if the email is in the db, if the user doesn't exist, return error
         if email_exists(user_email) is False:
             return HttpResponseServerError('Email dont exists')
-
+        
         confirm_code = generate_random_digits()
-        msg = f"""
+
+        # Use dir="rtl" to ensure correct display of RTL text
+        msg = mark_safe(f"""
         <html>
             <body>
-                <p>שלום,</p>
-                <p>קוד האימות שלך הוא: <b>{confirm_code}</b><br>
+                <p dir="rtl">שלום רב, אימייל זה נשלח מכיוון שרצית לאפס את הסיסמה שלך</p>
+                <p dir="rtl">קוד האימות שלך הוא: <b>{confirm_code}</b><br>
                    הקוד תקף ל-5 דקות.
                 </p>
             </body>
         </html>
-        """
+        """)
+
         subject = 'איפוס סיסמה'
 
         # send email to user email with a 6 digit code
