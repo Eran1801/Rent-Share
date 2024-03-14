@@ -142,7 +142,16 @@ def forget_password(request):
             return HttpResponseServerError('Email dont exists')
 
         confirm_code = generate_random_digits()
-        msg = f'קוד האימות שלך הוא : {confirm_code}\nהקוד תקף ל-5 דקות'
+        msg = f"""
+        <html>
+            <body>
+                <p>שלום,</p>
+                <p>קוד האימות שלך הוא: <b>{confirm_code}</b><br>
+                   הקוד תקף ל-5 דקות.
+                </p>
+            </body>
+        </html>
+        """
         subject = 'איפוס סיסמה'
 
         # send email to user email with a 6 digit code
