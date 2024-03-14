@@ -7,8 +7,7 @@ import hashlib
 import logging
 from email.message import EmailMessage
 import os
-import requests
-
+from django.core.mail import send_mail
 '''
 In this file there is all the helper function
 for the User app and maybe others'''
@@ -16,11 +15,11 @@ for the User app and maybe others'''
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-PORT = os.environ.get('EMAIL_PORT')
-EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
+# PORT = os.environ.get('EMAIL_PORT')
+# EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
 FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
-PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
-SANDGRID_API_KEY = os.environ.get('SANDGRID_API_KEY')
+# PASSWORD_EMAIL = os.environ.get('EMAIL_PASSWORD')
+# SANDGRID_API_KEY = os.environ.get('SANDGRID_API_KEY')
 
 def generate_random_digits() -> str:
     return ''.join(random.choice('0123456789') for _ in range(4))
@@ -47,42 +46,9 @@ def send_email(sender_email,receiver_email,message,subject) -> None:
     except Exception as e:
         logger.error('Error send email: %s', e)
 
-def send_email_via_sendgrid(sender_email, receiver_email, message, subject) -> None:
-
-    sendgrid_api_key = "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"
-    url = "https://api.sendgrid.com/v3/mail/send"
-    payload = {
-        "personalizations": [
-            {
-                "to": [{"email": receiver_email}]
-            }
-        ],
-        "from": {"email": sender_email},
-        "subject": subject,
-        "content": [
-            {
-                "type": "text/plain",
-                "value": message
-            }
-        ]
-    }
-    headers = {
-        "Authorization": f"Bearer {sendgrid_api_key}",
-        'Content-Type': 'application/json'
-    }
-
-    try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()  # Raises a HTTPError if the response status code is 4XX or 5XX
-
-    except requests.exceptions.HTTPError as errh:
-        logger.error(f"Http Error: {errh}")
-    except requests.exceptions.ConnectionError as errc:
-        logger.error(f"Error Connecting: {errc}")
-    except requests.exceptions.Timeout as errt:
-        logger.error(f"Timeout Error: {errt}")
-    except requests.exceptions.RequestException as err:
-        logger.error(f"Oops: Something Else: {err}")
+def send_email_via_mailtrap(sender_email, receiver_email, message, subject) -> None:
+    
+    send_mail(subject="איפוס סיסמה",message=message,from_email=sender_email,recipient_list=[receiver_email])
 
 def check_valid_password(pas:str) -> bool:
 

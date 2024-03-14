@@ -49,7 +49,7 @@ def add_post(request):
                 # send email to the company email that a new post was added
                 msg = f"New post was added to S3.\nUser : {post_data.get('user').get('user_id')}"
                 subject = "New post"
-                send_email_via_sendgrid(FROM_EMAIL, FROM_EMAIL, msg, subject)
+                send_email_via_mailtrap(FROM_EMAIL, FROM_EMAIL, msg, subject)
                 
                 return JsonResponse("Post successfully saved in db", safe=False)
         else:
