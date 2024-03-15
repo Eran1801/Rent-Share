@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import environ
+
+env = environ.Env()
+env.read_env()
 
 DATE_INPUT_FORMATS = ['%d-%m-%Y']
 
@@ -22,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.str('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ["*"]
 
@@ -89,11 +93,11 @@ WSGI_APPLICATION = 'TelAviv.wsgi.application'
 DATABASES = {
     'default': { 
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME'), 
+        'NAME': env('DB_NAME'), 
         'USER': 'root', 
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
+        'PASSWORD':env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
         'OPTIONS': {
             'charset': 'utf8',  # Example character encoding setting
         },
@@ -171,11 +175,11 @@ LOGGING = {
 # S3 BUCKETS CONFIG
 
 # credentials used to authenticate and authorize your application to interact with the AWS services.
-AWS_ACCESS_KEY_ID = os.environ.get('AW_S_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AW_S_SECRET_ACCESS_KEY')
+AWS_ACCESS_KEY_ID = env('AW_S_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AW_S_SECRET_ACCESS_KEY')
 
 # the name of the S3 bucket where you want to store your static and media files.
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AW_S_BUCKET_NAME')
+AWS_STORAGE_BUCKET_NAME = env('AW_S_BUCKET_NAME')
 
 # specifies the version of the signature to use for requests to S3.
 # 's3v4' indicates the AWS Signature Version 4.
@@ -185,7 +189,7 @@ AWS_S3_SIGNATURE_VERSION = 's3v4'
 # Setting it to None allows you to control the access through bucket policies or IAM roles.
 AWS_DEFAULT_ACL = None
 
-AWS_S3_REGION_NAME = os.environ.get('AW_S_REGION_NAME')
+AWS_S3_REGION_NAME = env.str('AW_S_S3_REGION_NAME')
 
 # the custom domain to use for serving static and media files.
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
@@ -206,12 +210,4 @@ AWS_QUERYSTRING_AUTH = False
 # MEDIA_URL is the base URL for media files served from S3.
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
-# Email configuration
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'live.smtp.mailtrap.io'
-# EMAIL_HOST_USER = 'api'
-# EMAIL_HOST_PASSWORD = 'ed5f9cf2bac498663581875b79e39320'
-# EMAIL_PORT = '587'
-# EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = False
 

@@ -21,53 +21,28 @@ def register(request, user_id = 0):
 
     try:
         user_data = request.data 
+        user_data['user_email'] = user_data.get('user_email', '').lower()
         
-        # extract data
-        user_full_name = user_data.get('user_full_name')
-        user_email = user_data.get('user_email').lower() # lower case email
-        user_phone_number = user_data.get('user_phone')
-        user_password = user_data.get('user_password')
-        user_password_2 = user_data.get('user_password_2')
+        # Sequential validation checks
+        error_message = validate_user_data(user_data)
+        if error_message:
+            logger.info(f'Error message: {error_message}')
+            return JsonResponse(error_message, status=400,safe=False)
 
-        # checks valid register input from user
-        check_full_name: bool = full_name_check(user_full_name)
-        check_phone_number = phone_number_check(user_phone_number)
-        check_password = check_valid_password(user_password)
+        # Continue with registration if all checks pass
+        del user_data['user_password_2']  # No longer needed after validation
+        user_data['user_password'] = hash_password(user_data.get('user_password'))
 
-        if user_password == user_password_2: # checking if 2 user passwords are equal
-
-            # return associated error message if the input is invalid
-            if check_full_name is False:
-                return HttpResponseServerError('Invalid full name')
-
-            if email_exists(user_email) is True: 
-                return HttpResponseServerError('Email already exists')
-            
-            if phone_exists(user_phone_number) is True:
-                return HttpResponseServerError('Phone number already exists')
-            
-            if check_phone_number is False:
-                return HttpResponseServerError('Invalid phone number')
-            
-            if check_password is False:
-                return HttpResponseServerError('Invalid password')
-
-            del user_data['user_password_2'] # don't needs to be save in the db after checking
-            user_data['user_password'] = hash_password(user_password) # encrypt before saving
-
-            users_serializer = UsersSerializer(data=user_data)
-            if users_serializer.is_valid():
-                users_serializer.save() # save to db
-                return JsonResponse("Register Success",safe=False)
-            else:
-                logger.debug(users_serializer.errors)
-                return HttpResponseServerError("Register Fails")
+        users_serializer = UsersSerializer(data=user_data)
+        if users_serializer.is_valid():
+            users_serializer.save()
+            return JsonResponse("Register Success", status=200,safe=False)
         else:
-            return HttpResponseServerError("Passwords don't match.")
-            
+            return JsonResponse(users_serializer.errors, status=400,safe=False)
+    
     except Exception as e:
         logger.error(e)
-        return HttpResponseServerError("Error in register function")
+        return JsonResponse("Error in register function",safe=False,status=400)
     
 
 @api_view(['POST'])
@@ -78,17 +53,18 @@ def login(request):
         user_data = request.data
 
         # extract the right data
-        login_email_address = user_data.get('user_email').lower() # lower case email 
-        login_password = user_data.get('user_password')
+        email = user_data.get('user_email').lower() # lower case email 
+        password = user_data.get('user_password')
 
         # encrypt user password for check similarity in the db
-        hash_password_login = hash_password(login_password) 
+        hash_password_login = hash_password(password) 
 
         # retrieve user from db based on email
-        user = Users.objects.get(user_email=login_email_address)
+        user = Users.objects.get(user_email=email)
 
         if user.user_password == hash_password_login:
             
+            # todo: needs to be fix, security issue
             # sending to the frontend
             response_data = {
             'user': {
@@ -100,16 +76,16 @@ def login(request):
                 'message': 'Passwords match. Login successfully'
             }
             
-            return JsonResponse(response_data)
+            return JsonResponse(response_data,safe=False,status=200)
         else:
-            return HttpResponseServerError("Passwords Incorrect. Login fail")
+            return JsonResponse("Passwords Incorrect. Login fail",safe=False,status=400)
         
     except Users.DoesNotExist:
-        return HttpResponseServerError("Email don't exists. Login fail")
+        return JsonResponse("Email don't exists. Login fail",status=400,safe=False)
     
     except Exception as e:
         logger.error(e)
-        return HttpResponseServerError("Error in login function")
+        return JsonResponse("Error in login function",safe=False,status=400)
 
 
 @api_view(['DELETE'])
@@ -134,6 +110,7 @@ def delete_user(request):
 @api_view(['GET'])
 @csrf_exempt
 def forget_password(request):
+    '''This function will be used to send a 6 digit code to the user email to reset the password.'''
     try:
         
         # extract the user email
@@ -141,7 +118,7 @@ def forget_password(request):
 
         # first check if the email is in the db, if the user doesn't exist, return error
         if email_exists(user_email) is False:
-            return HttpResponseServerError('Email dont exists')
+            return JsonResponse('Email dont exists', safe=False, status=400)
         
         confirm_code = generate_random_digits()
 
@@ -162,6 +139,7 @@ def forget_password(request):
         # send email to user email with a 6 digit code
         send_email(FROM_EMAIL,user_email,msg,subject)
         
+        # todo: save the confirm code in the db for later use
         response_data = {
             'user': {
                 'user_email': user_email,
@@ -170,45 +148,43 @@ def forget_password(request):
                 'message': f"Email sent successfully with code : {confirm_code} with email {user_email}"
         }
 
-        return JsonResponse(response_data, safe=False)
+        return JsonResponse(response_data, safe=False, status=200)
 
     except Exception as e:
         logger.error('Error forget password: %s', e)
-        return HttpResponseServerError("Error forget password function")
+        return JsonResponse("Error forget password function", safe=False, status=400)
     
 
 @api_view(['PUT'])
 @csrf_exempt
 def reset_password(request):
+    '''This function will be reset the user password inside the forget-password flow'''
     try:
 
         data = request.data
 
-        # extract the right data
-        user_email = data.get('user_email').lower() # lower case email
+        user_email = data.get('user_email').lower()
+        user = Users.objects.get(user_email=user_email) # retrieve user from db based on email
+        
         user_password = data.get('user_password')
         user_password_2 = data.get('user_password_2')
 
         if check_valid_password(user_password) is False:
-            return HttpResponseServerError("Password is invalid")
+            return JsonResponse("Password is invalid", safe=False, status=400)
 
         if user_password == user_password_2: # checking if 2 user passwords are equal
 
-            # retrieve user from db based on email
-            user = Users.objects.get(user_email=user_email)
-
             # encrypt before saving
             user.user_password = hash_password(user_password) 
-
             user.save()
 
-            return JsonResponse("Password reset successfully", safe=False)
+            return JsonResponse("Password reset successfully", safe=False, status=200)
         else:
-            return HttpResponseServerError("Passwords don't match.")
+            return JsonResponse("Passwords don't match.", safe=False, status=400)
         
     except Exception as e:
         logger.error(e)
-        return HttpResponseServerError("Error reset password function")
+        return JsonResponse("Error reset password function", safe=False, status=400)
     
 # --- PERSONAL INFO SECTION --- 
     
