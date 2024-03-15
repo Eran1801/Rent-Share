@@ -17,6 +17,7 @@ import environ
 env = environ.Env()
 env.read_env()
 
+
 DATE_INPUT_FORMATS = ['%d-%m-%Y']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
