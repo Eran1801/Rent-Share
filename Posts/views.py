@@ -3,7 +3,6 @@ from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
-import logging
 from Inbox.models import UserInbox
 from Inbox.views import confirmation_status_messages
 from Posts.serializers import PostSerializerAll
@@ -27,6 +26,7 @@ def add_post(request):
     try:
         post_data = request.data    
 
+        # TODO
         # inside convert_images_to_files we extract the post data and convert the images to files
         post_data_dict = convert_images_to_files(post_data)
 

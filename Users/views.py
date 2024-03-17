@@ -3,339 +3,109 @@ from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from django.http import *
 from rest_framework.decorators import api_view
-from Posts.views import convert_base64
-from Users.models import Users
-from Users.serializers import UserSerializerPicture, UsersSerializer
+
+from Users.auth.auth_util import hash_password
+from Users.models import PasswordResetCode
 from Users.utilities import *
 import logging
 from Users.utilities import FROM_EMAIL
 from django.utils.safestring import mark_safe
 
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-
-@api_view(['POST'])
-@csrf_exempt
-def register(request, user_id = 0): 
-
-    try:
-        user_data = request.data 
-        user_data['user_email'] = user_data.get('user_email', '').lower()
-        
-        # Sequential validation checks
-        error_message = validate_user_data(user_data)
-        if error_message:
-            logger.info(f'Error message: {error_message}')
-            return JsonResponse(error_message, status=400,safe=False)
-
-        # Continue with registration if all checks pass
-        del user_data['user_password_2']  # No longer needed after validation
-        user_data['user_password'] = hash_password(user_data.get('user_password'))
-
-        users_serializer = UsersSerializer(data=user_data)
-        if users_serializer.is_valid():
-            users_serializer.save()
-            return JsonResponse("Register Success", status=200,safe=False)
-        else:
-            return JsonResponse(users_serializer.errors, status=400,safe=False)
-    
-    except Exception as e:
-        logger.error(e)
-        return JsonResponse("Error in register function",safe=False,status=400)
-    
-
-@api_view(['POST'])
-@csrf_exempt
-def login(request):
-
-    try:
-        user_data = request.data
-
-        # extract the right data
-        email = user_data.get('user_email').lower() # lower case email 
-        password = user_data.get('user_password')
-
-        # encrypt user password for check similarity in the db
-        hash_password_login = hash_password(password) 
-
-        # retrieve user from db based on email
-        user = Users.objects.get(user_email=email)
-
-        if user.user_password == hash_password_login:
-            
-            # todo: needs to be fix, security issue
-            # sending to the frontend
-            response_data = {
-            'user': {
-                'user_id': user.user_id,
-                'user_full_name': user.user_full_name,
-                'user_email': user.user_email,
-                'user_phone': user.user_phone
-            },
-                'message': 'Passwords match. Login successfully'
-            }
-            
-            return JsonResponse(response_data,safe=False,status=200)
-        else:
-            return JsonResponse("Passwords Incorrect. Login fail",safe=False,status=400)
-        
-    except Users.DoesNotExist:
-        return JsonResponse("Email don't exists. Login fail",status=400,safe=False)
-    
-    except Exception as e:
-        logger.error(e)
-        return JsonResponse("Error in login function",safe=False,status=400)
-
-
-@api_view(['DELETE'])
-@csrf_exempt    
-def delete_user(request):
-
-    try:
-        # get operation diff in extract data
-        user_id = request.GET.get('user_id')
-        user = Users.objects.get(user_id=user_id) # from db
-
-        # delete user, posts, messages from db
-        user.delete() 
-
-        return JsonResponse('Delete successfully', safe=False)
-    
-    except Exception as e:
-        logger.error(e)
-        return HttpResponseServerError("Error deleting user function")
+EMAIL_SUBJECT = 'איפוס סיסמה'
 
 
 @api_view(['GET'])
 @csrf_exempt
 def forget_password(request):
-    '''This function will be used to send a 6 digit code to the user email to reset the password.'''
+    """This function will be used to send a 6 digit code to the user email to reset the password."""
     try:
-        
+
         # extract the user email
-        user_email = request.GET.get('user_email').lower() # lower case email
+        user_email = request.GET.get('user_email').lower()  # lower case email
 
         # first check if the email is in the db, if the user doesn't exist, return error
         if email_exists(user_email) is False:
             return JsonResponse('Email dont exists', safe=False, status=400)
-        
-        confirm_code = generate_random_digits()
+
+        verification_code = generate_verification_code()
 
         # Use dir="rtl" to ensure correct display of RTL text
         msg = mark_safe(f"""
         <html>
             <body>
                 <p dir="rtl">שלום רב, אימייל זה נשלח מכיוון שרצית לאפס את הסיסמה שלך</p>
-                <p dir="rtl">קוד האימות שלך הוא: <b>{confirm_code}</b><br>
+                <p dir="rtl">קוד האימות שלך הוא: <b>{verification_code}</b><br>
                    הקוד תקף ל-5 דקות.
                 </p>
             </body>
         </html>
         """)
+        subject = EMAIL_SUBJECT
 
-        subject = 'איפוס סיסמה'
+        # send email to user email with a 6-digit code
+        send_email(FROM_EMAIL, user_email, msg, subject)
 
-        # send email to user email with a 6 digit code
-        send_email(FROM_EMAIL,user_email,msg,subject)
-        
-        # todo: save the confirm code in the db for later use
-        response_data = {
-            'user': {
-                'user_email': user_email,
-                'confirm_code': confirm_code,
-            },
-                'message': f"Email sent successfully with code : {confirm_code} with email {user_email}"
+        # Save the confirm_code in the db
+        password_reset_code = PasswordResetCode.objects.create(verification_code=verification_code)
+
+        response = {
+            'verification_code_id': password_reset_code.id,
+            'message': 'Email sent successfully'
         }
 
-        return JsonResponse(response_data, safe=False, status=200)
+        return JsonResponse(response, status=200)
 
     except Exception as e:
         logger.error('Error forget password: %s', e)
         return JsonResponse("Error forget password function", safe=False, status=400)
-    
+
+
+@api_view(['POST'])
+@csrf_exempt
+def verify_code(request):
+    """This function will be used to verify the code that the user received by email"""
+    try:
+        data = request.data
+        verification_code = data.get('verification_code')
+        verification_code_id = data.get('verification_code_id')
+
+        # check if the code exists in the db
+        if PasswordResetCode.objects.filter(id=verification_code_id, verification_code=verification_code).exists():
+            return JsonResponse("Code verified successfully", safe=False, status=200)
+
+        return JsonResponse("Code is invalid", safe=False, status=400)
+
+    except Exception as e:
+        logger.error('Error verify code: %s', e)
+        return JsonResponse("Error verify code function", safe=False, status=400)
+
 
 @api_view(['PUT'])
 @csrf_exempt
 def reset_password(request):
-    '''This function will be reset the user password inside the forget-password flow'''
+    """This function will be reset the user password inside the forget-password flow"""
     try:
 
         data = request.data
 
         user_email = data.get('user_email').lower()
-        user = Users.objects.get(user_email=user_email) # retrieve user from db based on email
-        
-        user_password = data.get('user_password')
-        user_password_2 = data.get('user_password_2')
+        user = Users.objects.get(user_email=user_email)
 
-        if check_valid_password(user_password) is False:
+        password = data.get('user_password')
+        password2 = data.get('user_password_2')
+
+        if check_valid_password(password) is False:
             return JsonResponse("Password is invalid", safe=False, status=400)
 
-        if user_password == user_password_2: # checking if 2 user passwords are equal
-
+        if password == password2:  # checking if 2 passwords are equal
             # encrypt before saving
-            user.user_password = hash_password(user_password) 
+            user.user_password = hash_password(password)
             user.save()
 
             return JsonResponse("Password reset successfully", safe=False, status=200)
         else:
             return JsonResponse("Passwords don't match.", safe=False, status=400)
-        
+
     except Exception as e:
         logger.error(e)
         return JsonResponse("Error reset password function", safe=False, status=400)
-    
-# --- PERSONAL INFO SECTION --- 
-    
-@api_view(['PUT'])
-@csrf_exempt
-def change_personal_info(request):
-    '''This function will be used to change the user's personal info'''
-
-    try:
-        user_data = request.data
-
-        # extract nesscrery data
-        user_id = user_data.get('user_id')
-        full_name = user_data.get('user_full_name')
-        phone = user_data.get('user_phone')
-        email = user_data.get('user_email')
-        
-        user = Users.objects.get(user_id=user_id)  # get the user from the database by user_id
-
-        # check if fields have changed
-        if full_name != user.user_full_name:
-            if full_name_check(full_name) is False:
-                return HttpResponseServerError("Invalid full name")
-            else:
-                user.user_full_name = full_name # changing the full name in the db
-
-        # means it's diff from the record in the db
-        if email != user.user_email:
-            if email_exists(email) is True:
-                return HttpResponseServerError("Email already exists")
-            
-            elif check_email_valid(email) is False:
-                return HttpResponseServerError("Email is invalid")
-            
-            else:
-                user.user_email = email
-
-        if phone != user.user_phone:
-            if phone_exists(phone) is True:
-                return HttpResponseServerError("Phone number already exists")
-            
-            elif phone_number_check(phone) is False:
-                return HttpResponseServerError("Phone number is invalid")
-            
-            else:
-                user.user_phone = phone
-        
-        user.save()  # save changes to the database, but only the one's that the user changed
-        return JsonResponse("Personal info updated successfully", safe=False)
-
-    except Users.DoesNotExist:
-        return HttpResponseServerError("User not found")
-
-    except Exception as e:
-        logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred during personal info update")
-
-
-@api_view(['PUT'])
-@csrf_exempt
-def change_password(request):
-    '''This function will be used to change the user's password'''
-
-    try:
-        user_data = request.data
-        user_id = user_data.get('user_id')
-
-        # encrypt the old password for checking against the db
-        old_password = hash_password(user_data.get('old_password'))
-
-        new_password = user_data.get('new_password')
-        new_password_confirm = user_data.get('new_password_confirm')
-
-        user = Users.objects.get(user_id=user_id) # get the User from the database by user_id
-        
-        # check if the old password is correct
-        if user.user_password != old_password:
-            return HttpResponseServerError("Old password is incorrect")
-        
-        if new_password != new_password_confirm:
-            return HttpResponseServerError("Passwords don't match.")
-        
-        if check_valid_password(new_password) is False:
-            return HttpResponseServerError("Password is invalid")
-        
-        # update the password but encrypt is first
-        user.user_password = hash_password(new_password)
-
-        # save changes to the database
-        user.save() 
-
-        return JsonResponse("Password updated successfully", safe=False)
-
-    except Users.DoesNotExist:
-        return HttpResponseServerError("User not found")
-    
-    except Exception as e:
-        logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred during password update")
-
-
-@api_view(['PUT'])
-@csrf_exempt
-def change_profile_picture(request):
-    '''This function will be used to change the user's profile picture'''
-
-    try:
-        user_data = request.data
-        user_id = user_data.get('user_id')
-
-        profile_image_base64 = user_data.get('profile_image')
-        profile_image_file = convert_base64(profile_image_base64, "profile_image")
-
-        user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
-
-        data = {'user_profile_pic': profile_image_file}
-       
-        # serialize only the photo field that separates the image from the rest of the data
-        user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
-        
-        if user_serializer.is_valid():
-            user_serializer.save()  # attempt to save to the database
-            logger.info("Saved to the database")
-            return JsonResponse("Profile picture successfully saved in db", safe=False)
-        
-        else:
-            logger.debug(user_serializer.errors)
-            return HttpResponseServerError("An error occurred during profile picture upload")
-
-    except Users.DoesNotExist:
-        return HttpResponseServerError("User not found")
-    
-    except Exception as e:
-        logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred during profile picture upload")
-  
-    
-@api_view(['GET'])
-@csrf_exempt
-def get_profile_pic(request):
-    try:
-        user_id = request.GET.get('user_id')
-        user = Users.objects.get(user_id=user_id) # get the user from the database by user_id
-
-        user_serializer = UserSerializerPicture(instance = user, many=False, partial=True)
-        return JsonResponse(user_serializer.data, safe=False)
-    
-    except Users.DoesNotExist:
-        return HttpResponseServerError("User not found")
-    
-    except Exception as e:
-        logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred during profile picture upload")
-    

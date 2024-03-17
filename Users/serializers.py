@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from Users.models import Users
+from Users.models import Users, PasswordResetCode
 
 
 # This file helps us to convert the data complex data types to native python data types
@@ -14,3 +14,9 @@ class UserSerializerPicture(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = ('user_profile_pic',)
+
+
+class PasswordResetCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PasswordResetCode
+        fields = "__all__"
