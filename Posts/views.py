@@ -24,14 +24,10 @@ logging.basicConfig(level=logging.DEBUG)
 def add_post(request):
 
     try:
-        post_data = request.data
-        logger.info(f'post_data = {post_data}')   
+        data = request.data
+        post_data = extract_post_data(data)
 
-        # TODO
-        # inside convert_images_to_files we extract the post data and convert the images to files
-        post_data_dict = convert_images_to_files(post_data)
-
-        post = PostSerializerAll(data=post_data_dict, partial=True)
+        post = PostSerializerAll(data=post_data, partial=True)
 
         if post.is_valid():
 
@@ -40,11 +36,11 @@ def add_post(request):
             if isinstance(saved_post,Post):
 
                 # create a new value in Inbox table for this user with the right message and post_id
-                user_name = post_data.get('user').get('user_full_name')
+                user_name = data.get('user').get('user_full_name')
 
                 message,headline = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
 
-                user_id = post_data.get('user').get('user_id')
+                user_id = data.get('user').get('user_id')
                 UserInbox.objects.create(user_id=user_id,post_id=saved_post.post_id,user_message=message,headline=headline)
 
                 # send email to the company email that a new post was added
@@ -227,7 +223,7 @@ def get_all_posts_zero_status(request):
     but only the posts with confirmation_status = '0'
     '''
     try:
-        posts = Post.objects.filter(confirmation_status='0')
+        posts = Post.objects.filter(confirmation_status='0') # 0 means not confirmed yet
         post_serialize = PostSerializerAll(posts, many=True)
 
         return JsonResponse(post_serialize.data, safe=False)

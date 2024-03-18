@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def update_confirm_status_in_post(post_id, new_confirm_status) -> Post:
-    '''Update the confirmation status and post_to_update field of a post.'''
+    '''Update the confirmation_status field of a post'''
     try:
         post = Post.objects.get(post_id=post_id)
         post.confirmation_status = new_confirm_status
@@ -27,7 +27,7 @@ def update_confirm_status_in_post(post_id, new_confirm_status) -> Post:
 
 
 def confirmation_status_messages(user_name,confirm_status):
-    '''This function extract the right message according to the confirm_status was givin'''
+    '''This function extract the right message and the heading according to the confirm_status was givin'''
 
     message_0 = (
         f"שלום {user_name} \n"
@@ -74,6 +74,7 @@ def confirmation_status_messages(user_name,confirm_status):
     )
 
     confirmation_status_messages = {
+        '''The dictionary contains the message and the heading for each confirmation status.'''
         "0": [message_0,'תודה ששיתפת, מחכה לאישור'],
         "1": [message_1,'חוות דעתך אושרה'],
         "2": [message_2,'תיקון נדרש: בעיה בפרטי דירתך'],

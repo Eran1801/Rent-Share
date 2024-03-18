@@ -110,48 +110,48 @@ def convert_base64(base64_str, filename):
         return None
 
 
-def extract_post_data(post_data: str) -> dict:
+def extract_post_data(post_data: dict) -> dict:
     try:
-        post_data_dict = {}
+        post = {}
 
         user = post_data.get('user')
-        logger.info(f'user: {user}')
-        post_data_dict['post_user_id'] = user.get('user_id')
-        post_data_dict['post_city'] = post_data.get('post_city')
-        post_data_dict['post_street'] = post_data.get('post_street')
-        post_data_dict['post_building_number'] = post_data.get('post_building_number')
-        post_data_dict['post_apartment_number'] = post_data.get('post_apartment_number')
-        post_data_dict['post_apartment_price'] = post_data.get('post_apartment_price')
-        post_data_dict['post_rent_start'] = post_data.get('post_rent_start')
-        post_data_dict['post_rent_end'] = post_data.get('post_rent_end')
-        post_data_dict['post_description'] = post_data.get('post_description')
-        post_data_dict['confirmation_status'] = '0'
-        post_data_dict['post_rating'] = post_data.get('post_rating')
-        post_data_dict['post_comments'] = post_data.get('post_comments')
+        post['post_user_id'] = user.get('user_id')
+        post['post_city'] = post_data.get('post_city')
+        post['post_street'] = post_data.get('post_street')
+        post['post_building_number'] = post_data.get('post_building_number')
+        post['post_apartment_number'] = post_data.get('post_apartment_number')
+        post['post_apartment_price'] = post_data.get('post_apartment_price')
+        post['post_rent_start'] = post_data.get('post_rent_start')
+        post['post_rent_end'] = post_data.get('post_rent_end')
+        post['post_description'] = post_data.get('post_description')
+        post['confirmation_status'] = '0'
+        post['post_rating'] = post_data.get('post_rating')
+        post['post_comments'] = post_data.get('post_comments')
+        
+        post = convert_images_to_files(post_data,post)
 
-        logger.info(f'post_data_dict: {post_data_dict}')
-        return post_data_dict
+        logger.info(f'post: {post}')
+        return post
 
     except Exception as e:
         logger.error(f"extract_post_data: {e}")
         return {}
 
 
-def convert_images_to_files(post_data: dict) -> dict:
+def convert_images_to_files(post_data: dict, post:dict) -> dict:
     number_of_pics = 4
-    post_data_dict = extract_post_data(post_data)
 
     try:
         rented_agreement_base64 = post_data.get('rent_agreement')
         logger.info(f'rent_agg = {rented_agreement_base64}')
         if rented_agreement_base64 is None:
             raise ValueError("A rented agreement is required")
-        post_data_dict['rent_agreement'] = convert_base64(rented_agreement_base64, "rent_agreement")
+        post['rent_agreement'] = convert_base64(rented_agreement_base64, "rent_agreement")
 
         driving_license_base64 = post_data.get('driving_license')
         if driving_license_base64 is None:
             raise ValueError("A driving license is required")
-        post_data_dict['driving_license'] = convert_base64(driving_license_base64, "driving_license")
+        post['driving_license'] = convert_base64(driving_license_base64, "driving_license")
 
         apartment_pics_base64 = []
         for i in range(number_of_pics):
@@ -159,9 +159,9 @@ def convert_images_to_files(post_data: dict) -> dict:
 
         for i, pic in enumerate(apartment_pics_base64):
             if pic is not None:
-                post_data_dict[f'apartment_pic_{i + 1}'] = convert_base64(pic, f"apartment_pic_{i + 1}")
+                post[f'apartment_pic_{i + 1}'] = convert_base64(pic, f"apartment_pic_{i + 1}")
 
-        return post_data_dict
+        return post
 
     except Exception as e:
         logger.error(f"convert_images_to_files: {e}")
