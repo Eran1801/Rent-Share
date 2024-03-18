@@ -24,7 +24,8 @@ logging.basicConfig(level=logging.DEBUG)
 def add_post(request):
 
     try:
-        post_data = request.data    
+        post_data = request.data
+        logger.info(f'post_data = {post_data}')   
 
         # TODO
         # inside convert_images_to_files we extract the post data and convert the images to files
@@ -71,7 +72,7 @@ def add_post(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_all_posts(request):
-
+    """This function will be used to get all the posts in the db 'Posts'"""
     try:
         # extract all the posts from the db
         all_posts = Post.objects.all()
@@ -87,9 +88,10 @@ def get_all_posts(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_parm(request):
+    """This function will be used to get the posts by the parameters that the user will send"""
 
     try:
-        # extract the right values from the user
+        # extract values from the user request
         post_city = request.GET.get('post_city') 
         post_street = request.GET.get('post_street')
         post_building_number = request.GET.get('post_building_number')

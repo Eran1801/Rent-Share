@@ -25,7 +25,7 @@ class Post(models.Model):
     #  if user delete his account, all of it's post removes also.
     post_user_id = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') 
 
-    post_city = models.CharField(max_length=50, null=False, blank=False)
+    post_city = models.CharField(max_length=50, null=False, blank=False,messages="City is required")
     post_street = models.CharField(max_length=50, null=False, blank=False)
     post_building_number = models.CharField(max_length=50, null=False, blank=False)
     post_apartment_number = models.CharField(max_length=50, null=False, blank=False)
