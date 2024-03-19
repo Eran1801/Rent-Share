@@ -11,7 +11,3 @@ Rent Share is a Django-based platform designed to revolutionize the apartment-hu
 - **Efficient Storage**: Utilizes AWS S3 for content storage, ensuring fast and reliable access to data.
 - **Robust Backend**: Built on Django, offering a secure and scalable foundation.
 - **Database Management**: Leverages MySQL for efficient database management, enabling complex queries and data analysis.
-
-## Mobile Compatibility
-
-The platform is optimized for mobile devices, providing a seamless user experience on the go. Check out our [mobile site](https://rentshare.netlify.app/#/)
