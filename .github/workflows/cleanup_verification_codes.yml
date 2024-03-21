@@ -1,0 +1,30 @@
+name: Cleanup Verification Codes
+
+on:
+  schedule:
+    # Set to runevery day at 00:00 UTC
+    - cron: '0 0 * * *'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Run Cleanup Script
+        env:
+          DJANGO_SETTINGS_MODULE: 'TelAviv.settings'
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER}}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST}}
+          DB_PORT: ${{ secrets.DB_PORT}}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        run: 
+          python .github/workflows/delete_old_verification_codes.py

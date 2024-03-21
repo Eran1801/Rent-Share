@@ -5,7 +5,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from Users.models import Users
 from Users.serializers import UsersSerializer
-from Users.auth.auth_util import *
+from Users.auth.utils_auth import *
+from django.contrib.auth import authenticate
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -24,9 +26,8 @@ def register(request, user_id=0):
             logger.info(f'Error message: {error_message}')
             return JsonResponse(error_message, status=400, safe=False)
 
-        # Continue with registration if all checks pass
         del user_data['user_password_2']  # No longer needed after validation
-        user_data['user_password'] = hash_password(user_data.get('user_password'))
+        user_data['user_password'] = encrypt_password(user_data.get('user_password'))
 
         users_serializer = UsersSerializer(data=user_data)
         if users_serializer.is_valid():
@@ -50,16 +51,10 @@ def login(request):
         email = user_data.get('user_email').lower()  # lower case email
         password = user_data.get('user_password')
 
-        # encrypt user password for check similarity in the db
-        hash_password_login = hash_password(password)
+        # Authenticate user
+        user = authenticate(username=email, password=password)
 
-        # retrieve user from db based on email
-        user = Users.objects.get(user_email=email)
-
-        if user.user_password == hash_password_login:
-
-            # todo: needs to be fix, security issue
-            # sending to the frontend
+        if user:
             response_data = {
                 'user': {
                     'user_id': user.user_id,

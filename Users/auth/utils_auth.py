@@ -1,4 +1,4 @@
-import hashlib
+from django.contrib.auth.hashers import make_password
 
 from Users.utilities import full_name_check, email_exists, phone_exists, check_valid_password, phone_number_check
 
@@ -20,11 +20,8 @@ def validate_register_data(user_data):
             return error_msg  # Return the error message if the validator condition is met
     return None  # No errors found
 
-def hash_password(plain_password: str) -> str:
-    '''encrypt the password user using sha256 algorithm'''
+def encrypt_password(plain_password: str) -> str:
+    '''encrypt the password user using PBKDF2 algorithm'''
+    
+    return make_password(plain_password)
 
-    sha256 = hashlib.sha256()
-    sha256.update(plain_password.encode('utf-8'))
-    hashed_password = sha256.hexdigest()
-
-    return hashed_password

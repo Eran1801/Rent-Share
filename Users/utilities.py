@@ -1,9 +1,10 @@
+from django.utils import timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
 import random
 import smtplib
-from Users.models import Users
+from Users.models import PasswordResetCode, Users
 import re
 import logging
 import os
@@ -48,7 +49,7 @@ def check_valid_password(pas: str) -> bool:
 
     pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)'  # contains at least one upper and one lower letter and number.
 
-    return re.match(pattern, pas) and len(pas) >= 8
+    return True if re.match(pattern, pas) and len(pas) >= 8 else False
 
 
 def email_exists(email: str) -> bool:
@@ -80,3 +81,15 @@ def phone_number_check(phone_number: str) -> bool:
 def check_email_valid(email: str) -> bool:
     '''in registration, the email is checked by Django but when he change it we need to check it again'''
     return email.count('@') == 1 and email.count('.') >= 1
+
+def check_verification_code_expiry(verification_code,object:PasswordResetCode) -> bool:
+    """This function will check if the verification code is expired or not"""
+    
+    # Calculate the current time
+    current_time = timezone.now()
+    # Calculate the time 5 minutes ago
+    expiry_time = object.created_at + timezone.timedelta(minutes=5) 
+    
+    return current_time > expiry_time
+
+    

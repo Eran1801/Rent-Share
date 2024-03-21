@@ -3,6 +3,7 @@ import time
 import os
 import uuid
 from typing import Any
+from django.contrib.auth.hashers import check_password
 
 
 def generate_unique_filename(instance: Any, filename: str):
@@ -16,8 +17,6 @@ def generate_unique_filename(instance: Any, filename: str):
 
 class Users(models.Model):
 
-    objects: 'models.Manager[Any]' = models.Manager()
-
     user_id = models.AutoField(primary_key=True)  # create primary key
     user_full_name = models.CharField(max_length=25, blank=False, null=False)
     user_password = models.CharField(max_length=100, blank=False, null=False)
@@ -27,6 +26,9 @@ class Users(models.Model):
 
     def __str__(self):
         return f"User Id ({self.user_id})"
+    
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.user_password)
 
 
 class PasswordResetCode(models.Model):

@@ -5,8 +5,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 
 from Posts.utilities import convert_base64
-from Users.auth.auth_util import hash_password
+from Users.auth.utils_auth import encrypt_password
 from Users.models import Users
+from Users.personal_info.personal_info_util import validate_update_user_info
 from Users.serializers import UserSerializerPicture
 from Users.utilities import email_exists, check_email_valid, phone_exists, phone_number_check, full_name_check, \
     check_valid_password
@@ -32,35 +33,12 @@ def change_personal_info(request):
 
         user = Users.objects.get(user_id=user_id)  # get the user from the database by user_id
 
-        # check if fields have changed
-        if full_name != user.user_full_name:
-            if full_name_check(full_name) is False:
-                return HttpResponseServerError("Invalid full name")
-            else:
-                user.user_full_name = full_name  # changing the full name in the db
+        response = validate_update_user_info(user, full_name, email, phone)
 
-        # means it's diff from the record in the db
-        if email != user.user_email:
-            if email_exists(email) is True:
-                return HttpResponseServerError("Email already exists")
-
-            elif check_email_valid(email) is False:
-                return HttpResponseServerError("Email is invalid")
-
-            else:
-                user.user_email = email
-
-        if phone != user.user_phone:
-            if phone_exists(phone) is True:
-                return HttpResponseServerError("Phone number already exists")
-
-            elif phone_number_check(phone) is False:
-                return HttpResponseServerError("Phone number is invalid")
-
-            else:
-                user.user_phone = phone
-
-        user.save()  # save changes to the database, but only the one's that the user changed
+        if response != "success":
+            return JsonResponse(response,safe=False, status=400)
+        
+        user.save()  # save changes to the database
         return JsonResponse("Personal info updated successfully", safe=False)
 
     except Users.DoesNotExist:
@@ -78,28 +56,24 @@ def change_password(request):
 
     try:
         user_data = request.data
-        user_id = user_data.get('user_id')
-
-        # encrypt the old password for checking against the db
-        old_password = hash_password(user_data.get('old_password'))
 
         new_password = user_data.get('new_password')
         new_password_confirm = user_data.get('new_password_confirm')
 
-        user = Users.objects.get(user_id=user_id)  # get the User from the database by user_id
+        user = Users.objects.get(user_id=user_data.get('user_id'))  # get the User from the database by user_id
 
         # check if the old password is correct
-        if user.user_password != old_password:
-            return HttpResponseServerError("Old password is incorrect")
+        if user.check_password(user_data.get('old_password')) is False:
+            return JsonResponse("Old password is incorrect",safe=False, status=400)
 
         if new_password != new_password_confirm:
-            return HttpResponseServerError("Passwords don't match.")
+            return JsonResponse("Passwords don't match.", safe=False, status=400)
 
         if check_valid_password(new_password) is False:
-            return HttpResponseServerError("Password is invalid")
+            return JsonResponse("Password is invalid",safe=False, status=400)
 
         # update the password but encrypt is first
-        user.user_password = hash_password(new_password)
+        user.user_password = encrypt_password(new_password)
 
         # save changes to the database
         user.save()
