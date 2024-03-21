@@ -21,11 +21,15 @@ def delete_old_verification_codes():
     # Calculate the cutoff time
     cutoff_time = datetime.now() - timedelta(minutes=5)
     
+    print("Delete Query:", delete_query)
+    
     # SQL query to delete old records
     delete_query = """
     DELETE FROM Users_passwordresetcode
     WHERE created_at < %s;
     """
+    
+    print("Delete Query:", delete_query)
     
     # Execute the deletion
     cursor.execute(delete_query, (cutoff_time,))
