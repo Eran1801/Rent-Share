@@ -4,7 +4,7 @@ from django.utils import timezone
 from Users.models import PasswordResetCode
 
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "your_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "TelAviv.settings")
 django.setup()
 
 
