@@ -3,7 +3,7 @@ name: Cleanup Verification Codes
 on:
   schedule:
     # Set to runevery day at 00:00 UTC
-    - cron: '0 0 * * *'
+    - cron: '*/1 * * * *'
 
 jobs:
   cleanup:
