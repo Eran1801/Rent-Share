@@ -1,9 +1,7 @@
 # standalone_delete.py
 import os
 import mysql.connector
-from django.utils import timezone
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "TelAviv.settings")
+from datetime import datetime,timedelta
 
 
 def delete_old_verification_codes():
@@ -21,7 +19,7 @@ def delete_old_verification_codes():
     cursor = conn.cursor()
     
     # Calculate the cutoff time
-    cutoff_time = timezone.now() - timezone.timedelta(minutes=5)
+    cutoff_time = datetime.now() - timedelta(minutes=5)
     
     # SQL query to delete old records
     delete_query = """

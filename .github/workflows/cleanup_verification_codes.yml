@@ -16,7 +16,6 @@ jobs:
       - name: Install mysql-connector-python and Django
         run: |
           pip install mysql-connector-python==8.1.0
-          pip install django==4.2.4
       - name: Run Cleanup Script
         env:
           DB_NAME: ${{ secrets.DB_NAME }}
