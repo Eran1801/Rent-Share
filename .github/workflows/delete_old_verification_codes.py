@@ -3,6 +3,9 @@ import os
 import mysql.connector
 from django.utils import timezone
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "TelAviv.settings")
+
+
 def delete_old_verification_codes():
     # Database configuration from environment variables
     db_config = {
