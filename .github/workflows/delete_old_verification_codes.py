@@ -1,27 +1,42 @@
+# standalone_delete.py
 import os
-import django
+from datetime import datetime, timedelta
+import mysql.connector
 from django.utils import timezone
-from Users.models import PasswordResetCode
-
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "TelAviv.settings")
-django.setup()
-
 
 def delete_old_verification_codes():
+    # Database configuration from environment variables
+    db_config = {
+        'host': os.getenv('DB_HOST'),
+        'user': os.getenv('DB_USER'),
+        'passwd': os.getenv('DB_PASSWORD'),
+        'database': os.getenv('DB_NAME')
+    }
+    
+    # Connect to the database
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    
     # Calculate the cutoff time
     cutoff_time = timezone.now() - timezone.timedelta(minutes=5)
+    
+    # SQL query to delete old records
+    delete_query = """
+    DELETE FROM password_reset_code
+    WHERE created_at < %s;
+    """
+    
+    # Execute the deletion
+    cursor.execute(delete_query, (cutoff_time,))
+    
+    # Commit the changes to the database
+    conn.commit()
+    
+    print(f"Deleted {cursor.rowcount} old verification code(s).")
 
-    # Query to find records older than 5 minutes
-    old_records = PasswordResetCode.objects.filter(created_at__lt=cutoff_time)
-
-    # Count old records before deleting, for logging
-    records_deleted = old_records.count()
-
-    # Delete the records
-    old_records.delete()
-
-    print(f"Deleted {records_deleted} old verification code(s).")
+    # Close the connection
+    cursor.close()
+    conn.close()
 
 if __name__ == "__main__":
     delete_old_verification_codes()
