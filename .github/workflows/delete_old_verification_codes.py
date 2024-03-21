@@ -26,19 +26,14 @@ def delete_old_verification_codes():
     # SQL query to delete old records
     delete_query = """
     DELETE FROM Users_passwordresetcode
-    WHERE created_at < %s;
+    WHERE created_at < DATE_SUB(NOW(), INTERVAL 5 MINUTE);
     """
-    
-    print("Delete Query:", delete_query)
-    
+
     # Execute the deletion
-    cursor.execute(delete_query, (cutoff_time,))
-    
+    cursor.execute(delete_query)
     # Commit the changes to the database
     conn.commit()
     
-    print(f"Deleted {cursor.rowcount} old verification code(s).")
-
     # Close the connection
     cursor.close()
     conn.close()

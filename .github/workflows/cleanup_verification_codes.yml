@@ -2,7 +2,7 @@ name: Cleanup Verification Codes
 
 on:
   schedule:
-    - cron: '*/1 * * * *'
+    - cron: '0 0 1 * *'
 
 jobs:
   cleanup:
