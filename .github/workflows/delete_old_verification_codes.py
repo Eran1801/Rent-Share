@@ -1,6 +1,5 @@
 # standalone_delete.py
 import os
-from datetime import datetime, timedelta
 import mysql.connector
 from django.utils import timezone
 
@@ -22,7 +21,7 @@ def delete_old_verification_codes():
     
     # SQL query to delete old records
     delete_query = """
-    DELETE FROM password_reset_code
+    DELETE FROM Users_passwordresetcode
     WHERE created_at < %s;
     """
     
