@@ -4,5 +4,11 @@
         "Bitan",
         "corsheaders",
         "dirtyfields"
-    ]
+    ],
+    "snyk.severity": {
+        "critical": false,
+        "high": false,
+        "medium": false,
+        "low": false
+    }
 }

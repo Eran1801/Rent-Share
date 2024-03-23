@@ -17,12 +17,7 @@ def delete_old_verification_codes():
     # Connect to the database
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
-    
-    # Calculate the cutoff time
-    cutoff_time = datetime.now() - timedelta(minutes=5)
-    
-    print("Delete Query:", delete_query)
-    
+        
     # SQL query to delete old records
     delete_query = """
     DELETE FROM Users_passwordresetcode

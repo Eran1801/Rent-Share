@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 @api_view(["POST"])
 @csrf_exempt
-def update_confirm_status(request):
+def update_confirm_status_field(request):
 
     try:
         data = request.data
@@ -25,28 +25,20 @@ def update_confirm_status(request):
         user_id = data.get('user_id')
         post_id = data.get('post_id')
 
-        logger.info(f'confirmation_status = {confirmation_status}')
-        logger.info(f'user_id = {user_id}')
-        logger.info(f'post_id = {post_id}')
-
         # update in 'Post' db the confirm status var
-        post_to_update = update_confirm_status_in_post(post_id,confirmation_status)
-
-        logger.info(f'post_to_update.confirmation_status = {post_to_update.confirmation_status}')
+        update_confirm_status_in_post(post_id,confirmation_status)
 
         # extract the needed value of user_name for the message
         user_name = Users.objects.get(user_id=user_id).user_full_name
 
-        logger.info(f'user name = {user_name}')
-
         # extract the right message according to the confirm_status value
-        message, headline = confirmation_status_messages(user_name, confirmation_status)
+        message, headline = extract_message_based_on_confirm_status(user_name, confirmation_status)
 
         logger.info(f'message = {message}')
 
         # Add a message to the 'UserInbox' user db 
         UserInbox.objects.create(user_id=user_id,post_id=post_id,user_message=message,headline=headline)
-        return JsonResponse('update_confirm_status end successfuly',safe=False)
+        return JsonResponse('update_confirm_status end successfully',safe=False)
 
     except Exception as e:
         logger.error(f'Error: {e}')
@@ -61,10 +53,10 @@ def get_all_user_messages(request):
         user_id = request.GET.get('user_id')
         
         user = Users.objects.get(user_id=user_id)
-        messages = user.messages.all() # i can use the messages bceause i estblish it in the related_name in the forg key.
+        messages = user.messages.all() # i can use the messages because i establish it in the related_name in the forgien key.
 
-        messages_serlizer = UserInboxSerializerAll(messages,many=True)
-        return JsonResponse(messages_serlizer.data, safe=False)
+        messages_serializer = UserInboxSerializerAll(messages,many=True)
+        return JsonResponse(messages_serializer.data, safe=False)
     
     except Users.DoesNotExist:
         return HttpResponseServerError('Message not found')
@@ -81,8 +73,7 @@ def update_read_status(request):
         data = request.data
 
         messages_id: list = data.get('messages_id')
-        print(f'messages_id - {messages_id} and his type is {type(messages_id)}')
-        
+                
         for _id in messages_id:
             messages = UserInbox.objects.get(message_id=_id)
             if messages.read_status == '1':
@@ -115,10 +106,10 @@ def delete_messages_by_post_id(request):
         # delete all the post from db with the same post_id
         message_to_delete.delete()
 
-        return JsonResponse('delete_messages_by_post_id function end succsufuly',safe=False)
+        return JsonResponse('delete_messages_by_post_id function end successfully',safe=False)
 
     except UserInbox.DoesNotExist:
-        return HttpResponseBadRequest('UserInbox not found inisde delete_messages_by_post_id')
+        return HttpResponseBadRequest('UserInbox not found inside delete_messages_by_post_id')
     
     except Exception as e:
         logger.error(e)
@@ -134,7 +125,7 @@ def has_unread_messages(request):
 
         messages = user.messages.all() # get's all user messages
 
-        # store all the messages that already redead  
+        # store all the messages that already reded  
         has_unread = any(mes.read_status == 1 for mes in messages)
         
         return JsonResponse({'unread_messages': has_unread},safe=False)
@@ -149,7 +140,7 @@ def has_unread_messages(request):
 
 @api_view(['GET'])
 @csrf_exempt
-def all_messages_by_post_id(request):
+def get_all_messages_by_user_id(request):
     try:
         user_id = request.GET.get('user_id')
 
@@ -160,25 +151,8 @@ def all_messages_by_post_id(request):
         # flatten the resulting
         unique_post_ids = all_messages.values_list('post_id', flat=True).distinct()
 
-        posts_data = []
-        for post_id in unique_post_ids:
-            post = Post.objects.get(post_id=post_id)
-
-            # convert post to a dict for JSON responce
-            post_dict = {"post": PostSerializerAll(post).data}
-
-            # get's all the messages of the asscoieted to this post_id
-            all_post_messages = UserInbox.objects.filter(post_id=post_id).order_by('message_id')
-
-            # sotred the message inside a list for the JSON return
-            message_list_sorted = [mes.user_message for mes in all_post_messages]
-            post_dict['messages_sorted'] = message_list_sorted
-
-            # the actual messages in a dict form for the JSON return
-            post_dict['massages'] = UserInboxSerializerAll(all_post_messages,many=True).data
+        posts_data = normalize_messages(unique_post_ids)
         
-            posts_data.append(post_dict)
-
         return JsonResponse({'posts': posts_data}, safe=False)
     
     except Post.DoesNotExist:

@@ -1,10 +1,12 @@
 from datetime import datetime
+import traceback
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
 from Inbox.models import UserInbox
-from Inbox.views import confirmation_status_messages
+from Inbox.msg_emails_Enum import Emails
+from Inbox.views import extract_message_based_on_confirm_status
 from Posts.serializers import PostSerializerAll
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from .models import Post
@@ -12,11 +14,14 @@ from Users.utilities import *
 from Posts.utilities import *
 from django.core.exceptions import ObjectDoesNotExist
 from Users.utilities import send_email
+from datetime import datetime
 
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+EMAIL_SUBJECT = 'New Post'
 
 
 @api_view(['POST'])
@@ -34,36 +39,34 @@ def add_post(request):
             saved_post = post.save()
 
             if isinstance(saved_post,Post):
-
-                # create a new value in Inbox table for this user with the right message and post_id
-                user_name = data.get('user').get('user_full_name')
-
-                message,headline = confirmation_status_messages(user_name,'0') # 0 means not confirmed yet
-
-                user_id = data.get('user').get('user_id')
-                UserInbox.objects.create(user_id=user_id,post_id=saved_post.post_id,user_message=message,headline=headline)
-
-                # send email to the company email that a new post was added
-                msg_html = f"""
-                <html>
-                    <body>
-                        <p>New post was added to S3.</p>
-                        <p>User: {user_id}</p>
-                    </body>
-                </html>
-                """
-                subject = "New post"
-                send_email(FROM_EMAIL, FROM_EMAIL, msg_html, subject) # send an email for ourself for tracking the posts insertion
                 
+                user = data.get('user')
+                user_id = user.get('user_id')
+                user_name = user.get('user_full_name')
+                
+                headline,message = extract_message_based_on_confirm_status(user_name,'0') # 0 means not confirmed yet
+                
+                # create a new value in Inbox table for this user with the right message and post_id
+                UserInbox.objects.create(user_id=user_id,post_id=saved_post.post_id,user_message=message,headline=headline)
+            
+                # send email to the company email that a new post was added
+                msg_html = Emails.NEW_POST_SEND_TO_ADMIN.value
+                                
+                # send an email for ourself for tracking the posts insertion and approval by the admin
+                send_email(FROM_EMAIL, FROM_EMAIL, msg_html, EMAIL_SUBJECT)
+                
+                post.save() # save to db
                 return JsonResponse("Post successfully saved in db", safe=False)
+                                
         else:
             logger.info(post.errors)
             return HttpResponseServerError("Post validation failed")
 
     except Exception as e:
-        logger.error(f"add_post : {e}")
+        # Log the full traceback along with the exception message
+        logger.error(f"An error occurred in add_post: {e}\n{traceback.format_exc()}")
         return HttpResponseServerError('An error occurred while adding a new post')
-
+    
 
 @api_view(['GET'])
 @csrf_exempt
@@ -84,26 +87,21 @@ def get_all_posts(request):
 @api_view(['GET'])
 @csrf_exempt
 def get_post_by_parm(request):
+    # HERE - MORE CHECKS NEED TO BE CHECKS IN POSTMAN 
     """This function will be used to get the posts by the parameters that the user will send"""
 
     try:
         # extract values from the user request
-        post_city = request.GET.get('post_city') 
-        post_street = request.GET.get('post_street')
-        post_building_number = request.GET.get('post_building_number')
-        post_apartment_number = request.GET.get('post_apartment_number')
-
-        # edge cases to check first        
-        if post_city == '' and post_street == 'null' and post_apartment_number == 'null' and post_building_number == 'null': 
-            return HttpResponseBadRequest("At least one field is required")
-
-        # without city you can't search anything
-        if post_city == '':
-            return HttpResponseBadRequest("City field is required")
+        city, street, building_number, apartment_number = extract_fields_for_post_parm(request)
+                
+        # Validate the parameters
+        validation_error = validate_post_parameters(city, street, building_number, apartment_number)
+        if validation_error:
+            return JsonResponse(validation_error, safe=False, status=400)
 
         # create the filter conditions before extract the right posts from db
-        filter_conditions = filter_cond(post_city,post_street,post_building_number,post_apartment_number)
-
+        filter_conditions = filter_cond(city,street,building_number,apartment_number)
+        
         # extract the posts that fill the filter_conditions
         post = Post.objects.filter(**filter_conditions)
 
@@ -111,12 +109,15 @@ def get_post_by_parm(request):
             try:
                 post_serializer = PostSerializerAll(post, many=True)
 
-                # if more then one post for the same address we combined them to make it easy to the front
-                apartments = process_apartments(post_serializer.data)
-                grouped_apartments = group_apartments_by_location(apartments) 
-                json_result = convert_to_json(grouped_apartments)
+                # if more then one post for the same address we combined them to make it easy to the frontend
+                if len(post_serializer.data) > 1:
+                    apartments = process_apartments(post_serializer.data)
+                    grouped_apartments = group_apartments_by_location(apartments) 
+                    json_result = convert_to_json(grouped_apartments)
 
-                return JsonResponse('{' + json_result + '}', safe=False)   
+                    return JsonResponse(json_result, safe=False)
+                
+                return JsonResponse(post_serializer.data, safe=False)
             except :
                 return HttpResponseServerError("An error occurred while serialize the post in get_posts")
         else:
@@ -159,6 +160,7 @@ def get_post_by_user_id(request):
     
     except Post.DoesNotExist:    
             return HttpResponseBadRequest("Post with the given ID does not exist.")
+        
     except Exception as e:
             return HttpResponseBadRequest(f"An error occurred: {e}")
 
@@ -238,53 +240,29 @@ def get_all_posts_zero_status(request):
     
 @api_view(['PUT'])
 @csrf_exempt
-def update_post(request):
+def update_post_for_approval(request):
     '''Update post is needed when there is a problem with the input of the user like id, address..'''
     try:
         # getting all the data of the post
         post_data = request.data
-        logger.info(f'post_data = {post_data}')
-
-        # extract the post needs to be update
         post_id = post_data.get('post_id')
         
+        # extract the post needs to be update
         post_to_update = Post.objects.get(post_id=post_id)
 
         # confirm_status is already change in the dashboard admin by us. when changes 'change_confirm_status()' is executed
         confirm_status = post_data.get('confirmation_status')
 
-        # switch case on the 'confirm_status' var
-        if confirm_status == '2':
-        
-            post_to_update.post_city = post_data.get('post_city')
-            post_to_update.post_street = post_data.get('post_street')
-            post_to_update.post_building_number = post_data.get('post_building_number')
-            post_to_update.post_apartment_number = post_data.get('post_apartment_number')
+        switch_dict = {
+            "2": update_post_address(post_to_update, post_data),
+            "3": update_post_rent_dates(post_to_update, post_data),
+            "4": update_post_rent_agreement(post_to_update, post_data),
+            "5": update_post_driving_license(post_to_update, post_data)
+        }
 
-        elif confirm_status == '3':
-
-            new_rent_start_date = post_data.get('post_rent_start')
-            new_rent_end_date = post_data.get('post_rent_end')
-
-            new_rent_start_date = datetime.strptime(new_rent_start_date, '%Y-%m-%d').date()
-            new_rent_end_date = datetime.strptime(new_rent_end_date, '%Y-%m-%d').date()
-
-            post_to_update.post_rent_start = new_rent_start_date
-            post_to_update.post_rent_end = new_rent_end_date
-        
-        elif confirm_status == '4':
-
-            rent_agreement_base64 = post_data.get('rent_agreement')
-            new_rent_agreement = convert_base64(rent_agreement_base64, "new rent agreement")
-
-            post_to_update.rent_agreement = new_rent_agreement
-        
-        elif confirm_status == '5':
-
-            driving_license_base64 = post_data.get('driving_license')
-            new_driving_license = convert_base64(driving_license_base64, "new driving license")
-
-            post_to_update.driving_license = new_driving_license
+        response = switch_dict.get(confirm_status, "Invalid confirm status")
+        if response == "Invalid confirm status":
+            return HttpResponseBadRequest("Invalid confirm status")
 
         post_to_update.confirmation_status = '0' # needs to approve again by the admin
         post_to_update.save()

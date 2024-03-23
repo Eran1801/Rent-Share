@@ -1,6 +1,11 @@
+from Inbox.models import UserInbox
+from Inbox.msg_emails_Enum import Messages
+from Inbox.serializers import UserInboxSerializerAll
 from Posts.models import Post
 import logging
 from django.core.exceptions import ObjectDoesNotExist
+
+from Posts.serializers import PostSerializerAll
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -16,7 +21,7 @@ def update_confirm_status_in_post(post_id, new_confirm_status) -> Post:
         logger.info(f"Post {post_id} updated successfully.")
         return post
     
-    except ObjectDoesNotExist:
+    except Post.DoesNotExist:
         logger.error(f"Post with ID {post_id} does not exist.")
 
     except Exception as e:
@@ -26,63 +31,55 @@ def update_confirm_status_in_post(post_id, new_confirm_status) -> Post:
     return None
 
 
-def confirmation_status_messages(user_name,confirm_status):
-    '''This function extract the right message and the heading according to the confirm_status was givin'''
+def extract_message_based_on_confirm_status(user_name,confirm_status:str):
+    '''
+    This function extract the right message and the heading of it 
+    according to the confirm_status was givin
+    the confirm_status is the status of the post after the user submitted it when 
+    the admin need to approve it.'''
 
-    message_0 = (
-        f"שלום {user_name} \n"
-        "חוות הדעת שלך התקבלה אצלנו וממתינה לאישור.\n"
-        "הודעה נוספת תישלח אלייך במידה וחוות הדעת תאושר.\n"
-        "תוכל גם להתעדכן בסטטוס שלה באיזור \"הדירות שלי.\""
-    )
-
-    message_1 = (
-        f"שלום {user_name} \n"
-        "חוות הדעת שלך אושרה.\n"
-        "תודה רבה על תרומתך לקהילה.\n"
-        "עכשיו תוכל למצוא אותה באזור חיפוש הדירות."
-    )
-
-    message_2 = (
-        f"שלום {user_name} \n"
-        "זיהינו אי התאמה בין פרטי הדירה (עיר / רחוב / מספר בניין / דירה) לבין חוזה השכירות.\n"
-        "אנא הוסף שנית את חוות הדעת עם הפרטים הנכונים."
-    )
-
-    message_3 = (
-        f"שלום {user_name} \n"
-        "זיהינו אי התאמה בין תאריכי הכניסה והיציאה שהזנת לבין מה שרשום בחוזה השכירות.\n"
-        "אנא הגש את חוות הדעת מחדש עם הפרטים הנכונים."
-    )
-
-    message_4 = (
-        f"שלום {user_name} \n"
-        "זיהינו אי התאמה בין העלאת הטופס אשר עוזר לנו לאמת שאכן השכרת את הדירה (חוזה שכירות).\n"
-        "אנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
-    )
-
-    message_5 = (
-        f"שלום {user_name} \n"
-        "זיהינו אי התאמה בין הפרטים בתעודה מזהה שהועלתה בחוות הדעת לבין חוזה השכירות.\n"
-        "אנא הגש שוב את חוות הדעת מחדש עם הפרטים הנכונים."
-    )
-
-    message_6 = (
-        f"שלום {user_name} \n"
-        "זיהינו שפה לא נאותה במתן חוות הדעת שלך.\n"
-        "אנא היכנס ל\"דירות שלי\" ועדכן את חוות הדעת על ידי שינוי המלל בתיבת הטקסט ולחיצה על כפתור \"עדכן חוות דעת\"."
-    )
-
-    confirmation_status_messages = {
-        '''The dictionary contains the message and the heading for each confirmation status.'''
-        "0": [message_0,'תודה ששיתפת, מחכה לאישור'],
-        "1": [message_1,'חוות דעתך אושרה'],
-        "2": [message_2,'תיקון נדרש: בעיה בפרטי דירתך'],
-        "3": [message_3,'בדוק תאריכים: תיקון נדרש בחוות דעתך'],
-        "4": [message_4,'הגשה מחדש נדרשת: אי התאמה במסמכים'],
-        "5": [message_5,'תיקון פרטים: אי התאמה בתעודה מזהה'],
-        "6": [message_6,'עדכון נדרש: שפה לא נאותה בחוות הדעת']
+    # The dictionary contains the message and the heading for each confirmation status
+    messages = {
+        "0": [Messages.MESSAGE_0.value % user_name, 'תודה ששיתפת, מחכה לאישור'],
+        "1": [Messages.MESSAGE_1.value % user_name, 'חוות דעתך אושרה'],
+        "2": [Messages.MESSAGE_2.value % user_name, 'תיקון נדרש: בעיה בפרטי דירתך'],
+        "3": [Messages.MESSAGE_3.value % user_name, 'בדוק תאריכים: תיקון נדרש בחוות דעתך'],
+        "4": [Messages.MESSAGE_4.value % user_name, 'הגשה מחדש נדרשת: אי התאמה במסמכים'],
+        "5": [Messages.MESSAGE_5.value % user_name, 'תיקון פרטים: אי התאמה בתעודה מזהה'],
+        "6": [Messages.MESSAGE_6.value % user_name, 'עדכון נדרש: שפה לא נאותה בחוות הדעת']
     }
 
-    return confirmation_status_messages.get(confirm_status)[0], confirmation_status_messages.get(confirm_status)[1]
+    return messages.get(confirm_status)[1], messages.get(confirm_status)[0]
 
+
+def normalize_messages(unique_post_ids):
+    
+    try:
+        posts_data = []
+        # for each post_id in the list of unique post_ids
+        for post_id in unique_post_ids:
+            # get the post object
+            post = Post.objects.get(post_id=post_id) 
+
+            # convert post to a dict for JSON response
+            post_dict = {"post": PostSerializerAll(post).data}
+
+            # get's all the messages that associated to this post_id and order them by message_id as the message id is the order of the messages
+            all_post_messages = UserInbox.objects.filter(post_id=post_id).order_by('message_id')
+
+            # sorted the message inside a list for the JSON return
+            message_list_sorted = [mes.user_message for mes in all_post_messages]
+            post_dict['messages_sorted'] = message_list_sorted
+
+            # the actual messages in a dict form for the JSON return
+            post_dict['massages'] = UserInboxSerializerAll(all_post_messages,many=True).data
+        
+            posts_data.append(post_dict)
+
+        return posts_data
+    
+    except Post.DoesNotExist:
+        logger.error(f"Post with ID {post_id} does not exist.")
+    
+    except Exception as e:
+        logger.error(f"An error occurred while normalizing messages for post {post_id}: {e}")

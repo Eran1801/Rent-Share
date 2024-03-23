@@ -1,7 +1,10 @@
+from datetime import datetime
 import logging
 import base64
 from django.core.files.base import ContentFile
 import json
+
+from django.http import JsonResponse
 
 '''
 In this file there is all the helper function
@@ -49,11 +52,10 @@ def group_apartments_by_location(apartments_data):
             # If the location key is not in the dictionary, add it with an empty list as the value
             if location_key not in grouped_apartments:
                 # create a new key in the dictionary only if it doesn't exist
-                # because if we have the same address we can post more then one on apartment
+                # because if we have the same address we can review more then one on apartment
                 grouped_apartments[location_key] = []
-
-            # if the key exist we append the apartment to the list
-            grouped_apartments[location_key].append(apartment_data)
+            else:
+                grouped_apartments[location_key].append(apartment_data)
 
         return grouped_apartments
 
@@ -67,7 +69,7 @@ def convert_to_json(grouped_apartments):
 
     for apartment_list in grouped_apartments.values():
         json_result.append(apartment_list)
-
+    
     return json.dumps(json_result, ensure_ascii=False)
 
 
@@ -190,3 +192,77 @@ def filter_cond(city, street, building, apr_number):
     except Exception as e:
         logger.error(f"filter_cond : {e}")
         return {}
+
+def extract_fields_for_post_parm(post):
+    city = post.GET.get('post_city') 
+    street = post.GET.get('post_street',"")
+    building_number = post.GET.get('post_building_number',"")
+    apartment_number = post.GET.get('post_apartment_number',"")
+        
+    return city, street, building_number, apartment_number
+
+def validate_post_parameters(city, street, building_number, apartment_number):
+    """Validate the parameters for getting posts"""
+
+    # Check if any of the required fields are missing or empty
+    if city == '' or street == 'null' or apartment_number == 'null' or building_number == 'null': 
+        return "At least one field is required"
+    
+    # Check if the city field is empty
+    if city == '':
+        return "City field is required"
+
+    # If everything is fine, return None
+    return None
+
+            
+def update_post_address(post, data):
+
+    try:
+        post.post_city = data.get('post_city')
+        post.post_street = data.get('post_street')
+        post.post_building_number = data.get('post_building_number')
+        post.post_apartment_number = data.get('post_apartment_number')
+    
+    except Exception as e:
+        logger.error(f"update_post_address: {e}")
+        return JsonResponse({'message': 'Failed to update the address'}, status=400)
+    
+        
+def update_post_rent_dates(post_to_update, post_data):
+    
+    try:
+        new_rent_start_date = post_data.get('post_rent_start')
+        new_rent_end_date = post_data.get('post_rent_end')
+
+        new_rent_start_date = datetime.strptime(new_rent_start_date, '%Y-%m-%d').date()
+        new_rent_end_date = datetime.strptime(new_rent_end_date, '%Y-%m-%d').date()
+
+        post_to_update.post_rent_start = new_rent_start_date
+        post_to_update.post_rent_end = new_rent_end_date
+    except Exception as e:
+        logger.error(f"update_post_rent_dates: {e}")
+        return JsonResponse({'message': 'Failed to update the rented dates'}, status=400)
+    
+    
+    
+def update_post_driving_license(post_to_update, post_data):
+    try:
+        driving_license_base64 = post_data.get('driving_license')
+        new_driving_license = convert_base64(driving_license_base64, "new driving license")
+
+        post_to_update.driving_license = new_driving_license
+    except Exception as e:
+        logger.error(f"update_post_driving_license: {e}")
+        return JsonResponse({'message': 'Failed to update the driving license'}, status=400)
+        
+def update_post_rent_agreement(post_to_update, post_data):
+    
+    try:
+        rent_agreement_base64 = post_data.get('rent_agreement')
+        new_rent_agreement = convert_base64(rent_agreement_base64, "new rent agreement")
+        post_to_update.rent_agreement = new_rent_agreement
+    except Exception as e:
+        logger.error(f"update_post_rent_agreement: {e}")
+        return JsonResponse({'message': 'Failed to update the rented agreement'}, status=400)
+    

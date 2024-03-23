@@ -7,9 +7,8 @@ from rest_framework.decorators import api_view
 from Users.auth.utils_auth import encrypt_password
 from Users.models import PasswordResetCode
 from Users.utilities import *
-import logging
 from Users.utilities import FROM_EMAIL
-from django.utils.safestring import mark_safe
+from Inbox.msg_emails_Enum import Emails
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -32,16 +31,7 @@ def forget_password(request):
         verification_code = generate_verification_code()
         
         # Use dir="rtl" to ensure correct display of RTL text
-        msg = mark_safe(f"""
-        <html>
-            <body>
-                <p dir="rtl">שלום רב, אימייל זה נשלח מכיוון שרצית לאפס את הסיסמה שלך</p>
-                <p dir="rtl">קוד האימות שלך הוא: <b>{verification_code}</b><br>
-                   הקוד תקף ל-5 דקות.
-                </p>
-            </body>
-        </html>
-        """)
+        msg = Emails.FORGET_PASSWORD_MESSAGE.value % verification_code  
         subject = EMAIL_SUBJECT
 
         # send email to user email with a 6-digit code
