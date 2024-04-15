@@ -193,6 +193,7 @@ def filter_cond(city, street, building, apr_number):
         logger.error(f"filter_cond : {e}")
         return {}
 
+
 def extract_fields_for_post_parm(post):
     city = post.GET.get('post_city') 
     street = post.GET.get('post_street',"")
@@ -200,6 +201,7 @@ def extract_fields_for_post_parm(post):
     apartment_number = post.GET.get('post_apartment_number',"")
         
     return city, street, building_number, apartment_number
+
 
 def validate_post_parameters(city, street, building_number, apartment_number):
     """Validate the parameters for getting posts"""
@@ -245,7 +247,6 @@ def update_post_rent_dates(post_to_update, post_data):
         return JsonResponse({'message': 'Failed to update the rented dates'}, status=400)
     
     
-    
 def update_post_driving_license(post_to_update, post_data):
     try:
         driving_license_base64 = post_data.get('driving_license')
@@ -255,6 +256,7 @@ def update_post_driving_license(post_to_update, post_data):
     except Exception as e:
         logger.error(f"update_post_driving_license: {e}")
         return JsonResponse({'message': 'Failed to update the driving license'}, status=400)
+        
         
 def update_post_rent_agreement(post_to_update, post_data):
     

@@ -3,13 +3,25 @@ from Inbox.msg_emails_Enum import Messages
 from Inbox.serializers import UserInboxSerializerAll
 from Posts.models import Post
 import logging
-from django.core.exceptions import ObjectDoesNotExist
 
 from Posts.serializers import PostSerializerAll
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+def extract_unread_messages(messages) -> dict:
+    '''Extract the unread messages from a list of messages'''
+    ans = {}
+    
+    for mes in messages:
+        if mes.read_status == '1':
+            if mes.post_id not in ans:
+                ans[mes.post_id] = []
+                ans[mes.post_id].append((mes.user_message, mes.headline))
+            else:
+                ans[mes.post_id].append((mes.user_message, mes.headline))
+    
+    return ans
 
 def update_confirm_status_in_post(post_id, new_confirm_status) -> Post:
     '''Update the confirmation_status field of a post'''

@@ -1,5 +1,5 @@
 from django.contrib.auth.backends import BaseBackend
-from .models import Users
+from ..models import Users
 
 # Custom Backend for Email Authentication
 class CustomBackend(BaseBackend):

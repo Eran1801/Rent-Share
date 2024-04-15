@@ -1,13 +1,11 @@
+from Users.utilities import encrypt_password, error_response, success_response, validate_register_data
 import logging
-
 from django.http import JsonResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from Users.models import Users
 from Users.serializers import UsersSerializer
-from Users.auth.utils_auth import *
 from django.contrib.auth import authenticate
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -15,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 @api_view(['POST'])
 @csrf_exempt
-def register(request, user_id=0):
+def register(request):
     try:
         user_data = request.data
         user_data['user_email'] = user_data.get('user_email', '').lower()
@@ -24,7 +22,7 @@ def register(request, user_id=0):
         error_message = validate_register_data(user_data)
         if error_message:
             logger.info(f'Error message: {error_message}')
-            return JsonResponse(error_message, status=400, safe=False)
+            return error_response(message=error_message)
 
         del user_data['user_password_2']  # No longer needed after validation
         user_data['user_password'] = encrypt_password(user_data.get('user_password'))
@@ -32,14 +30,13 @@ def register(request, user_id=0):
         users_serializer = UsersSerializer(data=user_data)
         if users_serializer.is_valid():
             users_serializer.save()
-            return JsonResponse("Register Success", status=200, safe=False)
+            return success_response(message="Register Success")
         else:
-            return JsonResponse(users_serializer.errors, status=400, safe=False)
+            return error_response(message=users_serializer.errors)
 
     except Exception as e:
         logger.error(e)
-        return JsonResponse("Error in register function", safe=False, status=400)
-
+        return error_response(message="Error in register function")
 
 @api_view(['POST'])
 @csrf_exempt
@@ -64,18 +61,17 @@ def login(request):
                 },
                 'message': 'Passwords match. Login successfully'
             }
+            return success_response(data=response_data, message="Passwords match. Login successfully")
 
-            return JsonResponse(response_data, safe=False, status=200)
         else:
-            return JsonResponse("Passwords Incorrect. Login fail", safe=False, status=400)
+            return error_response(message="Passwords Incorrect. Login fail")
 
     except Users.DoesNotExist:
-        return JsonResponse("Email don't exists. Login fail", status=400, safe=False)
+        return error_response(message="Email doesn't exist. Login fail")
 
     except Exception as e:
         logger.error(e)
-        return JsonResponse("Error in login function", safe=False, status=400)
-
+        return error_response(message="Error in login function")
 
 @api_view(['DELETE'])
 @csrf_exempt
@@ -88,8 +84,8 @@ def delete_user(request):
         # delete user, posts, messages from db
         user.delete()
 
-        return JsonResponse('Delete successfully', safe=False)
+        return success_response(message="Delete successfully")
 
     except Exception as e:
         logger.error(e)
-        return HttpResponseServerError("Error deleting user function")
+        return error_response(message="Error deleting user function")

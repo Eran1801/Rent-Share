@@ -1,9 +1,8 @@
-from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
-from Posts.serializers import PostSerializerAll
 from Users.models import Users
+from Users.utilities import error_response, success_response
 from .models import UserInbox
 from Posts.models import Post
 from Inbox.utilities import *
@@ -38,11 +37,11 @@ def update_confirm_status_field(request):
 
         # Add a message to the 'UserInbox' user db 
         UserInbox.objects.create(user_id=user_id,post_id=post_id,user_message=message,headline=headline)
-        return JsonResponse('update_confirm_status end successfully',safe=False)
+        return success_response('update_confirm_status end successfully')
 
     except Exception as e:
         logger.error(f'Error: {e}')
-        return HttpResponseServerError("An error occurred during update_confirm_status")
+        return error_response("An error occurred during update_confirm_status")
 
 
 @api_view(['GET'])
@@ -56,14 +55,14 @@ def get_all_user_messages(request):
         messages = user.messages.all() # i can use the messages because i establish it in the related_name in the forgien key.
 
         messages_serializer = UserInboxSerializerAll(messages,many=True)
-        return JsonResponse(messages_serializer.data, safe=False)
+        return success_response(data=messages_serializer.data,)
     
     except Users.DoesNotExist:
-        return HttpResponseServerError('Message not found')
+        return error_response('Message not found')
 
     except Exception as e:
         logger.error(e)
-        return HttpResponseServerError('An error occurred during get_all_user_messages')
+        return error_response('An error occurred during get_all_user_messages')
 
 
 @api_view(['PUT'])
@@ -82,15 +81,15 @@ def update_read_status(request):
             messages.read_status = 1
             messages.save()
 
-        return JsonResponse('update_read_status() end successful',safe=False)
+        return success_response('update_read_status() end successful')
 
     except UserInbox.DoesNotExist as e:
         logger.error(e)
-        return HttpResponseBadRequest('UserInbox not found inside update_read_status')
+        return error_response('UserInbox not found inside update_read_status')
     
     except Exception as e:
         logger.error(e)
-        return HttpResponseBadRequest('Something wont wrong inside update_read_status')
+        return error_response('Something went wrong inside update_read_status')
 
 
 @api_view(['DELETE'])
@@ -106,63 +105,62 @@ def delete_messages_by_post_id(request):
         # delete all the post from db with the same post_id
         message_to_delete.delete()
 
-        return JsonResponse('delete_messages_by_post_id function end successfully',safe=False)
+        return success_response('delete_messages_by_post_id function end successfully')
 
     except UserInbox.DoesNotExist:
-        return HttpResponseBadRequest('UserInbox not found inside delete_messages_by_post_id')
+        return error_response('UserInbox not found inside delete_messages_by_post_id')
     
     except Exception as e:
         logger.error(e)
-        return HttpResponseBadRequest('Something wont wrong inside delete_messages_by_post_id')
+        return error_response('Something went wrong inside delete_messages_by_post_id')
 
     
 @api_view(['GET'])
 @csrf_exempt
 def has_unread_messages(request):
+    """NEEDS TO CHECK WHERE IT'S USED"""
     try:
         user_id = request.GET.get('user_id')
         user = Users.objects.get(user_id=user_id)
 
         messages = user.messages.all() # get's all user messages
 
-        # store all the messages that already reded  
-        has_unread = any(mes.read_status == 1 for mes in messages)
+        # store all the messages that already read  
+        unread_messages = extract_unread_messages(messages)
         
-        return JsonResponse({'unread_messages': has_unread},safe=False)
+        return success_response(data=unread_messages, message='all unread messages was extracted successfully')
         
     except UserInbox.DoesNotExist:
-        return HttpResponseBadRequest('Message dont exist.')
+        return error_response('Message dont exist.')
 
     except Exception as e:
         logger.error(e)
-        return HttpResponseBadRequest('Something is wrong with had_unread_messages')
+        return error_response('Something is wrong with had_unread_messages')
 
 
-@api_view(['GET'])
-@csrf_exempt
-def get_all_messages_by_user_id(request):
-    try:
-        user_id = request.GET.get('user_id')
+# @api_view(['GET'])
+# @csrf_exempt
+# def get_all_messages_by_user_id(request):
+#     try:
+#         user_id = request.GET.get('user_id')
 
-        # get all the messages of the user
-        user = Users.objects.get(user_id=user_id)
-        all_messages = user.messages.all()
+#         # get all the messages of the user
+#         user = Users.objects.get(user_id=user_id)
+#         all_messages = user.messages.all()
 
-        # flatten the resulting
-        unique_post_ids = all_messages.values_list('post_id', flat=True).distinct()
+#         # flatten the resulting
+#         unique_post_ids = all_messages.values_list('post_id', flat=True).distinct()
 
-        posts_data = normalize_messages(unique_post_ids)
+#         posts_data = normalize_messages(unique_post_ids)
         
-        return JsonResponse({'posts': posts_data}, safe=False)
+#         return success_response(data=posts_data, message='all user messages was extracted successfully')
     
-    except Post.DoesNotExist:
-        return HttpResponseBadRequest('Post not found !')
+#     except Post.DoesNotExist:
+#         return error_response('Post not found !')
 
-    except UserInbox.DoesNotExist:
-        return HttpResponseBadRequest('Message not found !')
+#     except UserInbox.DoesNotExist:
+#         return error_response('Message not found !')
 
-    except Exception as e:
-        logger.error(e)
-        return HttpResponseBadRequest('something wont wrong in all_messages_by_post_id')
-
-
+#     except Exception as e:
+#         logger.error(e)
+#         return error_response('something went wrong in all_messages_by_post_id')
