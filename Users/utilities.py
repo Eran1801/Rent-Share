@@ -1,6 +1,4 @@
 from django.contrib.auth.hashers import make_password
-from Users.utilities import check_full_name, email_exists, phone_exists, check_valid_password, check_phone_number
-from Users.utilities import check_email_valid, email_exists, check_full_name, phone_exists, check_phone_number
 from django.http import JsonResponse
 from django.utils import timezone
 from email.mime.multipart import MIMEMultipart
