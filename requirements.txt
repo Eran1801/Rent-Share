@@ -25,3 +25,4 @@ typing_extensions==4.7.1
 urllib3==1.26.16
 requests==2.31.0
 django_environ==0.11.2
+PyJWT==2.8.0

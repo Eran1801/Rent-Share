@@ -1,11 +1,15 @@
-from Users.utilities import encrypt_password, error_response, success_response, validate_register_data
+import datetime
+import os
+
+import jwt
+from Users.auth.decorators import jwt_required
+from Users.utilities import encrypt_password, error_response, set_cookie_in_response, success_response, validate_register_data
 import logging
-from django.http import JsonResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from Users.models import Users
 from Users.serializers import UsersSerializer
-from django.contrib.auth import authenticate
+from Users.auth.backends import CustomBackend
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -15,28 +19,28 @@ logging.basicConfig(level=logging.DEBUG)
 @csrf_exempt
 def register(request):
     try:
-        user_data = request.data
-        user_data['user_email'] = user_data.get('user_email', '').lower()
+        
+        request.data['user_email'] = request.data.get('user_email', '').lower() # set use mail to lower before saving
 
-        # Sequential validation checks
-        error_message = validate_register_data(user_data)
+        # validation checks for user details
+        error_message = validate_register_data(request.data)
         if error_message:
-            logger.info(f'Error message: {error_message}')
             return error_response(message=error_message)
 
-        del user_data['user_password_2']  # No longer needed after validation
-        user_data['user_password'] = encrypt_password(user_data.get('user_password'))
+        del request.data['user_password_2']  # no longer needed after validation
+        request.data['user_password'] = encrypt_password(request.data.get('user_password'))
 
-        users_serializer = UsersSerializer(data=user_data)
+        users_serializer = UsersSerializer(data=request.data)
         if users_serializer.is_valid():
             users_serializer.save()
-            return success_response(message="Register Success")
+            
+            return success_response(message="User created successfully")
         else:
             return error_response(message=users_serializer.errors)
 
     except Exception as e:
-        logger.error(e)
-        return error_response(message="Error in register function")
+        return error_response(message=f"Error in register function, {e}")
+
 
 @api_view(['POST'])
 @csrf_exempt
@@ -48,44 +52,33 @@ def login(request):
         email = user_data.get('user_email').lower()  # lower case email
         password = user_data.get('user_password')
 
-        # Authenticate user
-        user = authenticate(username=email, password=password)
-
+        # authenticate user
+        user = CustomBackend.authenticate(username=email, password=password)
+        
         if user:
-            response_data = {
-                'user': {
-                    'user_id': user.user_id,
-                    'user_full_name': user.user_full_name,
-                    'user_email': user.user_email,
-                    'user_phone': user.user_phone
-                },
-                'message': 'Passwords match. Login successfully'
-            }
-            return success_response(data=response_data, message="Passwords match. Login successfully")
+            response = set_cookie_in_response(user)
+            return response
 
-        else:
-            return error_response(message="Passwords Incorrect. Login fail")
-
-    except Users.DoesNotExist:
-        return error_response(message="Email doesn't exist. Login fail")
+        return error_response("email or password incorrect")
 
     except Exception as e:
-        logger.error(e)
-        return error_response(message="Error in login function")
+        return error_response(message=f"Error in login function, {e}")
+
 
 @api_view(['DELETE'])
 @csrf_exempt
+@jwt_required
 def delete_user(request):
     try:
-        # get operation diff in extract data
-        user_id = request.GET.get('user_id')
-        user = Users.objects.get(user_id=user_id)  # from db
+        user = Users.objects.get(user_id=request.user_id)
 
         # delete user, posts, messages from db
         user.delete()
 
         return success_response(message="Delete successfully")
 
+    except Users.DoesNotExist:
+        return error_response("User not found")
+
     except Exception as e:
-        logger.error(e)
-        return error_response(message="Error deleting user function")
+        return error_response(message=f"Error deleting user function, {e}")

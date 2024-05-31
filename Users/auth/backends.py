@@ -3,7 +3,7 @@ from ..models import Users
 
 # Custom Backend for Email Authentication
 class CustomBackend(BaseBackend):
-    def authenticate(self, request, username=None, password=None):
+    def authenticate(username=None, password=None):
         try:
             user = Users.objects.get(user_email=username)
             if user.check_password(password):

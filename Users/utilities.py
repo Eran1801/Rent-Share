@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.utils import timezone
@@ -6,6 +7,9 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 import random
 import smtplib
+
+import jwt
+from Inbox.msg_emails_Enum import EMAIL_PASSWORD, EMAIL_PORT, EMAIL_SERVER
 from Users.models import PasswordResetCode, Users
 import re
 import logging
@@ -14,12 +18,6 @@ import os
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-EMAIL_PORT = os.environ.get('EMAIL_PORT')
-EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
-FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
-EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
-
-
 def generate_verification_code() -> str:
     """Generate a random 4 digits number for forget password"""
     return ''.join(random.choice('0123456789') for _ in range(4))
@@ -27,14 +25,20 @@ def generate_verification_code() -> str:
 
 def validate_register_data(user_data:dict) -> str:
     """Perform sequential validation checks and return the first error message encountered."""
+    
+    full_name = user_data.get('user_full_name')
+    email = user_data.get('user_email')
+    phone = user_data.get('user_phone')
+    password = user_data.get('user_password')
+    confirm_password = user_data.get('user_password_2')
+    
     validators = [
-        (lambda value: not check_full_name(value), 'Invalid full name', user_data.get('user_full_name')),
-        (email_exists, 'Email already exists', user_data.get('user_email')),
-        (phone_exists, 'Phone number already exists', user_data.get('user_phone')),
-        (lambda value: not check_phone_number(value), 'Invalid phone number', user_data.get('user_phone')),
-        (lambda value: not check_valid_password(value), 'Invalid password', user_data.get('user_password')),
-        (lambda password: password != user_data.get('user_password_2'), "Passwords don't match",
-         user_data.get('user_password')),
+        (lambda value: not check_full_name(value), 'Invalid full name', full_name),
+        (lambda value: not check_phone_number(value), 'Invalid phone number', phone),
+        (lambda value: not check_valid_password(value), 'Invalid password', password),
+        (lambda password: password != confirm_password, "Passwords don't match", password),
+        (email_exists, 'Email already exists', email),
+        (phone_exists, 'Phone number already exists', phone),
     ]
 
     for validator, error_msg, value in validators:
@@ -106,9 +110,9 @@ def phone_exists(phone: str) -> bool:
 
 
 def check_valid_password(pas: str) -> bool:
-    """check if the password is valid, it must contain at least one upper and one lower letter and number"""
-
-    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)'  # contains at least one upper and one lower letter and number.
+    """check if the password is valid, it must contain at least one upper and one lower letter, number and special char"""
+    
+    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$'
 
     return True if re.match(pattern, pas) and len(pas) >= 8 else False
 
@@ -118,15 +122,37 @@ def check_full_name(full_name: str) -> bool:
     check if the full name is valid
     full name must be at least 4 characters and contain at least one space.
     '''
-    return len(full_name) >= 4 and full_name.count(' ') >= 1
-
+def check_full_name(full_name: str) -> bool:
+    '''
+    Check if the full name is valid.
+    Full name must be at least 4 characters, contain at least one space, and have at least two characters after the space.
+    '''
+    # Check if full name is at least 4 characters long
+    if len(full_name) < 4:
+        return False
+    
+    # Find the first space
+    space_index = full_name.find(' ')
+    if space_index == -1:
+        return False
+    
+    # Check if there are at least two characters after the space
+    if len(full_name[space_index + 1:]) < 2:
+        return False
+    
+    # Check if the part after the space contains only alphabetic characters
+    after_space = full_name[space_index + 1:]
+    if not after_space.isalpha():
+        return False
+    
+    return True
 
 def check_phone_number(phone_number: str) -> bool:
     '''
     check if the phone number is valid.
     phone number must be at least 10 characters 
     '''
-    return len(phone_number) >= 10
+    return len(phone_number) >= 10 and phone_number.isdigit()
 
 
 def check_email_valid(email: str) -> bool:
@@ -165,3 +191,36 @@ def error_response(message="Error", status=400) -> JsonResponse:
     """
     response_data = {'error': message}
     return JsonResponse(response_data, status=status)
+
+def set_cookie_in_response(user:Users):
+    payload = {
+        'user_id': user.user_id,
+        'exp': (datetime.datetime.now() + datetime.timedelta(days=30)).timestamp()
+    }
+    token = jwt.encode(payload, os.getenv('SECRET'), algorithm='HS256')
+            
+    response = success_response() # return the response
+    response.set_cookie(key='Authorization',
+                        value=token,
+                        httponly=True,
+                        samesite='Lax',
+                        max_age=30*24*60*60,  # 30 days in seconds
+                        expires=(datetime.datetime.now() + datetime.timedelta(days=30)).strftime("%a, %d-%b-%Y %H:%M:%S GMT"))
+    
+    return response
+
+def validate_change_password_data(request, user:Users) -> str:
+    
+    new_password = request.data.get('new_password')
+    new_password_confirm = request.data.get('new_password_confirm')
+    
+    if user.check_password(request.data.get('old_password')) is False:
+        return error_response(message="Old password is incorrect", status=400)
+
+    if new_password != new_password_confirm:
+        return error_response(message="Passwords don't match.", status=400)
+
+    if check_valid_password(new_password) is False:
+        return error_response(message="Password is invalid", status=400)
+
+    return None

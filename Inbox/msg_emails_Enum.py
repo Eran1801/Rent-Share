@@ -1,6 +1,11 @@
 from enum import Enum
+import os
 from django.utils.safestring import mark_safe
 
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_SERVER = os.environ.get('EMAIL_SERVER')
+FROM_EMAIL = os.environ.get('COMPANY_EMAIL')
+EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 class Messages(Enum):
     MESSAGE_0 = (
@@ -46,14 +51,14 @@ class Messages(Enum):
         "זיהינו שפה לא נאותה במתן חוות הדעת שלך.\n"
         "אנא היכנס ל\"דירות שלי\" ועדכן את חוות הדעת על ידי שינוי המלל בתיבת הטקסט ולחיצה על כפתור \"עדכן חוות דעת\"."
     )
-    
-    ## Emails
 
 
     def __str__(self):
         return self.value
     
 class Emails(Enum):
+    
+    FORGET_PASSWORD_SUBJECT = "איפוס סיסמא"
     
     # send email to the company email that a new post was added
     NEW_POST_SEND_TO_ADMIN = f"""

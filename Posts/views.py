@@ -8,13 +8,11 @@ from Inbox.models import UserInbox
 from Inbox.msg_emails_Enum import Emails
 from Inbox.views import extract_message_based_on_confirm_status
 from Posts.serializers import PostSerializerAll
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
 from .models import Post
 from Users.utilities import *
 from Posts.utilities import *
 from django.core.exceptions import ObjectDoesNotExist
 from Users.utilities import send_email
-from datetime import datetime
 
 
 # Define the logger at the module level
@@ -22,32 +20,6 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 EMAIL_SUBJECT = 'New Post'
-
-
-from datetime import datetime
-import traceback
-from django.http.response import JsonResponse
-from django.views.decorators.csrf import csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
-from rest_framework.decorators import api_view
-from Inbox.models import UserInbox
-from Inbox.msg_emails_Enum import Emails
-from Inbox.views import extract_message_based_on_confirm_status
-from Posts.serializers import PostSerializerAll
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
-from .models import Post
-from Users.utilities import *
-from Posts.utilities import *
-from django.core.exceptions import ObjectDoesNotExist
-from Users.utilities import send_email
-from datetime import datetime
-
-
-# Define the logger at the module level
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-
-EMAIL_SUBJECT = 'New Post'
-
 
 @api_view(['POST'])
 @csrf_exempt
