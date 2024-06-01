@@ -1,7 +1,4 @@
-import datetime
-import os
-
-import jwt
+from django.db import transaction
 from Users.auth.decorators import jwt_required
 from Users.utilities import encrypt_password, error_response, set_cookie_in_response, success_response, validate_register_data
 import logging
@@ -10,9 +7,6 @@ from rest_framework.decorators import api_view
 from Users.models import Users
 from Users.serializers import UsersSerializer
 from Users.auth.backends import CustomBackend
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 
 @api_view(['POST'])
@@ -32,7 +26,8 @@ def register(request):
 
         users_serializer = UsersSerializer(data=request.data)
         if users_serializer.is_valid():
-            users_serializer.save()
+            with transaction.atomic():
+                users_serializer.save()
             
             return success_response(message="User created successfully")
         else:
