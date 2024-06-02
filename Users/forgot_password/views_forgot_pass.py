@@ -2,10 +2,10 @@ from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from django.http import *
 from rest_framework.decorators import api_view
-
+from django.db import transaction
 from Users.models import PasswordResetCode, Users
-from Users.utilities import FROM_EMAIL, check_valid_password, check_verification_code_expiry, email_exists, encrypt_password, error_response, generate_verification_code, send_email, success_response, logger
-from Inbox.msg_emails_Enum import Emails
+from Users.utilities import check_valid_password, check_verification_code_expiry, email_exists, encrypt_password, error_response, generate_verification_code, send_email, success_response
+from Inbox.msg_emails_Enum import FROM_EMAIL, Emails
 
 
 @api_view(['GET'])
@@ -25,7 +25,8 @@ def forget_password(request):
         send_email(FROM_EMAIL, user_email, msg, subject)
 
         password_verification_code = PasswordResetCode.objects.create(verification_code=verification_code)
-        password_verification_code.save()
+        with transaction.atomic():
+            password_verification_code.save()
 
         return success_response(data=password_verification_code.id, message="Email sent successfully")
 
@@ -75,7 +76,8 @@ def reset_password(request):
 
         if password == password2:  # checking if 2 passwords are equal
             user.user_password = encrypt_password(password) # update in the db
-            user.save()
+            with transaction.atomic():
+                user.save()
 
             return success_response(message="Password reset successfully")
         

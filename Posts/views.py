@@ -1,11 +1,9 @@
-from datetime import datetime
 import traceback
-from django.http.response import JsonResponse
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
 from Inbox.models import UserInbox
-from Inbox.msg_emails_Enum import Emails
+from Inbox.msg_emails_Enum import FROM_EMAIL, Emails
 from Inbox.views import extract_message_based_on_confirm_status
 from Posts.serializers import PostSerializerAll
 from .models import Post
@@ -13,61 +11,51 @@ from Users.utilities import *
 from Posts.utilities import *
 from django.core.exceptions import ObjectDoesNotExist
 from Users.utilities import send_email
+from django.db import transaction
 
-
-# Define the logger at the module level
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-
-EMAIL_SUBJECT = 'New Post'
 
 @api_view(['POST'])
 @csrf_exempt
 def add_post(request):
 
     try:
-        data = request.data
-        post_data = extract_post_data(data)
+        post_data = extract_post_data(request) #! todo, needs to fix the function that handle pic
 
         post = PostSerializerAll(data=post_data, partial=True)
 
         if post.is_valid():
 
-            saved_post = post.save()
+            with transaction.atomic():
+                saved_post = post.save()
 
             if isinstance(saved_post, Post):
-                
-                user = data.get('user')
-                user_id = user.get('user_id')
-                user_name = user.get('user_full_name')
-                
-                headline, message = extract_message_based_on_confirm_status(user_name, '0')  # 0 means not confirmed yet
+                                
+                headline, message = extract_message_based_on_confirm_status(request.data.get('user_full_name'), '0')  # 0 means not confirmed yet
                 
                 # create a new value in Inbox table for this user with the right message and all the other fields
-                UserInbox.objects.create(user_id=user_id, post_id=saved_post.post_id, user_message=message, headline=headline)
+                UserInbox.objects.create(user_id=request.user_id, post_id=saved_post.post_id, user_message=message, headline=headline)
             
                 # extract email message
                 msg_html = Emails.NEW_POST_SEND_TO_ADMIN.value
                                 
                 # send an email for ourselves for tracking the posts insertion and approval by the admin
-                send_email(FROM_EMAIL, FROM_EMAIL, msg_html, EMAIL_SUBJECT)
+                send_email(FROM_EMAIL, FROM_EMAIL, msg_html, Emails.EMAIL_NEW_POST_SUBJECT)
                 
-                post.save()  # save to db
+                with transaction.atomic():
+                    post.save()  # save to db
                 return success_response("Post successfully saved in db")
                                 
-        else:
-            logger.info(post.errors)
-            return error_response("Post validation failed")
+        
+        return error_response(f"Post validation failed, {post.errors}")
 
     except Exception as e:
-        # Log the full traceback along with the exception message
-        logger.error(f"An error occurred in add_post: {e}\n{traceback.format_exc()}")
-        return error_response('An error occurred while adding a new post')
+        return error_response(f'An error occurred while adding a new post, {e}')
 
 
 @api_view(['GET'])
 @csrf_exempt
 def get_all_posts(request):
+    # todo: IN HERE 
     """This function will be used to get all the posts in the db 'Posts'"""
     try:
         # extract all the posts from the db

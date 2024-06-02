@@ -59,7 +59,8 @@ class Messages(Enum):
 class Emails(Enum):
     
     FORGET_PASSWORD_SUBJECT = "איפוס סיסמא"
-    
+    EMAIL_NEW_POST_SUBJECT = 'New Post'
+
     # send email to the company email that a new post was added
     NEW_POST_SEND_TO_ADMIN = f"""
     <html>

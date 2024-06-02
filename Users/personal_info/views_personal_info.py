@@ -1,5 +1,3 @@
-import logging
-from django.http import JsonResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from Posts.utilities import convert_base64
@@ -7,10 +5,7 @@ from Users.auth.decorators import jwt_required
 from Users.models import Users
 from django.db import transaction
 from Users.serializers import UserSerializerPicture
-from Users.utilities import encrypt_password, error_response,check_valid_password, success_response, validate_change_password_data, validate_update_user_info
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+from Users.utilities import encrypt_password, error_response, success_response, validate_change_password_data, validate_update_user_info
 
 @api_view(['PUT'])
 @csrf_exempt
@@ -36,10 +31,10 @@ def change_personal_info(request):
         return success_response(message="Personal info updated successfully")
 
     except Users.DoesNotExist:
-        return HttpResponseServerError("User not found")
+        return error_response("User not found")
 
     except Exception as e:
-        return HttpResponseServerError(f"An error occurred during personal info update,  {e}")
+        return error_response(f"An error occurred during personal info update,  {e}")
 
 
 @api_view(['PUT'])
@@ -56,15 +51,16 @@ def change_password(request):
             return response
 
         user.user_password = encrypt_password(request.data.get('new_password'))
-        user.save()
+        with transaction.atomic():
+            user.save()
 
         return success_response(message="Password updated successfully")
 
     except Users.DoesNotExist:
-        return HttpResponseServerError("User not found")
+        return error_response("User not found")
 
     except Exception as e:
-        return HttpResponseServerError(f"An error occurred during password update {e}")
+        return error_response(f"An error occurred during password update {e}")
 
 
 @api_view(['PUT'])
@@ -87,8 +83,9 @@ def change_profile_picture(request):
         user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
 
         if user_serializer.is_valid():
-            user_serializer.save()
-            return success_response(message="Profile picture successfully saved in db")
+            with transaction.atomic():
+                user_serializer.save()
+                return success_response(message="Profile picture successfully saved in db")
        
         return error_response(f"An error occurred during personal_info picture upload, {user_serializer.errors}")
 

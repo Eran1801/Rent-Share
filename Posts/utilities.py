@@ -112,25 +112,24 @@ def convert_base64(base64_str, filename):
         return None
 
 
-def extract_post_data(post_data: dict) -> dict:
+def extract_post_data(request: dict) -> dict:
     try:
         post = {}
 
-        user = post_data.get('user')
-        post['post_user_id'] = user.get('user_id')
-        post['post_city'] = post_data.get('post_city')
-        post['post_street'] = post_data.get('post_street')
-        post['post_building_number'] = post_data.get('post_building_number')
-        post['post_apartment_number'] = post_data.get('post_apartment_number')
-        post['post_apartment_price'] = post_data.get('post_apartment_price')
-        post['post_rent_start'] = post_data.get('post_rent_start')
-        post['post_rent_end'] = post_data.get('post_rent_end')
-        post['post_description'] = post_data.get('post_description')
-        post['confirmation_status'] = '0'
-        post['post_rating'] = post_data.get('post_rating')
-        post['post_comments'] = post_data.get('post_comments')
+        post['post_user_id'] = request.user_id
+        post['post_city'] = request.get('post_city')
+        post['post_street'] = request.get('post_street')
+        post['post_building_number'] = request.get('post_building_number')
+        post['post_apartment_number'] = request.get('post_apartment_number')
+        post['post_apartment_price'] = request.get('post_apartment_price')
+        post['post_rent_start'] = request.get('post_rent_start')
+        post['post_rent_end'] = request.get('post_rent_end')
+        post['post_description'] = request.get('post_description')
+        post['confirmation_status'] = '0' # we set confirm status to 0, means not approved
+        post['post_rating'] = request.get('post_rating')
+        post['post_comments'] = request.get('post_comments')
         
-        post = convert_images_to_files(post_data,post)
+        post = convert_images_to_files(request, post)
 
         logger.info(f'post: {post}')
         return post
