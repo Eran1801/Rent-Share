@@ -2,16 +2,8 @@ from datetime import datetime
 import logging
 import json
 from Posts.models import Post
-from django.http import JsonResponse
-from django.core.files.base import ContentFile
 from django.db import transaction
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.decorators import api_view, parser_classes
-
-from Posts.serializers import PostSerializerDrivingLicense, PostSerializerRentAgreement
-
-
-'''In this file there is all the helper function for the Posts app'''
+from Posts.serializers import PostSerializer
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -75,54 +67,6 @@ def convert_to_json(grouped_apartments):
     
     return json.dumps(json_result, ensure_ascii=False)
 
-
-def filter_cond(city, street, building, apr_number):
-    '''This function will gather all the values for the query to the db for extract the right post'''
-    try:
-        # we add the confirmation_status to the filter conditions because we want to show only the posts that the admin approved
-        filter_conditions = {'post_city': city, 'confirmation_status': '1'}
-
-        if street != 'null' and street != '':
-            filter_conditions['post_street'] = street
-
-        if building != 'null' and building != '':
-            filter_conditions['post_building_number'] = building
-
-        if apr_number != 'null' and apr_number != '':
-            filter_conditions['post_apartment_number'] = apr_number
-            if filter_conditions.get('post_building_number') != None:
-                filter_conditions['post_apartment_number'] = apr_number
-
-        return filter_conditions
-
-    except Exception as e:
-        logger.error(f"filter_cond : {e}")
-        return {}
-
-
-def extract_fields_for_post_parm(post):
-    city = post.GET.get('post_city') 
-    street = post.GET.get('post_street',"")
-    building_number = post.GET.get('post_building_number',"")
-    apartment_number = post.GET.get('post_apartment_number',"")
-        
-    return city, street, building_number, apartment_number
-
-
-def validate_post_parameters(city, street, building_number, apartment_number):
-    """Validate the parameters for getting posts"""
-
-    # Check if any of the required fields are missing or empty
-    if city == '' or street == 'null' or apartment_number == 'null' or building_number == 'null': 
-        return "At least one field is required"
-    
-    # Check if the city field is empty
-    if city == '':
-        return "City field is required"
-
-    # If everything is fine, return None
-    return None
-
             
 def update_post_address(post_to_update, request):
 
@@ -155,7 +99,7 @@ def update_post_driving_license(post_to_update, request):
     try:
         with transaction.atomic():
             post_to_update.confirmation_status = '0'  # needs to be approved again by the admin
-            post_to_update = PostSerializerDrivingLicense(
+            post_to_update = PostSerializer(
                 instance=post_to_update, 
                 data=request, 
                 partial=True
@@ -172,7 +116,7 @@ def update_post_rent_agreement(post_to_update, request):
     try:
         with transaction.atomic():
             post_to_update.confirmation_status = '0'  # needs to be approved again by the admin
-            post_to_update = PostSerializerRentAgreement(
+            post_to_update = PostSerializer(
                 instance=post_to_update, 
                 data=request, 
                 partial=True

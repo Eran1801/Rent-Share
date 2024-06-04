@@ -6,11 +6,10 @@ from rest_framework.decorators import api_view
 from Inbox.models import UserInbox
 from Inbox.msg_emails_Enum import FROM_EMAIL, Emails
 from Inbox.views import extract_message_based_on_confirm_status
-from Posts.serializers import PostSerializerAll, PostSerializerRentAgreement
-from Posts.utilities import activate_function_based_on_status, convert_to_json, extract_fields_for_post_parm, group_apartments_by_location, process_apartments, update_post_address, update_post_driving_license, update_post_rent_agreement, update_post_rent_dates, validate_post_parameters
+from Posts.serializers import PostSerializer
+from Posts.utilities import activate_function_based_on_status, convert_to_json, group_apartments_by_location, process_apartments
 from Users.auth.decorators import jwt_required
 from .models import Post
-from Posts.utilities import filter_cond  
 from Users.utilities import error_response, send_email, success_response
 from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -24,8 +23,7 @@ from rest_framework.decorators import api_view, parser_classes
 def add_post(request):
 
     try:
-        
-        post = PostSerializerAll(data=request.data, partial=True)
+        post = PostSerializer(data=request.data, partial=True)
 
         if post.is_valid():
 
@@ -64,7 +62,7 @@ def get_all_posts(request):
     try:
         # extract all the posts from the db
         all_posts = Post.objects.all()
-        all_posts_serialize = PostSerializerAll(all_posts, many=True)  # many -> many posts
+        all_posts_serialize = PostSerializer(all_posts, many=True)  # many -> many posts
 
         return success_response(data=all_posts_serialize.data,message="All posts retrieved successfully")
 
@@ -75,46 +73,33 @@ def get_all_posts(request):
 
 @api_view(['GET'])
 @csrf_exempt
-def get_post_by_parm(request):
-    # HERE - MORE CHECKS NEED TO BE CHECKS IN POSTMAN 
+@jwt_required
+def get_post_by_parameters(request):
     """This function will be used to get the posts by the parameters that the user will send"""
-
     try:
-        # extract values from the user request
-        city, street, building_number, apartment_number = extract_fields_for_post_parm(request)
-                
-        # Validate the parameters
-        validation_error = validate_post_parameters(city, street, building_number, apartment_number)
-        if validation_error:
-            return error_response(validation_error, status=400)
 
-        # create the filter conditions before extracting the right posts from db
-        filter_conditions = filter_cond(city, street, building_number, apartment_number)
-        
+        search_post = request.data.copy()
+        search_post['confirmation_status'] = '1' # get only approved posts
+                
         # extract the posts that fulfill the filter_conditions
-        post = Post.objects.filter(**filter_conditions)
+        # post = Post.objects.filter(confirmation_status=1, post_city='עכו')
+        post = Post.objects.filter(**search_post)
 
         if post.exists():
-            try:
-                post_serializer = PostSerializerAll(post, many=True)
+            post_serializer = PostSerializer(post, many=True)
 
-                # if more than one post for the same address we combine them to make it easy for the frontend to 
-                if len(post_serializer.data) > 1:
-                    apartments = process_apartments(post_serializer.data)
-                    grouped_apartments = group_apartments_by_location(apartments) 
-                    json_result = convert_to_json(grouped_apartments)
-                
-                return success_response(data=post_serializer.data,message="Post retrieved successfully")
-            except :
-                return error_response("An error occurred while serializing the post in get_posts")
-
-    except Post.DoesNotExist:
-        logger.error("Post does not exist")
-        return error_response("Post does not exist")
+            # # if more than one post for the same address we combine them to make it easy for the frontend to 
+            # if len(post_serializer.data) > 1:
+            #     apartments = process_apartments(post_serializer.data)
+            #     grouped_apartments = group_apartments_by_location(apartments) 
+            #     json_result = convert_to_json(grouped_apartments)
+            
+            return success_response(data=post_serializer.data, message="Post/s retrieved successfully")
+        else:
+            return error_response("Post not found")
 
     except Exception as e:
-         logger.error(f"get_posts : {e}")
-         return error_response("An error occurred get_posts")
+         return error_response(f"An error occurred get_posts, {e}")
 
 
 @api_view(['GET'])
@@ -126,7 +111,7 @@ def get_post_by_post_id(request):
         post_id = request.GET.get('post_id')
 
         post = Post.objects.get(post_id=post_id)
-        post_serializer = PostSerializerAll(post)
+        post_serializer = PostSerializer(post)
 
         return success_response(data=post_serializer.data, message="Post retrieved successfully")
 
@@ -146,7 +131,7 @@ def get_all_user_posts(request):
         user_id = request.GET.get('user_id')
 
         posts = Post.objects.filter(post_user_id=user_id)
-        post_serializer = PostSerializerAll(posts, many=True)
+        post_serializer = PostSerializer(posts, many=True)
 
         return success_response(data=post_serializer.data,message="Post by user id retrieved successfully")
     
@@ -157,7 +142,7 @@ def get_all_user_posts(request):
             return error_response(f"An error occurred: {e}")
 
 
-@api_view(['PUT'])
+@api_view(['PATCH'])
 @csrf_exempt
 @jwt_required
 def update_post_review(request):
@@ -223,7 +208,7 @@ def get_unapproved_posts(request):
     '''
     try:
         posts = Post.objects.filter(confirmation_status='0')  # 0 means not confirmed yet
-        post_serialize = PostSerializerAll(posts, many=True)
+        post_serialize = PostSerializer(posts, many=True)
 
         return success_response(data=post_serialize.data, message="All unapproved posts retrieved successfully")
     
@@ -244,7 +229,7 @@ def get_approved_posts(request):
         all_approved_posts = Post.objects.filter(confirmation_status='1')
         
         if all_approved_posts:
-            all_approved_posts_ser = PostSerializerAll(all_approved_posts, many=True)
+            all_approved_posts_ser = PostSerializer(all_approved_posts, many=True)
             return success_response(all_approved_posts_ser.data, "All approved posts retrieved successfully")
         
         else:
@@ -254,11 +239,11 @@ def get_approved_posts(request):
         return error_response(f'Something wont wrong in get_approved_posts, {e}')
     
     
-@api_view(['PUT'])
+@api_view(['PATCH'])
 @csrf_exempt
 @jwt_required
 @parser_classes([MultiPartParser, FormParser])
-def fix_post_details_after_posting(request):
+def fix_post_issues(request):
     '''Update post is needed when there is a problem with the input of the user like rent docs, address and etc'''
     try:
         post_id = request.data.get('post_id')
@@ -285,32 +270,28 @@ def fix_post_details_after_posting(request):
         return error_response(f"An error occurred during fix_post_details_after_posting function, {e}")
 
 
-# @api_view(['PUT'])
-# @csrf_exempt
-# @jwt_required
-# @parser_classes([MultiPartParser, FormParser])
-# def update_apartment_pics(request):
+@api_view(['PATCH'])
+@csrf_exempt
+@jwt_required
+@parser_classes([MultiPartParser, FormParser])
+def update_apartment_pics(request):
+    '''When a user upload a post and want to updated, add pic this endpoint will activate'''
+    try:
+        post_data = request.data
 
-#     try:
-#         post_data = request.data
+        post_id = post_data.get('post_id')
+        post_to_update = Post.objects.get(post_id=post_id)
 
-#         post_id = post_data.get('post_id')
-#         post_to_update = Post.objects.get(post_id=post_id)
+        post_to_update = PostSerializer(instance=post_to_update, data=request.data, partial=True)
 
-#         max_pics = 4
-#         for i in range(max_pics):
-#             pic_base64 = post_data.get(f'apartment_pic_{i+1}')
-#             if pic_base64 is not None:
-#                 content_file = convert_base64(pic_base64, f"apartment_pic_{i+1}")
-#                 if content_file is not None:  # check if the return value is valid
-#                     setattr(post_to_update, f'apartment_pic_{i+1}', content_file)
+        with transaction.atomic():
+            if post_to_update.is_valid():
+                post_to_update.save()
         
-#         post_to_update.save()
-        
-#         return success_response('update_apartment_pics end successfully')
+        return success_response('update_apartment_pics end successfully')
 
-#     except Post.DoesNotExist:
-#         return error_response('Post does not exist')
+    except Post.DoesNotExist:
+        return error_response('Post does not exist')
     
-#     except Exception as e:
-#         return error_response(f'Something is wrong in the update_apartment_pics, {e}')
+    except Exception as e:
+        return error_response(f'Something is wrong in the update_apartment_pics, {e}')

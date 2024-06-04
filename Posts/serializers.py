@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Post
 
-class PostSerializerAll(serializers.ModelSerializer):
+class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
@@ -25,19 +25,3 @@ class PostSerializerAll(serializers.ModelSerializer):
             'apartment_pic_4',
             'user_addition_comments'
         )
-
-
-class PostSerializerRentAgreement(serializers.ModelSerializer):
-
-    class Meta:
-        model = Post
-        fields = ('rent_agreement',)
-        
-        
-
-class PostSerializerDrivingLicense(serializers.ModelSerializer):
-
-    class Meta:
-        model = Post
-        fields = ('driving_license',)
-        
