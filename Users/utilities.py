@@ -119,11 +119,6 @@ def check_valid_password(pas: str) -> bool:
 
 def check_full_name(full_name: str) -> bool:
     '''
-    check if the full name is valid
-    full name must be at least 4 characters and contain at least one space.
-    '''
-def check_full_name(full_name: str) -> bool:
-    '''
     Check if the full name is valid.
     Full name must be at least 4 characters, contain at least one space, and have at least two characters after the space.
     '''

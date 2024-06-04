@@ -1,10 +1,11 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from Posts.utilities import convert_base64
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, parser_classes
 from Users.auth.decorators import jwt_required
 from Users.models import Users
 from django.db import transaction
-from Users.serializers import UserSerializerPicture
+from Users.serializers import UserSerializerPicture, UserSerializerProfileDetails
 from Users.utilities import encrypt_password, error_response, success_response, validate_change_password_data, validate_update_user_info
 
 @api_view(['PUT'])
@@ -66,21 +67,15 @@ def change_password(request):
 @api_view(['PUT'])
 @csrf_exempt
 @jwt_required
+@parser_classes([MultiPartParser, FormParser])
 def change_profile_picture(request):
-    '''
-        This function will be used to change the user's personal_info picture
-        The function gets profile image in base64
-    '''
-
+    """
+    This function will be used to change the user's personal_info picture.
+    The function gets profile image in form-data.
+    """
     try:
-
-        profile_image_base64 = request.data.get('profile_image')
-        profile_image_file = convert_base64(profile_image_base64, "profile_image")
-
-        data = {'user_profile_pic': profile_image_file}
-
         user = Users.objects.get(user_id=request.user_id)
-        user_serializer = UserSerializerPicture(instance=user, data=data, partial=True)
+        user_serializer = UserSerializerPicture(instance=user, data=request.data, partial=True)
 
         if user_serializer.is_valid():
             with transaction.atomic():
@@ -89,19 +84,21 @@ def change_profile_picture(request):
        
         return error_response(f"An error occurred during personal_info picture upload, {user_serializer.errors}")
 
+    except Users.DoesNotExist:
+        return error_response("User not found")
+    
     except Exception as e:
         return error_response(f"An error occurred during personal_info picture upload, {e}")
-
 
 @api_view(['GET'])
 @csrf_exempt
 @jwt_required
-def get_profile_pic(request):
+def get_user_details(request):
     try:
-        user_id = request.GET.get('user_id')
-        user = Users.objects.get(user_id=user_id)
 
-        user_serializer = UserSerializerPicture(instance=user, many=False, partial=True)
+        user = Users.objects.get(user_id=request.user_id)
+
+        user_serializer = UserSerializerProfileDetails(instance=user, many=False, partial=True)
         return success_response(user_serializer.data)
 
     except Users.DoesNotExist:

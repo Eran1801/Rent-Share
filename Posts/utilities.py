@@ -1,14 +1,17 @@
 from datetime import datetime
 import logging
-import base64
-from django.core.files.base import ContentFile
 import json
-
+from Posts.models import Post
 from django.http import JsonResponse
+from django.core.files.base import ContentFile
+from django.db import transaction
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, parser_classes
 
-'''
-In this file there is all the helper function
-for the Posts app and maybe others'''
+from Posts.serializers import PostSerializerDrivingLicense, PostSerializerRentAgreement
+
+
+'''In this file there is all the helper function for the Posts app'''
 
 # Define the logger at the module level
 logger = logging.getLogger(__name__)
@@ -73,102 +76,6 @@ def convert_to_json(grouped_apartments):
     return json.dumps(json_result, ensure_ascii=False)
 
 
-def convert_base64(base64_str, filename):
-    '''
-    Convert base64-encoded images to actual files.
-    
-    Args:
-        base64_str (str): Base64-encoded image string.
-        filename (str): Desired filename for the output image file.
-        
-    Returns:
-        ContentFile: The converted image data as a Django ContentFile.
-    '''
-    try:
-
-        # split the base64 string into format and image data parts
-        format, image_str = base64_str.split(';base64,')
-        logger.info(f'format = {format} , image_str = {image_str}')
-
-        # extract the image file extension from the format part
-        ext = format.split('/')[-1]
-
-        # decode the base64-encoded image data
-        image_data = base64.b64decode(image_str)
-
-        # create the full image filename with extension
-        image_filename = f"{filename}.{ext}"
-
-        # create a ContentFile object containing the image data
-        # ContentFile - a file-like object that takes just raw content, rather than an actual file.
-        content_file = ContentFile(image_data, name=image_filename)
-
-        # return the ContentFile object
-        return content_file
-
-
-    except Exception as e:
-        logger.error(f"convert_base64_to_image: {e}")
-        return None
-
-
-def extract_post_data(request: dict) -> dict:
-    try:
-        post = {}
-
-        post['post_user_id'] = request.user_id
-        post['post_city'] = request.get('post_city')
-        post['post_street'] = request.get('post_street')
-        post['post_building_number'] = request.get('post_building_number')
-        post['post_apartment_number'] = request.get('post_apartment_number')
-        post['post_apartment_price'] = request.get('post_apartment_price')
-        post['post_rent_start'] = request.get('post_rent_start')
-        post['post_rent_end'] = request.get('post_rent_end')
-        post['post_description'] = request.get('post_description')
-        post['confirmation_status'] = '0' # we set confirm status to 0, means not approved
-        post['post_rating'] = request.get('post_rating')
-        post['post_comments'] = request.get('post_comments')
-        
-        post = convert_images_to_files(request, post)
-
-        logger.info(f'post: {post}')
-        return post
-
-    except Exception as e:
-        logger.error(f"extract_post_data: {e}")
-        return {}
-
-
-def convert_images_to_files(post_data: dict, post:dict) -> dict:
-    number_of_pics = 4
-
-    try:
-        rented_agreement_base64 = post_data.get('rent_agreement')
-        logger.info(f'rent_agg = {rented_agreement_base64}')
-        if rented_agreement_base64 is None:
-            raise ValueError("A rented agreement is required")
-        post['rent_agreement'] = convert_base64(rented_agreement_base64, "rent_agreement")
-
-        driving_license_base64 = post_data.get('driving_license')
-        if driving_license_base64 is None:
-            raise ValueError("A driving license is required")
-        post['driving_license'] = convert_base64(driving_license_base64, "driving_license")
-
-        apartment_pics_base64 = []
-        for i in range(number_of_pics):
-            apartment_pics_base64.append(post_data.get(f'apartment_pic_{i + 1}'))
-
-        for i, pic in enumerate(apartment_pics_base64):
-            if pic is not None:
-                post[f'apartment_pic_{i + 1}'] = convert_base64(pic, f"apartment_pic_{i + 1}")
-
-        return post
-
-    except Exception as e:
-        logger.error(f"convert_images_to_files: {e}")
-        return {}
-
-
 def filter_cond(city, street, building, apr_number):
     '''This function will gather all the values for the query to the db for extract the right post'''
     try:
@@ -217,53 +124,78 @@ def validate_post_parameters(city, street, building_number, apartment_number):
     return None
 
             
-def update_post_address(post, data):
+def update_post_address(post_to_update, request):
 
     try:
-        post.post_city = data.get('post_city')
-        post.post_street = data.get('post_street')
-        post.post_building_number = data.get('post_building_number')
-        post.post_apartment_number = data.get('post_apartment_number')
+        post_to_update.post_city = request.get('post_city')
+        post_to_update.post_street = request.get('post_street')
+        post_to_update.post_building_number = request.get('post_building_number')
+        post_to_update.post_apartment_number = request.get('post_apartment_number')
     
     except Exception as e:
-        logger.error(f"update_post_address: {e}")
-        return JsonResponse({'message': 'Failed to update the address'}, status=400)
+        return str(e)
     
         
-def update_post_rent_dates(post_to_update, post_data):
-    
+def update_post_rent_dates(post_to_update, request):
     try:
-        new_rent_start_date = post_data.get('post_rent_start')
-        new_rent_end_date = post_data.get('post_rent_end')
+        new_rent_start_date = request.get('post_rent_start')
+        new_rent_end_date = request.get('post_rent_end')
 
         new_rent_start_date = datetime.strptime(new_rent_start_date, '%Y-%m-%d').date()
         new_rent_end_date = datetime.strptime(new_rent_end_date, '%Y-%m-%d').date()
 
         post_to_update.post_rent_start = new_rent_start_date
         post_to_update.post_rent_end = new_rent_end_date
+    
     except Exception as e:
-        logger.error(f"update_post_rent_dates: {e}")
-        return JsonResponse({'message': 'Failed to update the rented dates'}, status=400)
+        return str(e)
     
     
-def update_post_driving_license(post_to_update, post_data):
+def update_post_driving_license(post_to_update, request):
     try:
-        driving_license_base64 = post_data.get('driving_license')
-        new_driving_license = convert_base64(driving_license_base64, "new driving license")
+        with transaction.atomic():
+            post_to_update.confirmation_status = '0'  # needs to be approved again by the admin
+            post_to_update = PostSerializerDrivingLicense(
+                instance=post_to_update, 
+                data=request, 
+                partial=True
+            )
+            
+            if post_to_update.is_valid():
+                return None, post_to_update
+            
+    except Exception as e:
+        return str(e)
+        
+        
+def update_post_rent_agreement(post_to_update, request):
+    try:
+        with transaction.atomic():
+            post_to_update.confirmation_status = '0'  # needs to be approved again by the admin
+            post_to_update = PostSerializerRentAgreement(
+                instance=post_to_update, 
+                data=request, 
+                partial=True
+            )
+            
+            if post_to_update.is_valid():
+                return None, post_to_update
+            
+    except Exception as e:
+        return str(e)
 
-        post_to_update.driving_license = new_driving_license
-    except Exception as e:
-        logger.error(f"update_post_driving_license: {e}")
-        return JsonResponse({'message': 'Failed to update the driving license'}, status=400)
-        
-        
-def update_post_rent_agreement(post_to_update, post_data):
+def activate_function_based_on_status(status, post_to_update, post_data) -> Post:
     
-    try:
-        rent_agreement_base64 = post_data.get('rent_agreement')
-        new_rent_agreement = convert_base64(rent_agreement_base64, "new rent agreement")
-        post_to_update.rent_agreement = new_rent_agreement
-    except Exception as e:
-        logger.error(f"update_post_rent_agreement: {e}")
-        return JsonResponse({'message': 'Failed to update the rented agreement'}, status=400)
-    
+    if status == '2':
+        err = update_post_address(post_to_update, post_data)
+        
+    elif status == '3':
+        err = update_post_rent_dates(post_to_update, post_data)
+        
+    elif status == '4':
+        err, post_to_update = update_post_rent_agreement(post_to_update, post_data)
+
+    elif status == '5':
+        err, post_to_update = update_post_driving_license(post_to_update, post_data)
+
+    return err, post_to_update

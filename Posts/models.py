@@ -1,70 +1,54 @@
 from typing import Any
 from django.db import models
-from Users.models import Users
 import os
 import uuid
-from django.db import models
 from datetime import datetime
 
-
-def generate_unique_filename(instance, filename: str):
-    # extract the file extension from the original filename
-    root_path, ext = os.path.splitext(filename)
-
-    # Format the current time to include only date, hour, and minute
+def generate_unique_filename(instance, file_name: str, folder_name):
+    _, ext = os.path.splitext(file_name)
     formatted_time = datetime.now().strftime("%d-%m-%Y_%H-%M")
+    unique_filename = f"{uuid.uuid4()}_{formatted_time}{ext}"
+    return os.path.join('Posts', str(instance.post_user_id), str(instance.post_id), folder_name, unique_filename)
 
-    unique_filename = f"{uuid.uuid4()}_{formatted_time}_{ext}"
-    return os.path.join('Posts', str(instance.post_user_id), str(instance.post_id), filename[:filename.index('.')] , unique_filename)
+def upload_to_rent_docs(instance, filename):
+    return generate_unique_filename(instance, filename, 'rent_docs')
+
+def upload_to_apartment_pics(instance, filename):
+    return generate_unique_filename(instance, filename, 'apartment_pics')
 
 class Post(models.Model):
+    post_id = models.AutoField(primary_key=True)
+    post_user_id = models.IntegerField(null=False, blank=False)
     
-    post_id = models.AutoField(primary_key=True)  # create primary key
-
-    #  relation with Users table, this means each post is associated with a user from the Users model.
-    #  if user delete his account, all of it's post removes also.
-    post_user_id = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='posts') 
-
     post_city = models.CharField(max_length=50, null=False, blank=False)
     post_street = models.CharField(max_length=50, null=False, blank=False)
     post_building_number = models.CharField(max_length=50, null=False, blank=False)
     post_apartment_number = models.CharField(max_length=50, null=False, blank=False)
     post_apartment_price = models.CharField(max_length=10, null=False, blank=False)
-
     post_rent_start = models.DateField(null=False, blank=False)
     post_rent_end = models.DateField(null=False, blank=False)
-
-    post_description = models.CharField(max_length=2000,null=False, blank=False)
-    post_rating = models.CharField(max_length=3,null=False, blank=False, default='0')
-
-    confirmation_status = models.CharField(max_length=1,null=False,blank=False,default='0') # after confirm from admin turn to True
-
-    # Files to confirm that the user rent the house
-    rent_agreement = models.FileField(upload_to=generate_unique_filename,null=False,blank=False)
-    driving_license = models.FileField(upload_to=generate_unique_filename,null=False,blank=False)
-
-    apartment_pic_1 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
-    apartment_pic_2 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
-    apartment_pic_3 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
-    apartment_pic_4 = models.ImageField(upload_to=generate_unique_filename,blank=True, null=True)
-
-    post_comments = models.CharField(max_length=2000, null=True, blank=True,default='No comment')
+    post_review = models.CharField(max_length=5000, null=False, blank=False)
+    post_rating = models.CharField(max_length=3, null=False, blank=False, default='0')
+    confirmation_status = models.CharField(max_length=2, null=False, blank=False, default='0')
+    
+    rent_agreement = models.FileField(upload_to=upload_to_rent_docs, null=False, blank=False)
+    driving_license = models.FileField(upload_to=upload_to_rent_docs, null=False, blank=False)
+    
+    apartment_pic_1 = models.ImageField(upload_to=upload_to_apartment_pics, blank=True, null=True)
+    apartment_pic_2 = models.ImageField(upload_to=upload_to_apartment_pics, blank=True, null=True)
+    apartment_pic_3 = models.ImageField(upload_to=upload_to_apartment_pics, blank=True, null=True)
+    apartment_pic_4 = models.ImageField(upload_to=upload_to_apartment_pics, blank=True, null=True)
+    
+    user_addition_comments = models.CharField(max_length=2000, null=True, blank=True, default='No comment')
 
     def __str__(self):
         return f'Post id ({self.post_id})'
 
-
-    # override the save method to customize post_id behavior.
     def save(self, *args, **kwargs):
-        # check if post_id is not set (it's a new post).
         if not self.post_id:
-            # query the database for the last post.
             last_post = Post.objects.last()
-            # If there is a last post, increment its post_id.
             if last_post is not None:
                 self.post_id = last_post.post_id + 1
             else:
-                # If there are no existing posts, set post_id to 1.
                 self.post_id = 1
-        # Call the original save method to save the model instance to the database.
         super().save(*args, **kwargs)

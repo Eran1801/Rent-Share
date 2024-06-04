@@ -16,16 +16,17 @@ logging.basicConfig(level=logging.DEBUG)
 @api_view(["POST"])
 @csrf_exempt
 def update_confirm_status_field(request):
+    '''This function is call by the admin dashboard, when a user upload a Post
+    We check it and update the confirmation status accordingly'''
 
     try:
-        data = request.data
         
-        confirmation_status = data.get('confirmation_status')
-        user_id = data.get('user_id')
-        post_id = data.get('post_id')
+        confirmation_status = request.data.get('confirmation_status')
+        user_id = request.data.get('user_id')
+        post_id = request.data.get('post_id')
 
         # update in 'Post' db the confirm status var
-        update_confirm_status_in_post(post_id,confirmation_status)
+        update_confirm_status_in_post(post_id, confirmation_status)
 
         # extract the needed value of user_name for the message
         user_name = Users.objects.get(user_id=user_id).user_full_name
@@ -33,15 +34,13 @@ def update_confirm_status_field(request):
         # extract the right message according to the confirm_status value
         message, headline = extract_message_based_on_confirm_status(user_name, confirmation_status)
 
-        logger.info(f'message = {message}')
-
         # Add a message to the 'UserInbox' user db 
         UserInbox.objects.create(user_id=user_id,post_id=post_id,user_message=message,headline=headline)
-        return success_response('update_confirm_status end successfully')
+        
+        return success_response('Update confirmation status and create a new message in the user inbox successfully')
 
     except Exception as e:
-        logger.error(f'Error: {e}')
-        return error_response("An error occurred during update_confirm_status")
+        return error_response(f"An error occurred during update_confirm_status {e}")
 
 
 @api_view(['GET'])

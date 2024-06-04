@@ -17,5 +17,5 @@ urlpatterns = [
     re_path(r'^change_personal_info/$', views_personal_info.change_personal_info, name='change_personal_info'),
     re_path(r'^change_password/$', views_personal_info.change_password, name='change_password'),
     re_path(r'^change_profile_pic/$', views_personal_info.change_profile_picture, name='change_profile_pic'),
-    re_path(r'^get_profile_pic/$', views_personal_info.get_profile_pic, name='get_profile_pic'),
+    re_path(r'^get_user_details/$', views_personal_info.get_user_details, name='get_user_details'),
 ]
