@@ -54,8 +54,12 @@ INSTALLED_APPS = [
 ]
 
 
-CORS_ORIGIN_ALLOW_ALL = True  # can reach from any host
+CORS_ORIGIN_ALLOW_ALL = False  # Disable allowing all origins
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "https://telavivback-production.up.railway.app"
+]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',

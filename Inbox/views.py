@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
@@ -19,13 +20,25 @@ logging.basicConfig(level=logging.DEBUG)
 def get_all_user_messages(request):
     '''This function will activate when the user will enter the section of 'My Messages' '''
     try:
-        
         user = Users.objects.get(user_id=request.user_id)
-        messages = user.messages.all() # i can use the messages because i establish it in the related_name in the ForeignKey.
+        messages = user.messages.all()  # I can use the messages because I establish it in the related_name in the ForeignKey.
 
         messages_serializer = UserInboxSerializer(messages, many=True)
-        return success_response(data=messages_serializer.data)
-    
+        messages_data = messages_serializer.data
+
+        # Group messages by post_id
+        grouped_messages = defaultdict(list)
+        for message in messages_data:
+            grouped_messages[message['post_id']].append(message)
+
+        # Convert to the desired format
+        grouped_messages_list = [
+            {"post_id": post_id, "messages": msgs}
+            for post_id, msgs in grouped_messages.items()
+        ]
+
+        return success_response(data=grouped_messages_list, message="Success")
+
     except Users.DoesNotExist:
         return error_response('Message not found')
 
@@ -100,28 +113,3 @@ def has_unread_messages(request):
     except Exception as e:
         logger.error(e)
         return error_response('Something is wrong with had_unread_messages')
-
-
-# @api_view(['GET'])
-# @csrf_exempt
-# def get_all_messages_by_user_id(request):
-#     try:
-#         # get all the messages of the user
-#         user = Users.objects.get(user_id=request.user_id)
-#         all_messages = user.messages.all()
-
-#         # flatten the resulting
-#         unique_post_ids = all_messages.values_list('post_id', flat=True).distinct()
-
-#         posts_data = normalize_messages(unique_post_ids)
-        
-#         return success_response(data=posts_data, message='all user messages was extracted successfully')
-    
-#     except Post.DoesNotExist:
-#         return error_response('Post not found')
-
-#     except UserInbox.DoesNotExist:
-#         return error_response('Message not found')
-
-#     except Exception as e:
-#         return error_response('something went wrong in all_messages_by_post_id')

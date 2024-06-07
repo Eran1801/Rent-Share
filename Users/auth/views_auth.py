@@ -14,7 +14,7 @@ from Users.auth.backends import CustomBackend
 def register(request):
     try:
         
-        request.data['user_email'] = request.data.get('user_email', '').lower() # set use mail to lower before saving
+        request.data['user_email'] = request.data.get('user_email', '').lower() # set user mail to lower before saving
 
         # validation checks for user details
         error_message = validate_register_data(request.data)
@@ -41,11 +41,10 @@ def register(request):
 @csrf_exempt
 def login(request):
     try:
-        user_data = request.data
-
+        
         # extract the right data
-        email = user_data.get('user_email').lower()  # lower case email
-        password = user_data.get('user_password')
+        email = request.data.get('user_email').lower()  # lower case email
+        password = request.data.get('user_password')
 
         # authenticate user
         user = CustomBackend.authenticate(username=email, password=password)
