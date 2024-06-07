@@ -46,10 +46,6 @@ def login(request):
         # Extract the right data
         email = request.data.get('user_email')
         password = request.data.get('user_password')
-        
-        # Check data types
-        if not isinstance(email, str) or not isinstance(password, str):
-            return error_response("Invalid data type for email or password")
 
         email = email.lower()  # lower case email
 
@@ -57,7 +53,7 @@ def login(request):
         user = CustomBackend().authenticate(request, username=email, password=password)
         
         if user:
-            response = set_cookie_in_response(request, user)
+            response = set_cookie_in_response(user, request)
             return response
 
         return error_response("email or password incorrect")
