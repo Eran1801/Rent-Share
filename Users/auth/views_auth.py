@@ -1,12 +1,14 @@
+from venv import logger
 from django.db import transaction
 from Users.auth.decorators import jwt_required
 from Users.utilities import encrypt_password, error_response, set_cookie_in_response, success_response, validate_register_data
-import logging
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from Users.models import Users
 from Users.serializers import UsersSerializer
 from Users.auth.backends import CustomBackend
+from rest_framework.parsers import JSONParser
+
 
 
 @api_view(['POST'])
@@ -41,13 +43,18 @@ def register(request):
 @csrf_exempt
 def login(request):
     try:
-        
-        # extract the right data
-        email = request.data.get('user_email').lower()  # lower case email
+        # Extract the right data
+        email = request.data.get('user_email')
         password = request.data.get('user_password')
+        
+        # Check data types
+        if not isinstance(email, str) or not isinstance(password, str):
+            return error_response("Invalid data type for email or password")
 
-        # authenticate user
-        user = CustomBackend.authenticate(username=email, password=password)
+        email = email.lower()  # lower case email
+
+        # Authenticate user
+        user = CustomBackend().authenticate(request, username=email, password=password)
         
         if user:
             response = set_cookie_in_response(user)
@@ -56,8 +63,8 @@ def login(request):
         return error_response("email or password incorrect")
 
     except Exception as e:
+        logger.error(f"Error in login function: {e}")
         return error_response(message=f"Error in login function, {e}")
-
 
 @api_view(['DELETE'])
 @csrf_exempt
