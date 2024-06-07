@@ -20,6 +20,8 @@ urlpatterns = [
     re_path(r'^update_post_review/$', views.update_post_review, name='update_post_review'),
     re_path(r"^fix_post_issues/$",views.fix_post_issues,name='fix_post_issues'),
     re_path(r"^update_aprtemanet_pics/$",views.update_apartment_pics,name='update_aprtemanet_pics'),
+    re_path(r'^update_confirm_status/$', views.update_confirm_status_field, name='update_confirm_status'), 
+
 
     # search post
     re_path(r"^get_post_by_parameters/$", views.get_post_by_parameters, name="get_post_by_parm"),
