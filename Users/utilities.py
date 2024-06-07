@@ -187,21 +187,31 @@ def error_response(message="Error", status=400) -> JsonResponse:
     response_data = {'error': message}
     return JsonResponse(response_data, status=status)
 
-def set_cookie_in_response(user:Users):
+def set_cookie_in_response(user: Users, request):
     payload = {
         'user_id': user.user_id,
         'exp': (datetime.datetime.now() + datetime.timedelta(days=30)).timestamp()
     }
     token = jwt.encode(payload, os.getenv('SECRET'), algorithm='HS256')
-            
-    response = success_response() # return the response
-    response.set_cookie(key='Authorization',
-                        value=token,
-                        httponly=True,
-                        samesite='Lax',
-                        max_age=30*24*60*60,  # 30 days in seconds
-                        expires=(datetime.datetime.now() + datetime.timedelta(days=30)).strftime("%a, %d-%b-%Y %H:%M:%S GMT"))
-    
+
+    response = success_response()  # return the response
+
+    # Detect environment based on the request host
+    if request.get_host().startswith('localhost') or request.get_host().startswith('127.0.0.1'):
+        domain = 'localhost'
+    else:
+        domain = 'telavivback-production.up.railway.app'
+
+    response.set_cookie(
+        key='Authorization',
+        value=token,
+        httponly=True,
+        samesite='Lax',
+        max_age=30*24*60*60,  # 30 days in seconds
+        expires=(datetime.datetime.now() + datetime.timedelta(days=30)).strftime("%a, %d-%b-%Y %H:%M:%S GMT"),
+        domain=domain  # dynamically set the domain based on the environment
+    )
+
     return response
 
 def validate_change_password_data(request, user:Users) -> str:
