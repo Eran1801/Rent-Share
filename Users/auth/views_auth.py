@@ -60,7 +60,7 @@ def login(request):
             response = set_cookie_in_response(user)
             return response
 
-            return error_response("email or password incorrect")
+        return error_response("email or password incorrect")
 
     except Exception as e:
         logger.error(f"Error in login function: {e}")
