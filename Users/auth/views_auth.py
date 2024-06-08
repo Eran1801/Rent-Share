@@ -1,3 +1,4 @@
+import traceback
 from venv import logger
 from django.db import transaction
 from Users.auth.decorators import jwt_required
@@ -49,19 +50,19 @@ def login(request):
 
         # Authenticate user
         user = CustomBackend().authenticate(request, username=email, password=password)
-        
+
         if user:
             response = set_cookie_in_response(user, request)
             return response
-            # logger.info(f'user email - {user.user_email}\nuser user_id - {user.user_id}')
-            # return success_response(user.user_email)
 
         return error_response("email or password incorrect")
 
     except Exception as e:
         logger.error(f"Error in login function: {e}")
+        logger.error(traceback.format_exc())
         return error_response(message=f"Error in login function, {e}")
-
+    
+    
 @api_view(['DELETE'])
 @csrf_exempt
 @jwt_required

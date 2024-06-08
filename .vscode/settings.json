@@ -3,7 +3,8 @@
         "arnona",
         "Bitan",
         "corsheaders",
-        "dirtyfields"
+        "dirtyfields",
+        "telavivback"
     ],
     "snyk.severity": {
         "critical": false,
