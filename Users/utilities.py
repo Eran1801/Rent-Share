@@ -189,7 +189,7 @@ def error_response(message="Error", status=400) -> JsonResponse:
 
 def set_cookie_in_response(user: Users, request):
     payload = {
-        'user_id': user.user_id,
+        'user_id': str(user.user_id),
         'exp': (datetime.datetime.now() + datetime.timedelta(days=30)).timestamp()
     }
     token = jwt.encode(payload, os.getenv('SECRET'), algorithm='HS256')

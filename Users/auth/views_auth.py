@@ -53,8 +53,10 @@ def login(request):
         user = CustomBackend().authenticate(request, username=email, password=password)
         
         if user:
-            response = set_cookie_in_response(user, request)
-            return response
+            # response = set_cookie_in_response(user, request)
+            # return response
+            logger.info(f'user email - {user.user_email}\nuser password - {user.user_id}')
+            return success_response(user.user_email)
 
         return error_response("email or password incorrect")
 
