@@ -138,7 +138,7 @@ def get_all_user_posts(request):
         posts = Post.objects.filter(post_user_id=user_id)
         post_serializer = PostSerializer(posts, many=True)
 
-        return success_response(data=post_serializer.data,message="Post by user id retrieved successfully")
+        return success_response(data=post_serializer.data, message="Post by user id retrieved successfully")
     
     except Post.DoesNotExist:    
             return error_response("Post with the given ID does not exist.")

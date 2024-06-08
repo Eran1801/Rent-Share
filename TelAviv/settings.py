@@ -54,11 +54,12 @@ INSTALLED_APPS = [
 ]
 
 
-CORS_ORIGIN_ALLOW_ALL = False  # Disable allowing all origins
+CORS_ORIGIN_ALLOW_ALL = True  # Disable allowing all origins
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost",
-    "https://telavivback-production.up.railway.app"
+    "https://telavivback-production.up.railway.app",
+    "https://rentshare.netlify.app",
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

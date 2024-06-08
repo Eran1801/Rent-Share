@@ -19,10 +19,10 @@ def forget_password(request):
             return error_response(message="Email doesn't exist")
 
         verification_code = generate_verification_code()
-        msg = Emails.FORGET_PASSWORD_MESSAGE.value % verification_code  
-        subject = Emails.FORGET_PASSWORD_SUBJECT
+        # msg = Emails.FORGET_PASSWORD_MESSAGE.value % verification_code  
+        # subject = Emails.FORGET_PASSWORD_SUBJECT
 
-        send_email(FROM_EMAIL, user_email, msg, subject)
+        # send_email(FROM_EMAIL, user_email, msg, subject)
 
         password_verification_code = PasswordResetCode.objects.create(verification_code=verification_code)
         with transaction.atomic():
