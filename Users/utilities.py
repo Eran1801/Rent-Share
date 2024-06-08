@@ -196,11 +196,11 @@ def set_cookie_in_response(user: Users, request):
 
     response = success_response()  # return the response
 
-    # Detect environment based on the request host
-    if request.get_host().startswith('localhost') or request.get_host().startswith('127.0.0.1'):
-        domain = 'localhost'
-    else:
-        domain = 'telavivback-production.up.railway.app'
+    # # Detect environment based on the request host
+    # if request.get_host().startswith('localhost') or request.get_host().startswith('127.0.0.1'):
+    #     domain = 'localhost'
+    # else:
+    domain = 'telavivback-production.up.railway.app'
 
     response.set_cookie(
         key='Authorization',

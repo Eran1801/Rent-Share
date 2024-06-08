@@ -44,19 +44,17 @@ def register(request):
 def login(request):
     try:
         # Extract the right data
-        email = request.data.get('user_email')
+        email = request.data.get('user_email').lower()
         password = request.data.get('user_password')
-
-        email = email.lower()  # lower case email
 
         # Authenticate user
         user = CustomBackend().authenticate(request, username=email, password=password)
         
         if user:
-            # response = set_cookie_in_response(user, request)
-            # return response
-            logger.info(f'user email - {user.user_email}\nuser password - {user.user_id}')
-            return success_response(user.user_email)
+            response = set_cookie_in_response(user, request)
+            return response
+            # logger.info(f'user email - {user.user_email}\nuser user_id - {user.user_id}')
+            # return success_response(user.user_email)
 
         return error_response("email or password incorrect")
 
