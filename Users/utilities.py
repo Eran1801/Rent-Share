@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 import random
 import smtplib
-
+import environ
 import jwt
 from Inbox.msg_emails_Enum import EMAIL_PASSWORD, EMAIL_PORT, EMAIL_SERVER
 from Users.models import PasswordResetCode, Users
@@ -188,13 +188,17 @@ def error_response(message="Error", status=400) -> JsonResponse:
     response_data = {'error': message}
     return JsonResponse(response_data, status=status)
 
+# Initialize the environment
+env = environ.Env()
+env.read_env()
+
 def set_cookie_in_response(user: Users, request):
     try:
         payload = {
             'user_id': str(user.user_id),
             'exp': (datetime.datetime.now() + datetime.timedelta(days=30)).timestamp()
         }
-        token = jwt.encode(payload, os.environ.get('SECRET'), algorithm='HS256')
+        token = jwt.encode(payload, env('SECRET'), algorithm='HS256')
 
         response = success_response()  # return the response
 
