@@ -8,16 +8,25 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 import random
 import smtplib
-import environ
 import jwt
 from Inbox.msg_emails_Enum import EMAIL_PASSWORD, EMAIL_PORT, EMAIL_SERVER
 from Users.models import PasswordResetCode, Users
 import re
 import logging
 import os
+import environ
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+def load_env():
+    env = environ.Env()
+    # Define the path to the .env file
+    env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'TelAviv', '.env')
+    env.read_env(env_path)
+    
+    return env
+
 
 def generate_verification_code() -> str:
     """Generate a random 4 digits number for forget password"""
@@ -143,6 +152,7 @@ def check_full_name(full_name: str) -> bool:
     
     return True
 
+
 def check_phone_number(phone_number: str) -> bool:
     '''
     check if the phone number is valid.
@@ -188,17 +198,21 @@ def error_response(message="Error", status=400) -> JsonResponse:
     response_data = {'error': message}
     return JsonResponse(response_data, status=status)
 
-# Initialize the environment
-env = environ.Env()
-env.read_env()
 
 def set_cookie_in_response(user: Users, request):
     try:
+        
+        # Initialize the environment
+        env = load_env()
+
+        # Now you can use env to access environment variables
+        secret = env('SECRET')
+        
         payload = {
             'user_id': str(user.user_id),
             'exp': (datetime.datetime.now() + datetime.timedelta(days=30)).timestamp()
         }
-        token = jwt.encode(payload, env('SECRET'), algorithm='HS256')
+        token = jwt.encode(payload, secret, algorithm='HS256')
 
         response = success_response()  # return the response
 
@@ -207,10 +221,6 @@ def set_cookie_in_response(user: Users, request):
             domain = 'localhost'
         else:
             domain = 'telavivback-production.up.railway.app'
-
-        # Log the token and domain for debugging
-        logger.debug(f"Token: {token}")
-        logger.debug(f"Domain: {domain}")
 
         response.set_cookie(
             key='Authorization',
