@@ -8,12 +8,12 @@ from Users.utilities import check_valid_password, check_verification_code_expiry
 from Inbox.msg_emails_Enum import FROM_EMAIL, Emails
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @csrf_exempt
 def forget_password(request):
     """This function will be used to send a 4 digit code to the user email to reset the password."""
     try:
-        user_email = request.GET.get('user_email').lower()  # lower case email
+        user_email = request.get('user_email').lower()  # lower case email
 
         if email_exists(user_email) is False:
             return error_response(message="Email doesn't exist")

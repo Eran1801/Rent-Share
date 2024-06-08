@@ -1,5 +1,4 @@
 import datetime
-import traceback
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.utils import timezone
@@ -235,9 +234,8 @@ def set_cookie_in_response(user: Users, request):
         return response
     
     except Exception as e:
-        logger.error(f"Error in set_cookie_in_response: {e}")
-        logger.error(traceback.format_exc())
-        return error_response(traceback.format_exc())
+        return error_response(str(e))
+
 
 def validate_change_password_data(request, user:Users) -> str:
     

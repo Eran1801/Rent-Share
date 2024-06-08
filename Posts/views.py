@@ -301,6 +301,7 @@ def update_apartment_pics(request):
     except Exception as e:
         return error_response(f'Something is wrong in the update_apartment_pics, {e}')
 
+
 @api_view(["PUT"])
 @csrf_exempt
 def update_confirm_status_field(request):
