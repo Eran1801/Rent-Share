@@ -194,7 +194,7 @@ def set_cookie_in_response(user: Users, request):
             'user_id': str(user.user_id),
             'exp': (datetime.datetime.now() + datetime.timedelta(days=30)).timestamp()
         }
-        token = jwt.encode(payload, os.getenv('SECRET'), algorithm='HS256')
+        token = jwt.encode(payload, os.environ.get('SECRET'), algorithm='HS256')
 
         response = success_response()  # return the response
 
