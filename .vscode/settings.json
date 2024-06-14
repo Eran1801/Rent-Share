@@ -4,6 +4,7 @@
         "Bitan",
         "corsheaders",
         "dirtyfields",
+        "rentshare",
         "telavivback"
     ],
     "snyk.severity": {

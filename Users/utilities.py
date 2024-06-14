@@ -219,7 +219,7 @@ def set_cookie_in_response(user: Users, request):
         if request.get_host().startswith('localhost') or request.get_host().startswith('127.0.0.1'):
             domain = 'localhost'
         else:
-            domain = 'telavivback-production.up.railway.app'
+            domain = 'rentshare.netlify.app'
 
         response.set_cookie(
             key='Authorization',

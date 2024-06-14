@@ -21,7 +21,6 @@ class UserSerializerProfileDetails(serializers.ModelSerializer):
         fields = ('user_profile_pic', 'user_full_name', 'user_email', 'user_phone')
 
 
-
 # Password Reset Code Model
 class PasswordResetCodeSerializer(serializers.ModelSerializer):
     class Meta:

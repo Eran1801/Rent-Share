@@ -14,9 +14,9 @@ from pathlib import Path
 import os
 import environ
 
-env = environ.Env()
-env.read_env()
+from Users.utilities import load_env
 
+env = load_env()
 
 DATE_INPUT_FORMATS = ['%d-%m-%Y']
 
