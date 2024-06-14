@@ -12,19 +12,12 @@ from Inbox.msg_emails_Enum import EMAIL_PASSWORD, EMAIL_PORT, EMAIL_SERVER
 from Users.models import PasswordResetCode, Users
 import re
 import logging
-import os
-import environ
+
+from manage import load_env
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-
-def load_env():
-    env = environ.Env()
-    # Define the path to the .env file
-    env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'TelAviv', '.env')
-    env.read_env(env_path)
-    
-    return env
 
 
 def generate_verification_code() -> str:

@@ -8,7 +8,7 @@ from Inbox.msg_emails_Enum import FROM_EMAIL, Emails
 from Inbox.utilities import update_confirm_status_in_post
 from Inbox.views import extract_message_based_on_confirm_status
 from Posts.serializers import PostSerializer
-from Posts.utilities import activate_function_based_on_status, convert_to_json, group_apartments_by_location, process_apartments
+from Posts.utilities import activate_function_based_on_status
 from Users.auth.decorators import jwt_required
 from Users.models import Users
 from .models import Post

@@ -12,9 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-import environ
 
-from Users.utilities import load_env
+from manage import load_env
 
 env = load_env()
 
