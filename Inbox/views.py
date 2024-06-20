@@ -88,28 +88,4 @@ def delete_messages_by_post_id(request):
         return error_response('UserInbox not found inside delete_messages_by_post_id')
     
     except Exception as e:
-        logger.error(e)
         return error_response('Something went wrong inside delete_messages_by_post_id')
-
-    
-@api_view(['GET'])
-@csrf_exempt
-def has_unread_messages(request):
-    """NEEDS TO CHECK WHERE IT'S USED"""
-    try:
-        user_id = request.GET.get('user_id')
-        user = Users.objects.get(user_id=user_id)
-
-        messages = user.messages.all() # get's all user messages
-
-        # store all the messages that already read  
-        unread_messages = extract_unread_messages(messages)
-        
-        return success_response(data=unread_messages, message='all unread messages was extracted successfully')
-        
-    except UserInbox.DoesNotExist:
-        return error_response('Message dont exist.')
-
-    except Exception as e:
-        logger.error(e)
-        return error_response('Something is wrong with had_unread_messages')

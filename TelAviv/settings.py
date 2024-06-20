@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 
-from manage import load_env
+from .utils import load_env
 
 env = load_env()
 

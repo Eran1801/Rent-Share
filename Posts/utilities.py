@@ -10,23 +10,6 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-def process_apartments(apartment_data) -> list:
-    '''This function will be used to process the apartments data and hold each apartment in a list'''
-    try:
-        apartments_list = []
-
-        logger.info(f'apartment_data: {apartment_data}')
-
-        for apr in apartment_data:
-            apartments_list.append(apr)
-
-        return apartments_list
-
-    except Exception as e:
-        logger.error(f"process_apartments: {e}")
-        return []
-
-
 def group_apartments_by_location(apartments_data):
     '''This function will be used to group the apartments by location based on city, address, building number, and apartment number'''
 
@@ -43,14 +26,16 @@ def group_apartments_by_location(apartments_data):
                 apartment_data['post_building_number'],
                 apartment_data['post_apartment_number']
             )
+            
+            logger.info(f'location_key: {location_key}')
 
             # If the location key is not in the dictionary, add it with an empty list as the value
             if location_key not in grouped_apartments:
                 # create a new key in the dictionary only if it doesn't exist
                 # because if we have the same address we can review more then one on apartment
                 grouped_apartments[location_key] = []
-            else:
-                grouped_apartments[location_key].append(apartment_data)
+                
+            grouped_apartments[location_key].append(apartment_data)
 
         return grouped_apartments
 

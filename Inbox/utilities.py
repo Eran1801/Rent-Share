@@ -7,19 +7,6 @@ from django.db import transaction
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-def extract_unread_messages(messages) -> dict:
-    '''Extract the unread messages from a list of messages'''
-    ans = {}
-    
-    for mes in messages:
-        if mes.read_status == '1':
-            if mes.post_id not in ans:
-                ans[mes.post_id] = []
-                ans[mes.post_id].append((mes.user_message, mes.headline))
-            else:
-                ans[mes.post_id].append((mes.user_message, mes.headline))
-    
-    return ans
 
 def update_confirm_status_in_post(post_id, new_confirm_status):
     '''Update the confirmation_status field of a post'''
@@ -59,36 +46,3 @@ def extract_message_based_on_confirm_status(user_name,confirm_status:str):
     }
 
     return messages.get(confirm_status)[1], messages.get(confirm_status)[0]
-
-
-# def normalize_messages(unique_post_ids):
-    
-#     try:
-#         posts_data = []
-#         # for each post_id in the list of unique post_ids
-#         for post_id in unique_post_ids:
-#             # get the post object
-#             post = Post.objects.get(post_id=post_id) 
-
-#             # convert post to a dict for JSON response
-#             post_dict = {"post": PostSerializerAll(post).data}
-
-#             # get's all the messages that associated to this post_id and order them by message_id as the message id is the order of the messages
-#             all_post_messages = UserInbox.objects.filter(post_id=post_id).order_by('message_id')
-
-#             # sorted the message inside a list for the JSON return
-#             message_list_sorted = [mes.user_message for mes in all_post_messages]
-#             post_dict['messages_sorted'] = message_list_sorted
-
-#             # the actual messages in a dict form for the JSON return
-#             post_dict['massages'] = UserInboxSerializerAll(all_post_messages,many=True).data
-        
-#             posts_data.append(post_dict)
-
-#         return posts_data
-    
-#     except Post.DoesNotExist:
-#         logger.error(f"Post with ID {post_id} does not exist.")
-    
-#     except Exception as e:
-#         logger.error(f"An error occurred while normalizing messages for post {post_id}: {e}")

@@ -8,7 +8,7 @@ from Inbox.msg_emails_Enum import FROM_EMAIL, Emails
 from Inbox.utilities import update_confirm_status_in_post
 from Inbox.views import extract_message_based_on_confirm_status
 from Posts.serializers import PostSerializer
-from Posts.utilities import activate_function_based_on_status
+from Posts.utilities import activate_function_based_on_status, group_apartments_by_location
 from Users.auth.decorators import jwt_required
 from Users.models import Users
 from .models import Post
@@ -62,17 +62,26 @@ def add_post(request):
 
 @api_view(['GET'])
 @csrf_exempt
+@jwt_required
 def get_all_posts(request):
-    """This function will be used to get all the posts in the db 'Posts'"""
+    """This function will be used to get all the posts in the db 'Posts' it's for the main page, for the feed"""
     try:
         # extract all the posts from the db
         all_posts = Post.objects.all()
+        
+        # if there is no posts in the db
+        if not all_posts:
+            return error_response("No posts found")
+        
+        # return all posts but combine them if there is more than one post for the same address
+        all_posts = group_apartments_by_location(all_posts)
+        
+        # serialize the data
         all_posts_serialize = PostSerializer(all_posts, many=True)  # many -> many posts
 
         return success_response(data=all_posts_serialize.data,message="All posts retrieved successfully")
 
     except Exception as e:
-         logger.error(f"get_all_posts : {e}")
          return error_response("An error occurred during get_all_posts")
 
 
