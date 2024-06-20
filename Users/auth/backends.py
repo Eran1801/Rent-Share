@@ -8,4 +8,5 @@ class CustomBackend(BaseBackend):
             if user.check_password(password):
                 return user
         except Users.DoesNotExist:
+
             return None
