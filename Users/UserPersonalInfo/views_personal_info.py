@@ -2,7 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view, parser_classes
-from Users.auth.decorators import jwt_required
+from Users.UserAuth.decorators import jwt_required
 from Users.models import Users
 from django.db import transaction
 from Users.serializers import UserSerializerPicture, UserSerializerProfileDetails
