@@ -2,7 +2,7 @@ from collections import defaultdict
 from django.views.decorators.csrf import \
     csrf_exempt  # will be used to exempt the CSRF token (Angular will handle CSRF token)
 from rest_framework.decorators import api_view
-from Users.auth.decorators import jwt_required
+from Users.UserAuth.decorators import jwt_required
 from Users.models import Users
 from Users.utilities import error_response, success_response
 from .models import UserInbox
