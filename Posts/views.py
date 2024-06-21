@@ -9,7 +9,7 @@ from Inbox.utilities import update_confirm_status_in_post
 from Inbox.views import extract_message_based_on_confirm_status
 from Posts.serializers import PostSerializer
 from Posts.utilities import activate_function_based_on_status, group_apartments_by_location
-from Users.auth.decorators import jwt_required
+from Users.UserAuth.decorators import jwt_required
 from Users.models import Users
 from .models import Post
 from Users.utilities import error_response, send_email, success_response
